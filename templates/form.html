@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>ASB Case Assistant – Describe Your Situation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #1f2937, #0f766e);
+            --page-bg: #0b1120;
+            --card-bg: #0f172a;
+            --card-border: #1e293b;
+            --accent: #22c55e;
+            --accent-alt: #38bdf8;
+            --accent-soft: rgba(34, 197, 94, 0.12);
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+            --input-bg: #020617;
+            --input-border: #1f2933;
+            --danger: #f97373;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--page-bg);
+            color: var(--text-main);
+        }
+
+        .top-bar {
+            background: var(--bg-gradient);
+            padding: 16px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        .top-bar-inner {
+            max-width: 980px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            background: radial-gradient(circle at 30% 30%, #22c55e, #22c55e 40%, #0f766e 75%, #020617);
+            border: 1px solid rgba(15, 23, 42, 0.7);
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-text span:first-child {
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            font-size: 1rem;
+        }
+
+        .brand-text span:last-child {
+            font-size: 0.8rem;
+            color: rgba(226, 232, 240, 0.9);
+        }
+
+        .top-bar-tagline {
+            font-size: 0.85rem;
+            color: rgba(226, 232, 240, 0.9);
+            text-align: right;
+        }
+
+        .page {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 24px 16px 40px;
+        }
+
+        header {
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            margin: 0 0 6px;
+            font-size: 1.7rem;
+        }
+
+        header p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid var(--card-border);
+            box-shadow:
+                0 18px 40px rgba(15, 23, 42, 0.65),
+                0 2px 4px rgba(15, 23, 42, 0.6);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .card-subtitle {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            font-size: 0.8rem;
+            color: var(--accent-alt);
+            background: rgba(15, 23, 42, 0.7);
+        }
+
+        .form-row {
+            margin-bottom: 16px;
+        }
+
+        .form-row label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 0.92rem;
+        }
+
+        .form-hint {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        textarea,
+        input[type="number"],
+        input[type="text"] {
+            width: 100%;
+            padding: 9px 10px;
+            border-radius: 10px;
+            border: 1px solid var(--input-border);
+            font-size: 0.95rem;
+            font-family: inherit;
+            resize: vertical;
+            background: var(--input-bg);
+            color: var(--text-main);
+        }
+
+        textarea::placeholder,
+        input::placeholder {
+            color: #4b5563;
+        }
+
+        textarea:focus,
+        input[type="number"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px var(--accent-soft);
+        }
+
+        .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 4px;
+        }
+
+        .radio-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--input-border);
+            cursor: pointer;
+            font-size: 0.85rem;
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-main);
+        }
+
+        .radio-pill input {
+            margin: 0;
+        }
+
+        .section-divider {
+            margin: 18px 0;
+            border: 0;
+            border-top: 1px solid rgba(55, 65, 81, 0.7);
+        }
+
+        .button-row {
+            margin-top: 12px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button[type="submit"],
+        .button-secondary {
+            border-radius: 999px;
+            padding: 9px 18px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+
+        button[type="submit"] {
+            background: var(--accent);
+            color: #020617;
+        }
+
+        button[type="submit"]:hover {
+            filter: brightness(0.96);
+        }
+
+        .button-secondary {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid rgba(148, 163, 184, 0.6);
+        }
+
+        .disclaimer {
+            margin-top: 14px;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        @media (max-width: 640px) {
+            .top-bar-inner {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .top-bar-tagline {
+                text-align: left;
+            }
+            .card {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="top-bar">
+    <div class="top-bar-inner">
+        <div class="brand">
+            <div class="brand-icon"></div>
+            <div class="brand-text">
+                <span>ASB Case Assistant</span>
+                <span>Structured help with neighbour and housing issues</span>
+            </div>
+        </div>
+        <div class="top-bar-tagline">
+            Built for tenants, residents and ordinary people – A practical resource.
+        </div>
+    </div>
+</div>
+
+<div class="page">
+    <header>
+        <h1>Describe what’s been happening</h1>
+        <p>Use plain language. The tool will organise it into a structured assessment for you.</p>
+    </header>
+
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Case details</h2>
+                <p class="card-subtitle">Answer as best you can – it’s fine if you don’t remember exact dates or numbers.</p>
+            </div>
+            <span class="pill">Step 1 of 2 – Input</span>
+        </div>
+
+        <form method="post" action="/assess">
+            <div class="form-row">
+                <label for="notes">Case notes</label>
+                <div class="form-hint">
+                    What is happening? How often? Who is involved? How does it affect you or anyone else?
+                </div>
+                <textarea id="notes" name="notes" rows="10"
+                          placeholder="For example: neighbour plays loud music most nights after 11pm, shouts in the stairwell, children can’t sleep..."
+                          required></textarea>
+            </div>
+
+            <div class="form-row">
+                <label for="num_previous_incidents">Number of previous incidents</label>
+                <div class="form-hint">
+                    Rough count of how many times this has happened recently (e.g. last 3–6 months).
+                </div>
+                <input type="number" id="num_previous_incidents" name="num_previous_incidents"
+                       min="0" value="0" required>
+            </div>
+
+            <div class="form-row">
+                <label>Vulnerable person involved?</label>
+                <div class="form-hint">
+                    For example: elderly, disabled, long-term health conditions, mental health issues, children at risk.
+                </div>
+                <div class="radio-group">
+                    <label class="radio-pill">
+                        <input type="radio" name="vulnerable_tenant" value="yes" checked>
+                        <span>Yes</span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="vulnerable_tenant" value="no">
+                        <span>No</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <label for="incident_type">Incident type</label>
+                <div class="form-hint">
+                    e.g. noise, harassment, threats, hate-related behaviour, vandalism, drug activity, general ASB.
+                </div>
+                <input type="text" id="incident_type" name="incident_type"
+                       placeholder="e.g. noise and harassment" required>
+            </div>
+
+            <div class="form-row">
+                <label>Known criminal history?</label>
+                <div class="form-hint">
+                    Only select “Yes” if you know of past convictions or serious police involvement.
+                </div>
+                <div class="radio-group">
+                    <label class="radio-pill">
+                        <input type="radio" name="has_criminal_history" value="yes">
+                        <span>Yes</span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="has_criminal_history" value="no" checked>
+                        <span>No / Don’t know</span>
+                    </label>
+                </div>
+            </div>
+
+            <hr class="section-divider">
+            <div class="card-header" style="margin-top: 6px;">
+                <div>
+                    <h2 class="card-title">Risk assessment matrix (v8)</h2>
+                    <p class="card-subtitle">Answer these questions to calculate an evidence-based risk score (0–41).</p>
+                </div>
+                <span class="pill">Optional but recommended</span>
+            </div>
+            <p class="disclaimer" style="margin-top: 0;">
+                This section mirrors common ASB risk matrix scoring used by agencies. Each answer has points shown in brackets.
+            </p>
+            <div class="form-row">
+                <label>Risk matrix Q1: Other than this occasion - how often do you have problems?</label>
+                <div class="radio-group">
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q1" value="0" required>
+                        <span>Only occasionally <span style="opacity:.75;">(0)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q1" value="1">
+                        <span>Most months <span style="opacity:.75;">(1)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q1" value="2">
+                        <span>Most weeks <span style="opacity:.75;">(2)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q1" value="3">
+                        <span>Most days <span style="opacity:.75;">(3)</span></span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-row">
+                <label>Risk matrix Q2: Do you think the current incident is linked to previous incidents?</label>
+                <div class="radio-group">
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q2" value="0" required>
+                        <span>No <span style="opacity:.75;">(0)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q2" value="2">
+                        <span>Yes <span style="opacity:.75;">(2)</span></span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-row">
+                <label>Risk matrix Q3: Do you think that incidents are happening more often and/or are getting worse?</label>
+                <div class="radio-group">
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q3" value="0" required>
+                        <span>No <span style="opacity:.75;">(0)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q3" value="2">
+                        <span>Yes <span style="opacity:.75;">(2)</span></span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-row">
+                <label>Risk matrix Q4: Do you know the person or persons causing the problem?</label>
+                <div class="radio-group">
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q4" value="0" required>
+                        <span>I do not know them <span style="opacity:.75;">(0)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q4" value="1">
+                        <span>We are "known" to each other <span style="opacity:.75;">(1)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q4" value="2">
+                        <span>We know each other well <span style="opacity:.75;">(2)</span></span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-row">
+                <label>Risk matrix Q5: Do the people causing the problem (or their associates) have a history of or reputation for intimidation or harassment?</label>
+                <div class="radio-group">
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q5" value="0" required>
+                        <span>No history/reputation for harassment/intimidation <span style="opacity:.75;">(0)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q5" value="2">
+                        <span>Have not harassed me, but have a history/reputation for harassment/intimidation <span style="opacity:.75;">(2)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q5" value="4">
+                        <span>Have harassed me in the past <span style="opacity:.75;">(4)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q5" value="6">
+                        <span>Currently harassing me <span style="opacity:.75;">(6)</span></span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-row">
+                <label>Risk matrix Q6: Have you ever reported incidents of this kind to any other agency?</label>
+                <div class="radio-group">
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q6" value="1" required>
+                        <span>Yes <span style="opacity:.75;">(1)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q6" value="0">
+                        <span>No <span style="opacity:.75;">(0)</span></span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-row">
+                <label>Risk matrix Q7: Which of the following do you think that this incident deliberately targeted?</label>
+                <div class="radio-group">
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q7" value="1" required>
+                        <span>Your community <span style="opacity:.75;">(1)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q7" value="3">
+                        <span>Your family <span style="opacity:.75;">(3)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q7" value="4">
+                        <span>You <span style="opacity:.75;">(4)</span></span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-row">
+                <label>Risk matrix Q8: Do you feel that this incident is associated with your/your family's faith,religion/belief,race,sexuality,gender, gender identity,disability or another reason?Think Hate Crime</label>
+                <div class="radio-group">
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q8" value="0" required>
+                        <span>No <span style="opacity:.75;">(0)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q8" value="3">
+                        <span>Yes <span style="opacity:.75;">(3)</span></span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-row">
+                <label>Risk matrix Q9: In addition to what has happened, do you feel that there is anything that is increasing you or your household’s personal risk (e.g. because of personal circumstances)?</label>
+                <div class="radio-group">
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q9" value="0" required>
+                        <span>No <span style="opacity:.75;">(0)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q9" value="3">
+                        <span>Yes <span style="opacity:.75;">(3)</span></span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-row">
+                <label>Risk matrix Q10: How affected do you feel by what has happened?</label>
+                <div class="radio-group">
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q10" value="0" required>
+                        <span>Not at all <span style="opacity:.75;">(0)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q10" value="1">
+                        <span>Affected a little <span style="opacity:.75;">(1)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q10" value="2">
+                        <span>Moderately affected <span style="opacity:.75;">(2)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q10" value="3">
+                        <span>Affected a lot <span style="opacity:.75;">(3)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q10" value="5">
+                        <span>Extremely affected <span style="opacity:.75;">(5)</span></span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-row">
+                <label>Risk matrix Q11: Has yours or anyone’s health been affected as a result of this and any previous incidents?</label>
+                <div class="radio-group">
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q11" value="0" required>
+                        <span>No <span style="opacity:.75;">(0)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q11" value="3">
+                        <span>Yes <span style="opacity:.75;">(3)</span></span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-row">
+                <label>Risk matrix Q12: Do you have a social worker, health visitor or any other type of professional support?</label>
+                <div class="radio-group">
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q12" value="0" required>
+                        <span>No <span style="opacity:.75;">(0)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q12" value="1">
+                        <span>Yes <span style="opacity:.75;">(1)</span></span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-row">
+                <label>Risk matrix Q13: Do you have any friends and family to support you?</label>
+                <div class="radio-group">
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q13" value="0" required>
+                        <span>A close network to draw on for support <span style="opacity:.75;">(0)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q13" value="1">
+                        <span>A few people to draw on for support <span style="opacity:.75;">(1)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q13" value="3">
+                        <span>Isolated from people who can offer support <span style="opacity:.75;">(3)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q13" value="3">
+                        <span>Lives alone and is isolated <span style="opacity:.75;">(3)</span></span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-row">
+                <label>Risk matrix Q14: Apart from any effect on you, do you think anyone else has been affected by what has happened?</label>
+                <div class="radio-group">
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q14" value="0" required>
+                        <span>No-one else <span style="opacity:.75;">(0)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q14" value="1">
+                        <span>Your family <span style="opacity:.75;">(1)</span></span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="matrix_q14" value="3">
+                        <span>Local community <span style="opacity:.75;">(3)</span></span>
+                    </label>
+                </div>
+            </div>
+
+            <hr class="section-divider">
+
+            <div class="button-row">
+                <button type="submit">Get assessment</button>
+                <button type="reset" class="button-secondary">Clear form</button>
+            </div>
+
+            <p class="disclaimer">
+                This tool does not give legal advice and cannot replace speaking with your landlord, council, police or
+                a legal professional. It is designed to help you understand risk, impact and how to present your case.
+            </p>
+        </form>
+    </div>
+</div>
+</body>
+</html>
