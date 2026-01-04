@@ -1,4 +1,6 @@
+
 import os
+print ("RUNNING APP.PY FROM:",os.path.abspath(__file__))
 import uuid
 from flask import Flask, render_template, request, redirect, url_for, abort
 
