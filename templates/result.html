@@ -17,7 +17,39 @@
     ul { margin:8px 0 0; padding-left:20px; }
     details { margin-top: 10px; }
     summary { cursor: pointer; color:#38bdf8; font-weight:600; }
-    .btn { display:inline-block; margin-top:10px; text-decoration:none; background:#22c55e; color:#020617; padding:8px 14px; border-radius:999px; font-weight:700; }
+
+    .btn {
+      display:inline-block;
+      margin-top:10px;
+      text-decoration:none;
+      background:#22c55e;
+      color:#020617;
+      padding:8px 14px;
+      border-radius:999px;
+      font-weight:700;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-secondary {
+      display:inline-block;
+      margin-top:10px;
+      text-decoration:none;
+      background:transparent;
+      color:#9ca3af;
+      padding:8px 14px;
+      border-radius:999px;
+      font-weight:700;
+      border:1px solid #1e293b;
+      cursor: pointer;
+    }
+
+    .note {
+      margin-top: 10px;
+      color: #9ca3af;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
   </style>
 </head>
 <body>
@@ -37,24 +69,44 @@
       {% else %}
         <span class="badge">{{ result.final_risk_level }}</span>
       {% endif %}
-      <div class="card">
-  <h2 style="margin:0 0 10px;">What to do now</h2>
 
-  {% if result.what_to_do_now %}
-    <ul>
-      {% for step in result.what_to_do_now %}
-        <li>{{ step }}</li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p class="muted">No suggested actions available.</p>
-  {% endif %}
+      <!-- PAYWALL CTA (only show when not paid) -->
+      {% if not paid %}
+        <p class="note">
+          Want a full case summary you can copy/paste into an email or report? Unlock the full report for <strong>£1</strong>.
+        </p>
 
-  <p class="muted" style="margin-top:10px;">
-    This is general guidance, not legal advice. If you are in immediate danger call 999.
-  </p>
-</div>
+        {% if payment_pending %}
+          <p class="note"><strong>Payment not confirmed yet.</strong> If you’ve just paid, wait a few seconds and refresh this page.</p>
+        {% endif %}
 
+        <form method="post" action="/create-checkout-session" style="margin-top: 8px;">
+          <input type="hidden" name="case_id" value="{{ case_id }}">
+          <button class="btn" type="submit">Unlock full report (£1)</button>
+          <a class="btn-secondary" href="/case/{{ case_id }}">Stay on free result</a>
+        </form>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <h2 style="margin:0 0 10px;">What to do now</h2>
+
+      {% if result.what_to_do_now %}
+        <ul>
+          {% for step in result.what_to_do_now %}
+            <li>{{ step }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">No suggested actions available.</p>
+      {% endif %}
+
+      <p class="muted" style="margin-top:10px;">
+        This is general guidance, not legal advice. If you are in immediate danger call 999.
+      </p>
+    </div>
+
+    <div class="card">
       <details>
         <summary>How was this risk level arrived at</summary>
         <div style="margin-top:10px; color:#9ca3af;">
@@ -68,7 +120,7 @@
             </p>
           {% endif %}
           <p style="margin:0;">
-            This is the risk assessement without filling in Risk Matrix questions: <strong>{{ result.initial_risk_level }}</strong>
+            This is the risk assessment without filling in Risk Matrix questions: <strong>{{ result.initial_risk_level }}</strong>
           </p>
         </div>
       </details>
@@ -76,7 +128,15 @@
 
     <div class="card">
       <h2 style="margin:0 0 10px;">Case summary</h2>
-      <p style="margin:0;">{{ result.summary }}</p>
+
+      {% if paid or result.tier == "premium" %}
+        <p style="margin:0;">{{ result.summary }}</p>
+      {% else %}
+        <p style="margin:0;">
+          Free tier gives your risk rating and next steps.
+          Unlock the full report for a detailed case summary.
+        </p>
+      {% endif %}
     </div>
 
     <div class="card">
