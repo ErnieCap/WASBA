@@ -1,0 +1,5 @@
+Flask
+gunicorn
+stripe
+psycopg2-binary
+Werkzeug
