@@ -1,16 +1,20 @@
 import os
 import stripe
 
-# Required environment variables:
-# STRIPE_SECRET_KEY
-# STRIPE_PRICE_ID   (a £1 Price you create in Stripe dashboard)
-# STRIPE_WEBHOOK_SECRET (for webhook signature verification)
+from db import mark_paid
 
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+# Required env vars:
+# STRIPE_SECRET_KEY
+# STRIPE_PRICE_ID        (create a £3 Price in Stripe dashboard)
+# STRIPE_WEBHOOK_SECRET  (webhook signing secret)
+
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 
 
 def create_checkout_session(case_id: str, success_url: str, cancel_url: str):
-    price_id = os.getenv("STRIPE_PRICE_ID")
+    price_id = os.environ.get("STRIPE_PRICE_ID")
+    if not stripe.api_key:
+        raise RuntimeError("STRIPE_SECRET_KEY is not set")
     if not price_id:
         raise RuntimeError("STRIPE_PRICE_ID is not set")
 
@@ -24,24 +28,25 @@ def create_checkout_session(case_id: str, success_url: str, cancel_url: str):
     return session
 
 
-def handle_stripe_webhook(payload: bytes, sig_header: str, case_store: dict) -> bool:
-    webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
+def handle_stripe_webhook(payload: bytes, sig_header: str) -> bool:
+    webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET")
     if not webhook_secret:
         raise RuntimeError("STRIPE_WEBHOOK_SECRET is not set")
 
-    event = stripe.Webhook.construct_event(
-        payload=payload,
-        sig_header=sig_header,
-        secret=webhook_secret,
-    )
+    try:
+        event = stripe.Webhook.construct_event(
+            payload=payload,
+            sig_header=sig_header,
+            secret=webhook_secret,
+        )
+    except Exception:
+        # invalid signature or invalid payload
+        return False
 
-    # Checkout completed
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
         case_id = (session.get("metadata") or {}).get("case_id")
-
-        if case_id and case_id in case_store:
-            case_store[case_id]["paid"] = True
-            return True
+        if case_id:
+            return mark_paid(case_id)
 
     return False
