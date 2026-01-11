@@ -1,14 +1,17 @@
-
 import os
-print ("RUNNING APP.PY FROM:",os.path.abspath(__file__))
 import uuid
+
+print("RUNNING APP.PY FROM:", os.path.abspath(__file__))
 
 from flask import Flask, render_template, request, redirect, url_for, abort
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from service import assess_case_free, assess_case_premium
 from payments import create_checkout_session, handle_stripe_webhook
+
+# DB imports (Postgres)
 from db import init_db, create_case, get_case
+
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-only-change-me")
@@ -16,8 +19,15 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-only-change-me")
 # On Render, TLS is terminated at the edge; ProxyFix makes _external URLs HTTPS.
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
-# Create DB table(s)
-init_db()
+# ---------- Local dev fallback ----------
+USE_DB = bool(os.environ.get("DATABASE_URL"))
+CASE_STORE = {}  # local-only fallback store
+
+if USE_DB:
+    init_db()
+else:
+    print("DATABASE_URL not set — running in LOCAL DEV mode using in-memory storage.")
+# --------------------------------------
 
 
 @app.route("/", methods=["GET"])
@@ -35,7 +45,7 @@ def _collect_case_from_form() -> dict:
         "has_criminal_history": request.form.get("has_criminal_history", "").strip(),
     }
 
-    # Matrix questions (0.. etc) come in as strings; store as ints where possible
+    # Matrix questions
     for i in range(1, 15):
         key = f"matrix_q{i}"
         val = request.form.get(key)
@@ -43,9 +53,13 @@ def _collect_case_from_form() -> dict:
             try:
                 case[key] = int(val)
             except ValueError:
-                case[key] = val  # fall back
+                case[key] = val
 
     return case
+
+
+def _get_case_record(case_id: str):
+    return get_case(case_id) if USE_DB else CASE_STORE.get(case_id)
 
 
 @app.route("/assess", methods=["POST"])
@@ -57,17 +71,23 @@ def assess():
     case_id = str(uuid.uuid4())
     free_result = assess_case_free(case)
 
-    create_case(case_id, case, free_result)
+    if USE_DB:
+        create_case(case_id, case, free_result)
+    else:
+        CASE_STORE[case_id] = {"case_data": case, "free_result": free_result, "paid": False}
 
-    # Show free result + pay button
     return render_template("result.html", result=free_result, case_id=case_id, paid=False)
 
 
 @app.route("/pay/<case_id>", methods=["POST"])
 def pay(case_id: str):
-    row = get_case(case_id)
+    row = _get_case_record(case_id)
     if not row:
         abort(404, "Case not found (maybe expired).")
+
+    # In local dev (no DB), Stripe flow is not reliable/meaningful, so block it clearly.
+    if not USE_DB:
+        abort(400, "Payments disabled in local dev. Deploy to Render (with DATABASE_URL) to test Stripe.")
 
     success_url = url_for("premium", case_id=case_id, _external=True)
     cancel_url = url_for("premium", case_id=case_id, _external=True)
@@ -78,12 +98,11 @@ def pay(case_id: str):
 
 @app.route("/premium/<case_id>", methods=["GET"])
 def premium(case_id: str):
-    row = get_case(case_id)
+    row = _get_case_record(case_id)
     if not row:
         abort(404, "Case not found (maybe expired).")
 
     if not row["paid"]:
-        # Payment not confirmed yet (webhook is the source of truth)
         return render_template("result.html", result=row["free_result"], case_id=case_id, paid=False)
 
     premium_result = assess_case_premium(row["case_data"])
@@ -92,7 +111,16 @@ def premium(case_id: str):
 
 @app.route("/stripe/webhook", methods=["POST"])
 def stripe_webhook():
+    # In local dev without DB, ignore webhooks.
+    if not USE_DB:
+        return ("IGNORED (local dev without DB)", 200)
+
     payload = request.get_data()
     sig_header = request.headers.get("Stripe-Signature", "")
     ok = handle_stripe_webhook(payload, sig_header)
     return ("OK" if ok else "IGNORED", 200)
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
