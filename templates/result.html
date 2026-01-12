@@ -59,7 +59,7 @@
 
     <div class="card">
       <h2 style="margin:0 0 10px;">Overall risk</h2>
-      {% set final = result.final_risk_level.upper() %}
+      {% set final = (result.get('final_risk_level') or result.get('initial_risk_level') or 'UNKNOWN') | upper %}
       {% if final == "LOW" %}
         <span class="badge low">LOW</span>
       {% elif final == "MEDIUM" %}
@@ -67,24 +67,25 @@
       {% elif final == "HIGH" %}
         <span class="badge high">HIGH</span>
       {% else %}
-        <span class="badge">{{ result.final_risk_level }}</span>
+        <span class="badge">{{ result.get('final_risk_level') or result.get('initial_risk_level') or 'UNKNOWN' }}
+      </span>
       {% endif %}
 
       <!-- PAYWALL CTA (only show when not paid) -->
       {% if not paid %}
         <p class="note">
-          Want a full case summary you can copy/paste into an email or report? Unlock the full report for <strong>£1</strong>.
+          Want a full case summary you can copy/paste into an email or report? Unlock the full report for <strong>£3</strong>.
         </p>
 
         {% if payment_pending %}
           <p class="note"><strong>Payment not confirmed yet.</strong> If you’ve just paid, wait a few seconds and refresh this page.</p>
         {% endif %}
 
-        <form method="post" action="/create-checkout-session" style="margin-top: 8px;">
-          <input type="hidden" name="case_id" value="{{ case_id }}">
-          <button class="btn" type="submit">Unlock full report (£1)</button>
-          <a class="btn-secondary" href="/case/{{ case_id }}">Stay on free result</a>
-        </form>
+      <form method="post" action="/pay/{{ case_id }}" style="margin-top: 8px;">
+       <button class="btn" type="submit">Unlock full report (£3)</button>
+       <a class="btn-secondary" href="/premium/{{ case_id }}">Stay on free result</a>
+      </form>
+
       {% endif %}
     </div>
 
