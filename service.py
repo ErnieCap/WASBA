@@ -37,11 +37,74 @@ def _attach_recommendations(case: dict, result: dict) -> dict:
     return result
 
 
+def _score_matrix(case: dict) -> tuple[int | None, str | None]:
+    vals = []
+    for i in range(1, 15):
+        v = case.get(f"matrix_q{i}")
+        if isinstance(v, int):
+            vals.append(v)
+
+    if not vals:
+        return None, None
+
+    total = sum(vals)
+
+    # Simple bands — tweak later once you’ve sanity-checked real cases
+    if total <= 14:
+        band = "LOW"
+    elif total <= 28:
+        band = "MEDIUM"
+    else:
+        band = "HIGH"
+
+    return total, band
+
+
 def assess_case_free(case: dict) -> dict:
-    # Your free-tier logic can be as simple or rich as you like.
-    # Keeping a minimal structure here to match your templates.
-    return {
+    matrix_total, matrix_band = _score_matrix(case)
+
+    # Fallback if matrix not completed
+    initial_risk_level = matrix_band or "MEDIUM"
+
+    risk_factors = []
+    safeguarding = []
+
+    # Obvious structured factors from your form fields
+    if case.get("num_previous_incidents", 0) >= 3:
+        risk_factors.append("Repeat incidents reported (pattern emerging).")
+
+    if (case.get("vulnerable_tenant") or "").strip():
+        risk_factors.append("Potential vulnerability noted for reporting tenant/household.")
+        safeguarding.append("Consider vulnerability/safeguarding checks and appropriate support/referrals.")
+
+    if (case.get("has_criminal_history") or "").strip().lower() in {"yes", "y", "true"}:
+        risk_factors.append("Perpetrator criminal history indicated (higher risk of escalation).")
+
+    itype = (case.get("incident_type") or "").strip().lower()
+    if itype:
+        risk_factors.append(f"Incident type recorded: {case.get('incident_type')}.")
+
+    # If matrix answers include high values, flag as factors (light-touch, still “free”)
+    high_qs = []
+    for i in range(1, 15):
+        v = case.get(f"matrix_q{i}")
+        if isinstance(v, int) and v >= 3:
+            high_qs.append(i)
+    if high_qs:
+        risk_factors.append(f"Higher-severity indicators present in risk matrix (Q{', Q'.join(map(str, high_qs))}).")
+
+    result = {
         "tier": "free",
+
+        # Keys your template is already ready to show:
+        "initial_risk_level": initial_risk_level,
+        "matrix_total": matrix_total,
+        "matrix_band": matrix_band,
+
+        "risk_factors": risk_factors,
+        "safeguarding_concerns": safeguarding or None,  # None keeps template tidy
+
+        # You can keep these if you still use them elsewhere:
         "summary": "Free tier assessment generated from your input.",
         "case_highlights": [
             "Your description has been captured and structured.",
@@ -52,6 +115,21 @@ def assess_case_free(case: dict) -> dict:
             "If you feel unsafe, contact police immediately.",
         ],
     }
+
+    from recommendations import categorise_case, extract_flags, build_what_to_do_now
+
+    category = categorise_case(case)
+    flags = extract_flags(case)
+
+    result["what_to_do_now"] = build_what_to_do_now(
+        initial_risk_level,
+        category,
+        flags,
+    )
+    # ─────────────────────────────────────────
+
+    return result
+
 
 
 def assess_case_premium(case: dict) -> dict:
