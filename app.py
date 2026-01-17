@@ -31,7 +31,11 @@ else:
 
 
 @app.route("/", methods=["GET"])
-def index():
+def landing():
+    return render_template("landing.html")
+
+@app.route("/asb", methods=["GET"])
+def asb():
     return render_template("form.html")
 
 

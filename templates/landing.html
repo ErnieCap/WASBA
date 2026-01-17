@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>WASBA – practical help for neighbour problems</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap top__inner">
+      <div class="brand">
+        <div class="brand__name">WASBA</div>
+        <div class="brand__tag">Practical help for real neighbour problems</div>
+      </div>
+      <nav class="nav">
+        <a class="nav__link" href="{{ url_for('asb') }}">Start the ASB tool</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero__text">
+        <h1>Sort out neighbour problems without the waffle.</h1>
+        <p>
+          Choose what you need. You’ll get clear steps and suggested wording in plain English.
+        </p>
+        <div class="hero__actions">
+          <a class="btn" href="{{ url_for('asb') }}">Start: Anti-social behaviour help</a>
+          <a class="btn btn--ghost" href="#tools">See all tools</a>
+        </div>
+        <p class="small muted">Not legal advice — practical guidance and next steps.</p>
+      </div>
+
+      <div class="hero__art">
+        <!-- Replace this with your daughter's cartoon later -->
+        <div class="art-placeholder">
+          Cartoon here<br><span class="small muted">static/img/hero.png</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="tools" class="section">
+      <h2>Tools</h2>
+
+      <div class="grid">
+        <article class="card">
+          <div class="card__img"><div class="img-placeholder">Cartoon: ASB</div></div>
+          <h3>Anti-social behaviour help</h3>
+          <p>Describe what’s happening and get a clear plan of action.</p>
+          <a class="btn btn--small" href="{{ url_for('asb') }}">Open</a>
+        </article>
+
+        <article class="card">
+          <div class="card__img"><div class="img-placeholder">Cartoon: Noise diary</div></div>
+          <h3>Noise diary builder</h3>
+          <p>Create a diary that’s actually usable.</p>
+          <span class="pill">Coming soon</span>
+        </article>
+
+        <article class="card">
+          <div class="card__img"><div class="img-placeholder">Cartoon: Letters</div></div>
+          <h3>Letter templates</h3>
+          <p>Firm but fair wording for common situations.</p>
+          <span class="pill">Coming soon</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Privacy</h2>
+      <p class="muted">Don’t enter names, exact addresses, or anything you wouldn’t want shared. Keep it general.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer__inner">
+      <div class="small muted">© WASBA</div>
+      <div class="small muted">Built for practical problem-solving.</div>
+    </div>
+  </footer>
+</body>
+</html>
