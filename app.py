@@ -9,7 +9,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from service import assess_case_free, assess_case_premium
 from payments import create_checkout_session, handle_stripe_webhook
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 # DB imports (Postgres)
 from db import init_db, create_case, get_case
@@ -133,7 +133,7 @@ def health():
         "status": "ok",
         "use_db": USE_DB,
         "environment": "render" if os.environ.get("RENDER") else "local",
-        "timestamp": datetime.utcnow().isoformat() + "Z"
+        "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
 
