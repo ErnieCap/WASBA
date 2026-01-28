@@ -9,6 +9,8 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from service import assess_case_free, assess_case_premium
 from payments import create_checkout_session, handle_stripe_webhook
 
+from datetime import datetime
+
 # DB imports (Postgres)
 from db import init_db, create_case, get_case
 
@@ -123,6 +125,17 @@ def stripe_webhook():
     sig_header = request.headers.get("Stripe-Signature", "")
     ok = handle_stripe_webhook(payload, sig_header)
     return ("OK" if ok else "IGNORED", 200)
+
+
+@app.route("/health")
+def health():
+    return {
+        "status": "ok",
+        "use_db": USE_DB,
+        "environment": "render" if os.environ.get("RENDER") else "local",
+        "timestamp": datetime.utcnow().isoformat() + "Z"
+    }
+
 
 
 if __name__ == "__main__":
