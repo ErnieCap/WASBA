@@ -3,7 +3,7 @@ import uuid
 
 print("RUNNING APP.PY FROM:", os.path.abspath(__file__))
 
-from flask import Flask, render_template, request, redirect, url_for, abort
+from flask import Flask, render_template, request, redirect, url_for, abort, Response
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from service import assess_case_free, assess_case_premium
@@ -12,7 +12,13 @@ from payments import create_checkout_session, handle_stripe_webhook
 from datetime import datetime, timezone
 
 # DB imports (Postgres)
-from db import init_db, create_case, get_case
+from db import (
+    init_db,
+    create_case, get_case,
+    create_noise_case, list_noise_cases, get_noise_case,
+    create_noise_entry, list_noise_entries, get_noise_entry,
+    update_noise_entry, delete_noise_entry
+)
 
 
 app = Flask(__name__)
@@ -24,6 +30,9 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 # ---------- Local dev fallback ----------
 USE_DB = bool(os.environ.get("DATABASE_URL"))
 CASE_STORE = {}  # local-only fallback store
+NOISE_CASE_STORE = {}     # case_id -> {case fields..., entries:[...]}
+NOISE_ENTRY_STORE = {}    # entry_id -> {entry fields...} (optional, but handy)
+
 
 if USE_DB:
     init_db()
@@ -135,6 +144,274 @@ def health():
         "environment": "render" if os.environ.get("RENDER") else "local",
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
+
+
+# -------------------------
+# Tool #2: Noise Diary (MVP)
+# -------------------------
+
+@app.route("/noise", methods=["GET"])
+def noise_index():
+    """List noise diary cases."""
+    if USE_DB:
+        cases = list_noise_cases()
+    else:
+        # local: sort by created_at (string ISO) if present
+        cases = sorted(NOISE_CASE_STORE.values(), key=lambda c: c.get("created_at", ""), reverse=True)
+
+    return render_template("noise/index.html", cases=cases, use_db=USE_DB)
+
+
+@app.route("/noise/new", methods=["GET", "POST"])
+def noise_new():
+    """Create a new noise diary case."""
+    if request.method == "GET":
+        return render_template("noise/case_new.html")
+
+    title = request.form.get("title", "").strip()
+    address_text = request.form.get("address_text", "").strip()
+    start_date = request.form.get("start_date", "").strip()
+
+    if not title:
+        abort(400, "Title is required.")
+    if not start_date:
+        abort(400, "Start date is required.")
+
+    case_id = str(uuid.uuid4())
+
+    case = {
+        "id": case_id,
+        "title": title,
+        "address_text": address_text,
+        "start_date": start_date,
+        "status": "open",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    if USE_DB:
+        create_noise_case(case_id, case)
+    else:
+        case["entries"] = []
+        NOISE_CASE_STORE[case_id] = case
+
+    return redirect(url_for("noise_case_detail", case_id=case_id))
+
+
+def _get_noise_case_or_404(case_id: str):
+    if USE_DB:
+        row = get_noise_case(case_id)
+    else:
+        row = NOISE_CASE_STORE.get(case_id)
+    if not row:
+        abort(404, "Noise diary case not found.")
+    return row
+
+
+@app.route("/noise/<case_id>", methods=["GET"])
+def noise_case_detail(case_id: str):
+    """Case dashboard + entries list."""
+    case = _get_noise_case_or_404(case_id)
+
+    if USE_DB:
+        entries = list_noise_entries(case_id)
+    else:
+        entries = sorted(case.get("entries", []), key=lambda e: e.get("occurred_at", ""), reverse=True)
+
+    return render_template("noise/case_detail.html", case=case, entries=entries)
+
+
+@app.route("/noise/<case_id>/entries/new", methods=["GET", "POST"])
+def noise_entry_new(case_id: str):
+    """Add an entry to a diary case."""
+    case = _get_noise_case_or_404(case_id)
+
+    # prevent edits if submitted/closed (simple rule)
+    if case.get("status") in ("submitted", "closed"):
+        abort(400, "This diary is locked and can’t be edited.")
+
+    if request.method == "GET":
+        # default datetime-local value
+        now_local = datetime.now().strftime("%Y-%m-%dT%H:%M")
+        return render_template("noise/entry_form.html", case=case, entry=None, default_dt=now_local)
+
+    occurred_at = request.form.get("occurred_at", "").strip()  # from datetime-local
+    noise_type = request.form.get("noise_type", "").strip()
+    duration_minutes = request.form.get("duration_minutes", "").strip()
+    volume_level = request.form.get("volume_level", "").strip()
+    impact_level = request.form.get("impact_level", "").strip()
+    location = request.form.get("location", "").strip()
+    notes = request.form.get("notes", "").strip()
+
+    if not occurred_at:
+        abort(400, "Date/time is required.")
+    if not noise_type:
+        abort(400, "Noise type is required.")
+    if not notes:
+        abort(400, "Notes are required (what happened and how it affected you).")
+
+    entry_id = str(uuid.uuid4())
+
+    def _int_or_none(x):
+        x = (x or "").strip()
+        if x == "":
+            return None
+        try:
+            return int(x)
+        except ValueError:
+            return None
+
+    entry = {
+        "id": entry_id,
+        "case_id": case_id,
+        "occurred_at": occurred_at,  # store as string; DB layer will parse safely
+        "noise_type": noise_type,
+        "duration_minutes": _int_or_none(duration_minutes),
+        "volume_level": _int_or_none(volume_level),
+        "impact_level": _int_or_none(impact_level),
+        "location": location,
+        "notes": notes,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    if USE_DB:
+        create_noise_entry(entry_id, case_id, entry)
+    else:
+        NOISE_ENTRY_STORE[entry_id] = entry
+        NOISE_CASE_STORE[case_id]["entries"].append(entry)
+
+    return redirect(url_for("noise_case_detail", case_id=case_id))
+
+
+def _get_noise_entry_or_404(case_id: str, entry_id: str):
+    if USE_DB:
+        entry = get_noise_entry(case_id, entry_id)
+    else:
+        entry = NOISE_ENTRY_STORE.get(entry_id)
+        if entry and entry.get("case_id") != case_id:
+            entry = None
+    if not entry:
+        abort(404, "Noise diary entry not found.")
+    return entry
+
+
+@app.route("/noise/<case_id>/entries/<entry_id>/edit", methods=["GET", "POST"])
+def noise_entry_edit(case_id: str, entry_id: str):
+    case = _get_noise_case_or_404(case_id)
+
+    if case.get("status") in ("submitted", "closed"):
+        abort(400, "This diary is locked and can’t be edited.")
+
+    entry = _get_noise_entry_or_404(case_id, entry_id)
+
+    if request.method == "GET":
+        return render_template("noise/entry_form.html", case=case, entry=entry, default_dt=None)
+
+    occurred_at = request.form.get("occurred_at", "").strip()
+    noise_type = request.form.get("noise_type", "").strip()
+    duration_minutes = request.form.get("duration_minutes", "").strip()
+    volume_level = request.form.get("volume_level", "").strip()
+    impact_level = request.form.get("impact_level", "").strip()
+    location = request.form.get("location", "").strip()
+    notes = request.form.get("notes", "").strip()
+
+    if not occurred_at:
+        abort(400, "Date/time is required.")
+    if not noise_type:
+        abort(400, "Noise type is required.")
+    if not notes:
+        abort(400, "Notes are required.")
+
+    def _int_or_none(x):
+        x = (x or "").strip()
+        if x == "":
+            return None
+        try:
+            return int(x)
+        except ValueError:
+            return None
+
+    updates = {
+        "occurred_at": occurred_at,
+        "noise_type": noise_type,
+        "duration_minutes": _int_or_none(duration_minutes),
+        "volume_level": _int_or_none(volume_level),
+        "impact_level": _int_or_none(impact_level),
+        "location": location,
+        "notes": notes,
+    }
+
+    if USE_DB:
+        update_noise_entry(case_id, entry_id, updates)
+    else:
+        # update local store
+        NOISE_ENTRY_STORE[entry_id].update(updates)
+        # also update embedded list in case
+        for i, e in enumerate(NOISE_CASE_STORE[case_id]["entries"]):
+            if e["id"] == entry_id:
+                NOISE_CASE_STORE[case_id]["entries"][i].update(updates)
+                break
+
+    return redirect(url_for("noise_case_detail", case_id=case_id))
+
+
+@app.route("/noise/<case_id>/entries/<entry_id>/delete", methods=["POST"])
+def noise_entry_delete(case_id: str, entry_id: str):
+    case = _get_noise_case_or_404(case_id)
+
+    if case.get("status") in ("submitted", "closed"):
+        abort(400, "This diary is locked and can’t be edited.")
+
+    # ensure exists
+    _ = _get_noise_entry_or_404(case_id, entry_id)
+
+    if USE_DB:
+        delete_noise_entry(case_id, entry_id)
+    else:
+        NOISE_ENTRY_STORE.pop(entry_id, None)
+        NOISE_CASE_STORE[case_id]["entries"] = [
+            e for e in NOISE_CASE_STORE[case_id]["entries"] if e["id"] != entry_id
+        ]
+
+    return redirect(url_for("noise_case_detail", case_id=case_id))
+
+
+@app.route("/noise/<case_id>/export.csv", methods=["GET"])
+def noise_export_csv(case_id: str):
+    case = _get_noise_case_or_404(case_id)
+    if USE_DB:
+        entries = list_noise_entries(case_id)
+    else:
+        entries = sorted(case.get("entries", []), key=lambda e: e.get("occurred_at", ""))
+
+    # Build CSV manually (simple, dependency-free)
+    import csv
+    import io
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        "occurred_at", "noise_type", "duration_minutes", "volume_level", "impact_level", "location", "notes"
+    ])
+    for e in entries:
+        writer.writerow([
+            e.get("occurred_at", ""),
+            e.get("noise_type", ""),
+            e.get("duration_minutes", ""),
+            e.get("volume_level", ""),
+            e.get("impact_level", ""),
+            e.get("location", ""),
+            e.get("notes", ""),
+        ])
+
+    csv_data = output.getvalue()
+    filename = f"noise-diary-{case_id}.csv"
+
+    return Response(
+        csv_data,
+        mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
 
 
 
