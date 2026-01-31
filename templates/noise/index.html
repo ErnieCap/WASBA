@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Noise Diary</h1>
+  <p><a href="{{ url_for('noise_new') }}">Create a new diary</a></p>
+
+  {% if cases|length == 0 %}
+    <p>No diaries yet.</p>
+  {% else %}
+    <table border="1" cellpadding="6">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Start</th>
+          <th>Status</th>
+          <th>Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in cases %}
+          <tr>
+            <td><a href="{{ url_for('noise_case_detail', case_id=c.id) }}">{{ c.title }}</a></td>
+            <td>{{ c.start_date }}</td>
+            <td>{{ c.status }}</td>
+            <td>{{ c.address_text }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endblock %}

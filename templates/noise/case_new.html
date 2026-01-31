@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Create Noise Diary</h1>
+
+  <form method="post">
+    <div>
+      <label>Title *</label><br>
+      <input name="title" type="text" style="width: 420px" required>
+    </div>
+
+    <div>
+      <label>Address (optional)</label><br>
+      <input name="address_text" type="text" style="width: 420px">
+    </div>
+
+    <div>
+      <label>Start date *</label><br>
+      <input name="start_date" type="date" required>
+    </div>
+
+    <button type="submit">Create</button>
+    <a href="{{ url_for('noise_index') }}">Cancel</a>
+  </form>
+{% endblock %}

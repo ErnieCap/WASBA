@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>{{ case.title }}</h1>
+  <p><strong>Status:</strong> {{ case.status }} | <strong>Start:</strong> {{ case.start_date }}</p>
+  {% if case.address_text %}
+    <p><strong>Address:</strong> {{ case.address_text }}</p>
+  {% endif %}
+
+  <p>
+    <a href="{{ url_for('noise_entry_new', case_id=case.id) }}">Add entry</a> |
+    <a href="{{ url_for('noise_export_csv', case_id=case.id) }}">Export CSV</a> |
+    <a href="{{ url_for('noise_index') }}">Back to diaries</a>
+  </p>
+
+  {% if entries|length == 0 %}
+    <p>No entries yet.</p>
+  {% else %}
+    <table border="1" cellpadding="6">
+      <thead>
+        <tr>
+          <th>When</th>
+          <th>Type</th>
+          <th>Duration</th>
+          <th>Volume</th>
+          <th>Impact</th>
+          <th>Location</th>
+          <th>Notes</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in entries %}
+          <tr>
+            <td>{{ e.occurred_at }}</td>
+            <td>{{ e.noise_type }}</td>
+            <td>{{ e.duration_minutes }}</td>
+            <td>{{ e.volume_level }}</td>
+            <td>{{ e.impact_level }}</td>
+            <td>{{ e.location }}</td>
+            <td style="max-width: 420px">{{ e.notes }}</td>
+            <td>
+              <a href="{{ url_for('noise_entry_edit', case_id=case.id, entry_id=e.id) }}">Edit</a>
+              <form method="post" action="{{ url_for('noise_entry_delete', case_id=case.id, entry_id=e.id) }}" style="display:inline">
+                <button type="submit" onclick="return confirm('Delete this entry?')">Delete</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endblock %}

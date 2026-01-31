@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>{% if entry %}Edit{% else %}New{% endif %} Noise Entry</h1>
+  <p><a href="{{ url_for('noise_case_detail', case_id=case.id) }}">Back to diary</a></p>
+
+  <form method="post">
+    <div>
+      <label>Date/time *</label><br>
+      <input name="occurred_at" type="datetime-local"
+             value="{% if entry %}{{ entry.occurred_at[:16] }}{% else %}{{ default_dt }}{% endif %}"
+             required>
+    </div>
+
+    <div>
+      <label>Noise type *</label><br>
+      <select name="noise_type" required>
+        {% set current = entry.noise_type if entry else "" %}
+        {% for opt in ["music","voices/shouting","banging","DIY","pets","alarm","other"] %}
+          <option value="{{ opt }}" {% if current==opt %}selected{% endif %}>{{ opt }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label>Duration (minutes)</label><br>
+      <input name="duration_minutes" type="number" min="1" value="{{ entry.duration_minutes if entry else '' }}">
+    </div>
+
+    <div>
+      <label>Volume (1-5)</label><br>
+      <input name="volume_level" type="number" min="1" max="5" value="{{ entry.volume_level if entry else '' }}">
+    </div>
+
+    <div>
+      <label>Impact (1-5)</label><br>
+      <input name="impact_level" type="number" min="1" max="5" value="{{ entry.impact_level if entry else '' }}">
+    </div>
+
+    <div>
+      <label>Location (optional)</label><br>
+      <input name="location" type="text" value="{{ entry.location if entry else '' }}">
+    </div>
+
+    <div>
+      <label>Notes *</label><br>
+      <textarea name="notes" rows="6" style="width: 520px" required>{{ entry.notes if entry else '' }}</textarea>
+    </div>
+
+    <button type="submit">{% if entry %}Save{% else %}Add{% endif %}</button>
+  </form>
+{% endblock %}
