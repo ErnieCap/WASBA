@@ -260,3 +260,25 @@ def delete_noise_entry(case_id: str, entry_id: str):
                 WHERE case_id = %s AND id = %s
             """, (case_id, entry_id))
         conn.commit()
+
+def update_noise_case(case_id: str, updates: dict):
+    # Example for sqlite3 with JSON column / key columns:
+    # You'll need to adapt this to your table design.
+    conn = _db_connect()
+    cur = conn.cursor()
+
+    fields = []
+    values = []
+
+    for k, v in updates.items():
+        fields.append(f"{k} = ?")
+        values.append(v)
+
+    values.append(case_id)
+
+    sql = f"UPDATE noise_cases SET {', '.join(fields)} WHERE id = ?"
+    cur.execute(sql, values)
+
+    conn.commit()
+    conn.close()
+      

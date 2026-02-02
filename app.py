@@ -374,6 +374,36 @@ def noise_entry_delete(case_id: str, entry_id: str):
 
     return redirect(url_for("noise_case_detail", case_id=case_id))
 
+@app.route("/noise/<case_id>/submit", methods=["POST"])
+def noise_case_submit(case_id: str):
+    case = _get_noise_case_or_404(case_id)
+
+    # already locked?
+    if case.get("status") in ("submitted", "closed"):
+        return redirect(url_for("noise_case_detail", case_id=case_id))
+
+    # optional: prevent empty submission
+    if USE_DB:
+        entries = list_noise_entries(case_id)
+    else:
+        entries = case.get("entries", [])
+
+    if not entries:
+        abort(400, "You can’t submit an empty diary.")
+
+    updates = {
+        "status": "submitted",
+        "submitted_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    if USE_DB:
+        update_noise_case(case_id, updates)
+    else:
+        NOISE_CASE_STORE[case_id].update(updates)
+
+    return redirect(url_for("noise_case_detail", case_id=case_id))
+
+
 
 @app.route("/noise/<case_id>/export.csv", methods=["GET"])
 def noise_export_csv(case_id: str):
