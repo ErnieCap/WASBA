@@ -2,7 +2,10 @@ import os
 from typing import Optional, Dict, Any
 
 import psycopg2
+
 from psycopg2.extras import RealDictCursor, Json
+
+
 
 
 def get_conn():
@@ -28,17 +31,21 @@ def init_db() -> None:
             )
 
             # Noise Diary tables
-            cur.execute(
-                """
+            cur.execute ( 
+                """               
                 CREATE TABLE IF NOT EXISTS noise_diary_cases (
-                    id UUID PRIMARY KEY,
-                    title TEXT NOT NULL,
-                    address_text TEXT,
-                    start_date DATE NOT NULL,
-                    status TEXT NOT NULL DEFAULT 'open',
-                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-                );
-                """)
+                   id UUID PRIMARY KEY,
+                   title TEXT NOT NULL,
+                   address_text TEXT,
+                   start_date DATE NOT NULL,
+                   status TEXT NOT NULL DEFAULT 'open',
+                   submitted_at TIMESTAMPTZ,
+                   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+               );
+               """
+            )
+                                
+                    
 
             cur.execute(
                 """
@@ -58,6 +65,7 @@ def init_db() -> None:
 
             cur.execute("CREATE INDEX IF NOT EXISTS idx_noise_cases_created ON noise_diary_cases(created_at DESC);")
             cur.execute("CREATE INDEX IF NOT EXISTS idx_noise_entries_case_time ON noise_diary_entries(case_id, occurred_at DESC);")
+            cur.execute("ALTER TABLE noise_diary_cases ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMPTZ;")
 
         conn.commit()
 
@@ -115,33 +123,61 @@ def create_noise_case(case_id: str, case: dict):
             """, (case_id, case["title"], case.get("address_text"), case["start_date"], case.get("status","open")))
         conn.commit()
 
-def list_noise_cases():
+def list_noise_entries(case_id: str):
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                SELECT id::text, title, address_text, start_date::text, status, created_at::text
-                FROM noise_diary_cases
-                ORDER BY created_at DESC
-                LIMIT 200
-            """)
+                SELECT
+                    id::text, case_id::text,
+                    occurred_at::text,
+                    noise_type, duration_minutes, volume_level, impact_level,
+                    location, notes, created_at::text
+                FROM noise_diary_entries
+                WHERE case_id = %s
+                ORDER BY occurred_at DESC
+                LIMIT 2000
+            """, (case_id,))
             rows = cur.fetchall()
+
     return [
-        {"id": r[0], "title": r[1], "address_text": r[2], "start_date": r[3], "status": r[4], "created_at": r[5]}
+        {
+            "id": r[0],
+            "case_id": r[1],
+            "occurred_at": r[2],
+            "noise_type": r[3],
+            "duration_minutes": r[4],
+            "volume_level": r[5],
+            "impact_level": r[6],
+            "location": r[7],
+            "notes": r[8],
+            "created_at": r[9],
+        }
         for r in rows
     ]
+
 
 def get_noise_case(case_id: str):
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                SELECT id::text, title, address_text, start_date::text, status, created_at::text
+                SELECT id::text, title, address_text, start_date::text, status,
+                       submitted_at::text, created_at::text
                 FROM noise_diary_cases
                 WHERE id = %s
             """, (case_id,))
             r = cur.fetchone()
     if not r:
         return None
-    return {"id": r[0], "title": r[1], "address_text": r[2], "start_date": r[3], "status": r[4], "created_at": r[5]}
+    return {
+        "id": r[0],
+        "title": r[1],
+        "address_text": r[2],
+        "start_date": r[3],
+        "status": r[4] or "open",
+        "submitted_at": r[5],      # <-- new
+        "created_at": r[6],
+    }
+
 
 def create_noise_entry(entry_id: str, case_id: str, entry: dict):
     occurred_at = entry["occurred_at"]
@@ -167,36 +203,30 @@ def create_noise_entry(entry_id: str, case_id: str, entry: dict):
             ))
         conn.commit()
 
-def list_noise_entries(case_id: str):
+def list_noise_cases():
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                SELECT
-                    id::text, case_id::text,
-                    occurred_at::text,
-                    noise_type, duration_minutes, volume_level, impact_level,
-                    location, notes, created_at::text
-                FROM noise_diary_entries
-                WHERE case_id = %s
-                ORDER BY occurred_at DESC
-                LIMIT 2000
-            """, (case_id,))
+                SELECT id::text, title, address_text, start_date::text, status,
+                       submitted_at::text, created_at::text
+                FROM noise_diary_cases
+                ORDER BY created_at DESC
+                LIMIT 200
+            """)
             rows = cur.fetchall()
     return [
         {
             "id": r[0],
-            "case_id": r[1],
-            "occurred_at": r[2],
-            "noise_type": r[3],
-            "duration_minutes": r[4],
-            "volume_level": r[5],
-            "impact_level": r[6],
-            "location": r[7],
-            "notes": r[8],
-            "created_at": r[9],
+            "title": r[1],
+            "address_text": r[2],
+            "start_date": r[3],
+            "status": r[4] or "open",
+            "submitted_at": r[5],   # <-- new
+            "created_at": r[6],
         }
         for r in rows
     ]
+
 
 def get_noise_entry(case_id: str, entry_id: str):
     with get_conn() as conn:
@@ -261,24 +291,27 @@ def delete_noise_entry(case_id: str, entry_id: str):
             """, (case_id, entry_id))
         conn.commit()
 
-def update_noise_case(case_id: str, updates: dict):
-    # Example for sqlite3 with JSON column / key columns:
-    # You'll need to adapt this to your table design.
-    conn = _db_connect()
-    cur = conn.cursor()
 
-    fields = []
-    values = []
 
-    for k, v in updates.items():
-        fields.append(f"{k} = ?")
-        values.append(v)
+def update_noise_case(case_id: str, updates: dict) -> bool:
+    allowed = {"title", "address_text", "start_date", "status", "submitted_at"}
+    safe = {k: v for k, v in updates.items() if k in allowed}
+    if not safe:
+        return False
 
-    values.append(case_id)
+    fields = ", ".join([f"{k} = %s" for k in safe.keys()])
+    values = list(safe.values()) + [case_id]
 
-    sql = f"UPDATE noise_cases SET {', '.join(fields)} WHERE id = ?"
-    cur.execute(sql, values)
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                f"UPDATE noise_diary_cases SET {fields} WHERE id = %s",
+                values
+            )
+            updated = cur.rowcount
+        conn.commit()
 
-    conn.commit()
-    conn.close()
+    return updated == 1
+
+    
       

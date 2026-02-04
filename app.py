@@ -419,6 +419,16 @@ def noise_export_csv(case_id: str):
 
     output = io.StringIO()
     writer = csv.writer(output)
+
+    writer.writerow(["CASE DETAILS"])
+    writer.writerow(["case_id", case.get("id", "")])
+    writer.writerow(["title", case.get("title", "")])
+    writer.writerow(["address_text", case.get("address_text", "")])
+    writer.writerow(["start_date", case.get("start_date", "")])
+    writer.writerow(["status", case.get("status", "")])
+    writer.writerow(["submitted_at", case.get("submitted_at", "")])
+    writer.writerow([])
+    writer.writerow(["ENTRIES"])
     writer.writerow([
         "occurred_at", "noise_type", "duration_minutes", "volume_level", "impact_level", "location", "notes"
     ])

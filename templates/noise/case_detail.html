@@ -36,6 +36,8 @@
     <a href="{{ url_for('noise_export_csv', case_id=case.id) }}">Export CSV</a> |
     <a href="{{ url_for('noise_index') }}">Back to diaries</a>
   </p>
+  <p><strong>Diary reference:</strong> {{ case.id }}</p>
+
 
 
   {% if entries|length == 0 %}
