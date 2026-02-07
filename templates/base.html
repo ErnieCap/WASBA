@@ -4,17 +4,23 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>WASBA</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+
 </head>
 <body>
-  <header style="margin-bottom: 16px;">
-    <h2 style="margin: 0;">WASBA</h2>
-    <nav style="margin-top: 8px;">
-      <a href="{{ url_for('landing') }}">Home</a> |
-      <a href="{{ url_for('asb') }}">ASB</a> |
+  <div class="container">
+  <div class="nav">
+    <div class="brand">
+      <a href="{{ url_for('landing') }}">WASBA</a>
+    </div>
+    <div class="navlinks">
+      <a href="{{ url_for('landing') }}">Home</a>
       <a href="{{ url_for('noise_index') }}">Noise Diary</a>
-    </nav>
-    <hr>
-  </header>
+      <a href="{{ url_for('asb') }}">ASB Tool</a>
+    </div>
+  </div>
+</div>
+
 
   <main>
     {% block content %}{% endblock %}
