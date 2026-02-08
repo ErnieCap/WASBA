@@ -47,7 +47,7 @@ def landing():
 
 @app.route("/asb", methods=["GET"])
 def asb():
-    return render_template("form.html")
+    return render_template("asb/form.html")
 
 
 def _collect_case_from_form() -> dict:
@@ -91,7 +91,7 @@ def assess():
     else:
         CASE_STORE[case_id] = {"case_data": case, "free_result": free_result, "paid": False}
 
-    return render_template("result.html", result=free_result, case_id=case_id, paid=False)
+    return render_template("asb/result.html", result=free_result, case_id=case_id, paid=False)
 
 
 @app.route("/pay/<case_id>", methods=["POST"])
@@ -118,10 +118,10 @@ def premium(case_id: str):
         abort(404, "Case not found (maybe expired).")
 
     if not row["paid"]:
-        return render_template("result.html", result=row["free_result"], case_id=case_id, paid=False)
+        return render_template("asb/result.html", result=row["free_result"], case_id=case_id, paid=False)
 
     premium_result = assess_case_premium(row["case_data"])
-    return render_template("result.html", result=premium_result, case_id=case_id, paid=True)
+    return render_template("asb/result.html", result=premium_result, case_id=case_id, paid=True)
 
 
 @app.route("/stripe/webhook", methods=["POST"])

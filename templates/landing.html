@@ -1,89 +1,69 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>WASBA – practical help for neighbour problems</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
-</head>
-<body>
-  <header class="top">
-    <div class="wrap top__inner">
-      <div class="brand">
-        <div class="brand__name">WASBA</div>
-        <div class="brand__tag">Practical help for real neighbour problems</div>
-      </div>
-      <nav class="nav">
-        <a class="nav__link" href="{{ url_for('asb') }}">Open ASB tool </a>
-        <a href="{{ url_for('noise_index') }}">Noise Diary</a>
+{% extends "base.html" %}
+{% block content %}
 
-      </nav>
+<div class="container">
+
+  <div class="hero">
+    <h1 style="margin:0 0 8px;">WASBA</h1>
+    <p style="margin:0; font-size:18px; color:var(--muted);">
+      Practical tools for anti-social behaviour and noise cases — structured, evidence-focused, and easy to use.
+    </p>
+
+    <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn primary" href="{{ url_for('asb') }}">Open ASB Assessment</a>
+      <a class="btn" href="{{ url_for('noise_index') }}">Open Noise Diary</a>
     </div>
-  </header>
 
-  <main class="wrap">
-    <section class="hero">
-      <div class="hero__text">
-        <h1>Dealing with anti-social behaviour from a neighbour?</h1>
-        <p class = "hero --lead">
-          Get clear next steps and practical wording  - without legal jargon or waffle
-        </p>
-          
-        <div class="hero__actions">
-          <a class="btn" href="{{ url_for('asb') }}">Get Help now </a>
-          <a class="btn btn--ghost" href="#tools">See other tools </a>
-        </div>
-        <p class="small muted">Built around real housing and anti-social behaviour practice by an experienced housing professional </p>
-      </div>
-
-      <div class="hero__art">
-        <!-- Replace this with your daughter's cartoon later -->
-        <div class="art-placeholder">
-          Cartoon here<br><span class="small muted">static/img/hero.png</span>
-        </div>
-      </div>
-    </section>
-
-    <section id="tools" class="section">
-      <h2>Tools</h2>
-
-      <div class="grid">
-        <article class="card">
-          <div class="card__img"><div class="img-placeholder">Cartoon: ASB</div></div>
-          <h3>Anti-social behaviour help</h3>
-          <p>Describe what’s happening and get a clear plan of action.</p>
-          <a class="btn btn--small" href="{{ url_for('asb') }}">Open</a>
-        </article>
-
-        <article class="card">
-          <div class="card__img"><div class="img-placeholder">Cartoon: Noise diary</div></div>
-          <h3>Noise diary builder</h3>
-          <p>Create a diary that’s actually usable.</p>
-          <a class="btn primary" href="{{ url_for('noise_index') }}">
-          Open Noise Diary
-          </a>
-        </article>
-
-        <article class="card">
-          <div class="card__img"><div class="img-placeholder">Cartoon: Letters</div></div>
-          <h3>Letter templates</h3>
-          <p>Firm but fair wording for common situations.</p>
-          <span class="pill">Coming soon</span>
-        </article>
-      </div>
-    </section>
-
-    <section class="section">
-      <h2>Privacy</h2>
-      <p class="muted">Don’t enter names, exact addresses, or anything you wouldn’t want shared. Keep it general.</p>
-    </section>
-  </main>
-
-  <footer class="footer">
-    <div class="wrap footer__inner">
-      <div class="small muted">© WASBA</div>
-      <div class="small muted">Built for practical problem-solving.</div>
+    <div style="margin-top:12px; color:var(--muted);">
+      Built around real housing and ASB practice. No legal waffle.
     </div>
-  </footer>
-</body>
-</html>
+  </div>
+
+  
+
+  <div class="grid3" style="margin-top:14px;">
+    <div class="card">
+      <h3 style="margin:0 0 8px;">ASB Assessment</h3>
+      <p style="margin:0; color:var(--muted);">
+        Describe what’s happening and get a structured assessment: risk level, key factors, and practical next steps.
+      </p>
+      <div style="margin-top:12px;">
+        <a class="btn primary" href="{{ url_for('asb') }}">Get help now</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 8px;">Noise Diary</h3>
+      <p style="margin:0; color:var(--muted);">
+        Log incidents as they occur. A clean timeline you can lock and export.
+      </p>
+      <div style="margin-top:12px;">
+        <a class="btn" href="{{ url_for('noise_index') }}">Start a diary</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 8px;">Letters & Reports</h3>
+      <p style="margin:0; color:var(--muted);">
+        Firm-but-fair wording and export-ready summaries (coming soon).
+      </p>
+      <div style="margin-top:12px;">
+        <span class="badge">Coming soon</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <h3 style="margin:0 0 8px;">Privacy</h3>
+    <p style="margin:0; color:var(--muted);">
+      Don’t enter names, exact addresses, or anything you wouldn’t want shared. Keep it factual and time-based.
+    </p>
+  </div>
+
+  <div class="footer" style="margin-top:14px;">
+    Not legal advice. If you are in immediate danger call 999. For ongoing issues, contact your landlord, council, or support services.
+  </div>
+
+</div>
+
+{% endblock %}

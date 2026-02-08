@@ -1,51 +1,115 @@
 {% extends "base.html" %}
 {% block content %}
-  <h1>{% if entry %}Edit{% else %}New{% endif %} Noise Entry</h1>
-  <p><a href="{{ url_for('noise_case_detail', case_id=case.id) }}">Back to diary</a></p>
+{% if case and case.status == "submitted" %}
+  <div class="container">
+    <div class="hero">
+      <h1>Diary is locked</h1>
+      <p>This noise diary has been submitted and can’t be edited.</p>
+      <a class="btn" href="{{ url_for('noise_case_detail', case_id=case.id) }}">Back to diary</a>
+    </div>
+  </div>
+{% else %}
+  <div class="container">
 
-  <form method="post">
-    <div>
-      <label>Date/time *</label><br>
-      <input name="occurred_at" type="datetime-local"
-             value="{% if entry %}{{ entry.occurred_at[:16] }}{% else %}{{ default_dt }}{% endif %}"
-             required>
+    <div class="hero">
+      <h1 style="margin:0 0 8px;">{% if entry %}Edit{% else %}New{% endif %} noise entry</h1>
+      <p style="margin:0;">
+        Log what happened as clearly as you can. Date/time + type + impact + brief notes beats a long essay.
+      </p>
+
+      <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <span class="badge">Diary: {{ case.title }}</span>
+        <a class="btn" href="{{ url_for('noise_case_detail', case_id=case.id) }}">Back to diary</a>
+      </div>
     </div>
 
-    <div>
-      <label>Noise type *</label><br>
-      <select name="noise_type" required>
-        {% set current = entry.noise_type if entry else "" %}
-        {% for opt in ["music","voices/shouting","banging","DIY","pets","alarm","other"] %}
-          <option value="{{ opt }}" {% if current==opt %}selected{% endif %}>{{ opt }}</option>
-        {% endfor %}
-      </select>
+    <div class="card" style="margin-top:14px;">
+      <form method="post">
+
+        <div style="display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:14px;">
+          <div>
+            <label style="display:block; font-weight:700; margin-bottom:6px;">Date/time *</label>
+            <input name="occurred_at" type="datetime-local"
+                   value="{% if entry %}{{ entry.occurred_at[:16] }}{% else %}{{ default_dt }}{% endif %}"
+                   required
+                   style="width:100%; padding:10px; border-radius:12px; border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--text);">
+            <div style="margin-top:6px; color:var(--muted); font-size:13px;">
+              Use the best estimate if you’re unsure.
+            </div>
+          </div>
+
+          <div>
+            <label style="display:block; font-weight:700; margin-bottom:6px;">Noise type *</label>
+            <select name="noise_type" required
+                    style="width:100%; padding:10px; border-radius:12px; border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--text);">
+              {% set current = entry.noise_type if entry else "" %}
+              {% for opt in ["music","voices/shouting","banging","DIY","pets","alarm","other"] %}
+                <option value="{{ opt }}" {% if current==opt %}selected{% endif %}>{{ opt }}</option>
+              {% endfor %}
+            </select>
+            <div style="margin-top:6px; color:var(--muted); font-size:13px;">
+              Pick the closest match — details go in notes.
+            </div>
+          </div>
+
+          <div>
+            <label style="display:block; font-weight:700; margin-bottom:6px;">Duration (minutes)</label>
+            <input name="duration_minutes" type="number" min="1"
+                   value="{{ entry.duration_minutes if entry else '' }}"
+                   style="width:100%; padding:10px; border-radius:12px; border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--text);">
+          </div>
+
+          <div>
+            <label style="display:block; font-weight:700; margin-bottom:6px;">Location (optional)</label>
+            <input name="location" type="text"
+                   value="{{ entry.location if entry else '' }}"
+                   placeholder="e.g. bedroom, living room, hallway"
+                   style="width:100%; padding:10px; border-radius:12px; border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--text);">
+          </div>
+
+          <div>
+            <label style="display:block; font-weight:700; margin-bottom:6px;">Volume (1–5)</label>
+            <input name="volume_level" type="number" min="1" max="5"
+                   value="{{ entry.volume_level if entry else '' }}"
+                   placeholder="1 (low) – 5 (very loud)"
+                   style="width:100%; padding:10px; border-radius:12px; border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--text);">
+          </div>
+
+          <div>
+            <label style="display:block; font-weight:700; margin-bottom:6px;">Impact (1–5)</label>
+            <input name="impact_level" type="number" min="1" max="5"
+                   value="{{ entry.impact_level if entry else '' }}"
+                   placeholder="1 (minor) – 5 (severe)"
+                   style="width:100%; padding:10px; border-radius:12px; border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--text);">
+            <div style="margin-top:6px; color:var(--muted); font-size:13px;">
+              Think: sleep disrupted, anxiety, couldn’t use a room, etc.
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;">
+          <label style="display:block; font-weight:700; margin-bottom:6px;">Notes *</label>
+          <textarea name="notes" rows="6" required
+                    placeholder="Write what happened. Keep it factual. Avoid names if possible."
+                    style="width:100%; padding:10px; border-radius:12px; border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--text); white-space:pre-wrap;">{{ entry.notes if entry else '' }}</textarea>
+        </div>
+
+        <div style="display:flex; gap:10px; align-items:center; margin-top:14px; flex-wrap:wrap;">
+          <button class="btn primary" type="submit">{% if entry %}Save entry{% else %}Add entry{% endif %}</button>
+          <a class="btn" href="{{ url_for('noise_case_detail', case_id=case.id) }}">Cancel</a>
+        </div>
+
+        <div class="footer" style="margin-top:14px;">
+          Tip: avoid names and exact addresses in notes. Stick to what happened, when, and the impact.
+        </div>
+
+      </form>
     </div>
 
-    <div>
-      <label>Duration (minutes)</label><br>
-      <input name="duration_minutes" type="number" min="1" value="{{ entry.duration_minutes if entry else '' }}">
-    </div>
+  </div>
 
-    <div>
-      <label>Volume (1-5)</label><br>
-      <input name="volume_level" type="number" min="1" max="5" value="{{ entry.volume_level if entry else '' }}">
-    </div>
+  
 
-    <div>
-      <label>Impact (1-5)</label><br>
-      <input name="impact_level" type="number" min="1" max="5" value="{{ entry.impact_level if entry else '' }}">
-    </div>
+{% endif %}
 
-    <div>
-      <label>Location (optional)</label><br>
-      <input name="location" type="text" value="{{ entry.location if entry else '' }}">
-    </div>
-
-    <div>
-      <label>Notes *</label><br>
-      <textarea name="notes" rows="6" style="width: 520px" required>{{ entry.notes if entry else '' }}</textarea>
-    </div>
-
-    <button type="submit">{% if entry %}Save{% else %}Add{% endif %}</button>
-  </form>
 {% endblock %}

@@ -1,87 +1,74 @@
+
 {% extends "base.html" %}
 {% block content %}
-  <h1>{{ case.title }}</h1>
-  {% if case.status == "submitted" %}
-  <div class="alert alert-info">
-    <strong>Submitted / Locked</strong>
-    {% if case.submitted_at %}
-      <span>— {{ case.submitted_at }}</span>
-    {% endif %}
-  </div>
-{% else %}
-  <div class="alert alert-secondary">
-    <strong>Open</strong> — entries can still be added or edited.
-  </div>
-{% endif %}
 
-  <p><strong>Status:</strong> {{ case.status }} | <strong>Start:</strong> {{ case.start_date }}</p>
-  {% if case.address_text %}
-    <p><strong>Address:</strong> {{ case.address_text }}</p>
-  {% endif %}
+  <div class="card" style="margin-top:14px;">
+    <div style="display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap;">
+      <h3 style="margin:0;">Entries</h3>
+      {% if entries %}
+        <span class="badge">{{ entries|length }} total</span>
+      {% endif %}
+    </div>
 
-  <p>
-  {% if case.status != "submitted" %}
-    <a href="{{ url_for('noise_entry_new', case_id=case.id) }}">Add entry</a> |
-    <form method="post"
-          action="{{ url_for('noise_case_submit', case_id=case.id) }}"
-          style="display:inline">
-        <button type="submit"
-                onclick="return confirm('Submit this noise diary? Once submitted it cannot be edited.')">
-          Submit diary
-         </button>
-       </form>
-    |
-    {% endif %}
+    {% if not entries or entries|length == 0 %}
+      <p style="margin:10px 0 0; color: var(--muted);">
+        No entries yet. Log incidents as they occur so the diary stays consistent and time-stamped.
+      </p>
 
-    <a href="{{ url_for('noise_export_csv', case_id=case.id) }}">Export CSV</a> |
-    <a href="{{ url_for('noise_index') }}">Back to diaries</a>
-  </p>
-  <p><strong>Diary reference:</strong> {{ case.id }}</p>
+      {% if case.status != "submitted" %}
+        <div style="margin-top:12px;">
+          <a class="btn primary" href="{{ url_for('noise_entry_new', case_id=case.id) }}">Add first entry</a>
+        </div>
+      {% else %}
+        <div style="margin-top:12px;">
+          <span class="badge locked">Diary is locked — entries can’t be added.</span>
+        </div>
+      {% endif %}
 
+    {% else %}
 
-
-  {% if entries|length == 0 %}
-    <p>No entries yet.</p>
-  {% else %}
-    <table border="1" cellpadding="6">
-      <thead>
-        <tr>
-          <th>When</th>
-          <th>Type</th>
-          <th>Duration</th>
-          <th>Volume</th>
-          <th>Impact</th>
-          <th>Location</th>
-          <th>Notes</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
+      <div style="margin-top:12px; display:flex; flex-direction:column; gap:12px;">
         {% for e in entries %}
-          <tr>
-            <td>{{ e.occurred_at }}</td>
-            <td>{{ e.noise_type }}</td>
-            <td>{{ e.duration_minutes }}</td>
-            <td>{{ e.volume_level }}</td>
-            <td>{{ e.impact_level }}</td>
-            <td>{{ e.location }}</td>
-            <td style="max-width: 420px">{{ e.notes }}</td>
-            <td>
-              {% if case.status != "submitted" %}
-               <a href="{{ url_for('noise_entry_edit', case_id=case.id, entry_id=e.id) }}">Edit</a>
-               <form method="post"
-                     action="{{ url_for('noise_entry_delete', case_id=case.id, entry_id=e.id) }}"
-                     style="display:inline">
-                <button type="submit" onclick="return confirm('Delete this entry?')">Delete</button>
-               </form>
-              {% else %}
-               <em>Locked</em>
-              {% endif %}
-            </td>
+          <div class="card">
+            <div style="display:flex; gap:10px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap;">
+              <div>
+                <div style="font-weight:800; font-size:16px;">
+                  {# occurred_at is common; adjust if yours is named differently #}
+                  {{ e.occurred_at }}
+                </div>
+                <div style="margin-top:6px; color: var(--muted);">
+                  <span class="badge">{{ e.noise_type }}</span>
+                  {% if e.location %}<span class="badge">Location: {{ e.location }}</span>{% endif %}
+                </div>
+              </div>
 
-          </tr>
+              {% if e.duration_minutes or e.volume_level or e.impact_level %}
+              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+                {% if e.duration_minutes %}<span class="badge">Duration: {{ e.duration_minutes }} mins</span>{% endif %}
+                {% if e.volume_level %}<span class="badge">Volume: {{ e.volume_level }}/5</span>{% endif %}
+                {% if e.impact_level %}<span class="badge">Impact: {{ e.impact_level }}/5</span>{% endif %}
+              </div>
+              {% endif %}
+            </div>
+
+            {% if e.notes %}
+              <div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--line);">
+                <div style="color: var(--muted); font-weight:700; margin-bottom:6px;">Notes</div>
+                <div style="white-space:pre-wrap;">{{ e.notes }}</div>
+              </div>
+            {% endif %}
+          </div>
         {% endfor %}
-      </tbody>
-    </table>
-  {% endif %}
+      </div>
+
+      {% if case.status != "submitted" %}
+        <div style="margin-top:14px;">
+          <a class="btn primary" href="{{ url_for('noise_entry_new', case_id=case.id) }}">Add another entry</a>
+        </div>
+      {% endif %}
+
+    {% endif %}
+  </div>
 {% endblock %}
+
+
