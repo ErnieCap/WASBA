@@ -3,7 +3,7 @@ import uuid
 
 print("RUNNING APP.PY FROM:", os.path.abspath(__file__))
 
-from flask import Flask, render_template, request, redirect, url_for, abort, Response
+from flask import Flask, render_template, request, redirect, url_for, abort, Response, make_response
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from service import assess_case_free, assess_case_premium
@@ -17,7 +17,7 @@ from db import (
     create_case, get_case,
     create_noise_case, list_noise_cases, get_noise_case,
     create_noise_entry, list_noise_entries, get_noise_entry,
-    update_noise_entry, delete_noise_entry
+    update_noise_entry, delete_noise_entry, get_noise_case_for_owner
 )
 
 
@@ -39,6 +39,25 @@ if USE_DB:
 else:
     print("DATABASE_URL not set — running in LOCAL DEV mode using in-memory storage.")
 # --------------------------------------
+
+#this is a cookie that creates a uuid fir the user and sets up the uid on the users browser 
+COOKIE_NAME = "wasba_uid"
+
+def get_owner_uid() -> str:
+    uid = request.cookies.get(COOKIE_NAME)
+    return uid if uid else str(uuid.uuid4())
+
+def attach_owner_cookie(resp, owner_uid: str):
+    if not request.cookies.get(COOKIE_NAME):
+        resp.set_cookie(
+            COOKIE_NAME,
+            owner_uid,
+            max_age=60 * 60 * 24 * 365 * 2,
+            httponly=True,
+            samesite="Lax",
+            secure=False,  # change to True in production HTTPS
+        )
+    return resp
 
 
 @app.route("/", methods=["GET"])
@@ -154,7 +173,12 @@ def health():
 def noise_index():
     """List noise diary cases."""
     if USE_DB:
-        cases = list_noise_cases()
+        owner_uid = request.cookies.get(COOKIE_NAME)
+        if not owner_uid:
+            cases = []  # no cookie yet → show empty list rather than everyone’s diaries
+        else:
+            cases = list_noise_cases(owner_uid)
+
     else:
         # local: sort by created_at (string ISO) if present
         cases = sorted(NOISE_CASE_STORE.values(), key=lambda c: c.get("created_at", ""), reverse=True)
@@ -189,7 +213,12 @@ def noise_new():
     }
 
     if USE_DB:
-        create_noise_case(case_id, case)
+        owner_uid = get_owner_uid()
+        create_noise_case(case_id, owner_uid, case)
+
+        resp = make_response(redirect(url_for("noise_case_detail", case_id=case_id)))
+        return attach_owner_cookie(resp, owner_uid)
+
     else:
         case["entries"] = []
         NOISE_CASE_STORE[case_id] = case
@@ -199,7 +228,11 @@ def noise_new():
 
 def _get_noise_case_or_404(case_id: str):
     if USE_DB:
-        row = get_noise_case(case_id)
+        owner_uid = request.cookies.get(COOKIE_NAME)
+        if not owner_uid:
+            abort(404, "Noise diary case not found.")
+        row = get_noise_case_for_owner(case_id, owner_uid)
+
     else:
         row = NOISE_CASE_STORE.get(case_id)
     if not row:
