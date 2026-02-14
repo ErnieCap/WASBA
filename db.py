@@ -162,31 +162,6 @@ def list_noise_cases(owner_uid: str):
 
 
 
-def get_noise_case_for_owner(case_id: str, owner_uid: str):
-    with get_conn() as conn:
-        with conn.cursor() as cur:
-            cur.execute("""
-                SELECT id::text, title, address_text, start_date::text, status,
-                       submitted_at::text, created_at::text
-                FROM noise_diary_cases
-                WHERE id = %s AND owner_uid = %s
-            """, (case_id, owner_uid))
-            r = cur.fetchone()
-
-    if not r:
-        return None
-
-    return {
-        "id": r[0],
-        "title": r[1],
-        "address_text": r[2],
-        "start_date": r[3],
-        "status": r[4] or "open",
-        "submitted_at": r[5],
-        "created_at": r[6],
-    }
-
-
 def get_noise_case(case_id: str):
     with get_conn() as conn:
         with conn.cursor() as cur:
