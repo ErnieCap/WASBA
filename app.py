@@ -13,12 +13,18 @@ from datetime import datetime, timezone
 
 # DB imports (Postgres)
 from db import (
+    count_noise_cases_for_owner,
     init_db,
     create_case, get_case,
     create_noise_case, list_noise_cases, get_noise_case,
     create_noise_entry, list_noise_entries, get_noise_entry,
     update_noise_entry, delete_noise_entry, get_noise_case_for_owner
 )
+
+FREE_MAX_DIARIES = 1
+FREE_MAX_ENTRIES = 40
+FREE_RETENTION_DAYS = 60
+
 
 
 app = Flask(__name__)
@@ -126,7 +132,40 @@ def pay(case_id: str):
     success_url = url_for("premium", case_id=case_id, _external=True)
     cancel_url = url_for("premium", case_id=case_id, _external=True)
 
-    session = create_checkout_session(case_id, success_url, cancel_url)
+    session = create_checkout_session(case_id, success_url, cancel_url, metadata={"product": "asb_unlock"},)
+    return redirect(session.url, code=303)
+
+@app.route("/noise/pay/<case_id>", methods=["POST"])
+def noise_pay(case_id):
+    case = _get_noise_case_or_404(case_id)
+
+    if case.get("paid"):
+        return redirect(url_for("noise_case_detail", case_id=case_id))
+
+    owner_uid = request.cookies.get(COOKIE_NAME)
+    if not owner_uid:
+        abort(403, "Owner not identified.")
+
+    if not USE_DB:
+        abort(400, "Payments disabled in local dev. Deploy to Render (with DATABASE_URL) to test Stripe.")
+
+    success_url = url_for("noise_case_detail", case_id=case_id, _external=True)
+    cancel_url = url_for("noise_case_detail", case_id=case_id, _external=True)
+
+    session = create_checkout_session(
+        case_id,
+        success_url,
+        cancel_url,
+        metadata={
+            "product": "noise_unlock",
+            "owner_uid": owner_uid,
+        },
+    )
+
+    return redirect(session.url, code=303)
+        
+    
+
     return redirect(session.url, code=303)
 
 
@@ -173,17 +212,24 @@ def health():
 def noise_index():
     """List noise diary cases."""
     if USE_DB:
+        # Retention cleanup (free tier)
+        delete_expired_noise_cases(FREE_RETENTION_DAYS)
+
         owner_uid = request.cookies.get(COOKIE_NAME)
         if not owner_uid:
             cases = []  # no cookie yet → show empty list rather than everyone’s diaries
         else:
             cases = list_noise_cases(owner_uid)
-
     else:
         # local: sort by created_at (string ISO) if present
-        cases = sorted(NOISE_CASE_STORE.values(), key=lambda c: c.get("created_at", ""), reverse=True)
+        cases = sorted(
+            NOISE_CASE_STORE.values(),
+            key=lambda c: c.get("created_at", ""),
+            reverse=True
+        )
 
     return render_template("noise/index.html", cases=cases, use_db=USE_DB)
+
 
 
 @app.route("/noise/new", methods=["GET", "POST"])
@@ -214,6 +260,11 @@ def noise_new():
 
     if USE_DB:
         owner_uid = get_owner_uid()
+        existing_count = count_noise_cases_for_owner(owner_uid)
+
+    if existing_count >= FREE_MAX_DIARIES:
+        abort(403, "Free tier allows 1 diary per device.")
+
         create_noise_case(case_id, owner_uid, case)
 
         resp = make_response(redirect(url_for("noise_case_detail", case_id=case_id)))
@@ -238,6 +289,9 @@ def _get_noise_case_or_404(case_id: str):
     if not row:
         abort(404, "Noise diary case not found.")
     return row
+
+
+
 
 
 @app.route("/noise/<case_id>", methods=["GET"])
@@ -307,7 +361,12 @@ def noise_entry_new(case_id: str):
     }
 
     if USE_DB:
+        entry_count = count_noise_entries_for_case(case_id)
         create_noise_entry(entry_id, case_id, entry)
+    
+    if entry_count >= FREE_MAX_ENTRIES:
+        abort(403, "Free tier allows up to 40 entries per diary.")
+
     else:
         NOISE_ENTRY_STORE[entry_id] = entry
         NOISE_CASE_STORE[case_id]["entries"].append(entry)
