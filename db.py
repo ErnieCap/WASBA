@@ -66,7 +66,8 @@ def init_db() -> None:
                     notes TEXT NOT NULL,
                     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
                 );
-                """)
+                """
+            )
 
             cur.execute("CREATE INDEX IF NOT EXISTS idx_noise_cases_created ON noise_diary_cases(created_at DESC);")
             cur.execute("CREATE INDEX IF NOT EXISTS idx_noise_entries_case_time ON noise_diary_entries(case_id, occurred_at DESC);")
@@ -164,7 +165,7 @@ def list_noise_cases(owner_uid: str):
         }
         for r in rows
     ]
-    ]
+    
 
 
 
@@ -268,6 +269,17 @@ def list_noise_entries(case_id: str):
         }
         for r in rows
     ]
+
+def mark_noise_case_paid(case_id: str) -> bool:
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE noise_diary_cases SET paid=TRUE WHERE id=%s",
+                (case_id,)
+            )
+            updated = cur.rowcount
+        conn.commit()
+    return updated == 1
 
 
 # stops people guessing a uuid
