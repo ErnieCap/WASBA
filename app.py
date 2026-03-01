@@ -18,12 +18,19 @@ from db import (
     create_case, get_case,
     create_noise_case, list_noise_cases, get_noise_case,
     create_noise_entry, list_noise_entries, get_noise_entry,
-    update_noise_entry, delete_noise_entry, get_noise_case_for_owner
+    update_noise_entry, delete_noise_entry, get_noise_case_for_owner, delete_expired_noise_cases, get_active_noise_case_for_owner,
 )
 
+# --- Noise limits / pricing policy ---
 FREE_MAX_DIARIES = 1
-FREE_MAX_ENTRIES = 40
-FREE_RETENTION_DAYS = 60
+FREE_MAX_ENTRIES = 10
+PAID_MAX_ENTRIES = 50
+RETENTION_DAYS = 60
+MAX_NOTE_CHARS = 200
+
+def noise_entry_cap(case: dict) -> int:
+    """Return max entries allowed for this noise diary case."""
+    return PAID_MAX_ENTRIES if case.get("paid") else FREE_MAX_ENTRIES
 
 
 
@@ -213,7 +220,7 @@ def noise_index():
     """List noise diary cases."""
     if USE_DB:
         # Retention cleanup (free tier)
-        delete_expired_noise_cases(FREE_RETENTION_DAYS)
+        delete_expired_noise_cases(RETENTION_DAYS)
 
         owner_uid = request.cookies.get(COOKIE_NAME)
         if not owner_uid:
@@ -237,6 +244,16 @@ def noise_new():
     """Create a new noise diary case."""
     if request.method == "GET":
         return render_template("noise/case_new.html")
+    
+    owner_uid = request.cookies.get(COOKIE_NAME)
+    if not owner_uid:
+       abort(400, "Device ID missing.")
+
+    if USE_DB:
+        existing_case_id = get_active_noise_case_for_owner(owner_uid)
+    if existing_case_id:
+        Flask("You already have an active diary.")
+        return redirect(url_for("noise_case_detail", case_id=existing_case_id))
 
     title = request.form.get("title", "").strip()
     address_text = request.form.get("address_text", "").strip()
@@ -317,11 +334,10 @@ def noise_entry_new(case_id: str):
         abort(400, "This diary is locked and can’t be edited.")
 
     if request.method == "GET":
-        # default datetime-local value
         now_local = datetime.now().strftime("%Y-%m-%dT%H:%M")
         return render_template("noise/entry_form.html", case=case, entry=None, default_dt=now_local)
 
-    occurred_at = request.form.get("occurred_at", "").strip()  # from datetime-local
+    occurred_at = request.form.get("occurred_at", "").strip()
     noise_type = request.form.get("noise_type", "").strip()
     duration_minutes = request.form.get("duration_minutes", "").strip()
     volume_level = request.form.get("volume_level", "").strip()
@@ -335,6 +351,22 @@ def noise_entry_new(case_id: str):
         abort(400, "Noise type is required.")
     if not notes:
         abort(400, "Notes are required (what happened and how it affected you).")
+
+    # Enforce note length server-side
+    if len(notes) > MAX_NOTE_CHARS:
+        abort(400, f"Notes must be {MAX_NOTE_CHARS} characters or fewer.")
+
+    # Enforce entry cap BEFORE writing anything
+    cap = noise_entry_cap(case)
+
+    if USE_DB:
+        entry_count = count_noise_entries_for_case(case_id)
+    else:
+        # local store: count current entries already saved
+        entry_count = len(NOISE_CASE_STORE.get(case_id, {}).get("entries", []))
+
+    if entry_count >= cap:
+        abort(403, f"Entry limit reached ({cap}).")
 
     entry_id = str(uuid.uuid4())
 
@@ -350,7 +382,7 @@ def noise_entry_new(case_id: str):
     entry = {
         "id": entry_id,
         "case_id": case_id,
-        "occurred_at": occurred_at,  # store as string; DB layer will parse safely
+        "occurred_at": occurred_at,
         "noise_type": noise_type,
         "duration_minutes": _int_or_none(duration_minutes),
         "volume_level": _int_or_none(volume_level),
@@ -361,30 +393,14 @@ def noise_entry_new(case_id: str):
     }
 
     if USE_DB:
-        entry_count = count_noise_entries_for_case(case_id)
         create_noise_entry(entry_id, case_id, entry)
-    
-    if entry_count >= FREE_MAX_ENTRIES:
-        abort(403, "Free tier allows up to 40 entries per diary.")
-
+        # OPTIONAL but recommended: touch last_active_at here (cheap, helps 60-day retention)
+        # touch_noise_case_activity(case_id)
     else:
         NOISE_ENTRY_STORE[entry_id] = entry
         NOISE_CASE_STORE[case_id]["entries"].append(entry)
 
     return redirect(url_for("noise_case_detail", case_id=case_id))
-
-
-def _get_noise_entry_or_404(case_id: str, entry_id: str):
-    if USE_DB:
-        entry = get_noise_entry(case_id, entry_id)
-    else:
-        entry = NOISE_ENTRY_STORE.get(entry_id)
-        if entry and entry.get("case_id") != case_id:
-            entry = None
-    if not entry:
-        abort(404, "Noise diary entry not found.")
-    return entry
-
 
 @app.route("/noise/<case_id>/entries/<entry_id>/edit", methods=["GET", "POST"])
 def noise_entry_edit(case_id: str, entry_id: str):

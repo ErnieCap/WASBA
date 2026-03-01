@@ -289,7 +289,7 @@ def get_noise_case_for_owner(case_id: str, owner_uid: str):
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT id::text, title, address_text, start_date::text, status,
-                       submitted_at::text, created_at::text, paid
+                       submitted_at::text, created_at::text, paid, last_active_at::text
                 FROM noise_diary_cases
                 WHERE id = %s AND owner_uid = %s
             """, (case_id, owner_uid))
@@ -305,7 +305,23 @@ def get_noise_case_for_owner(case_id: str, owner_uid: str):
         "submitted_at": r[5],
         "created_at": r[6],
         "paid": bool(r[7]),
+        "last_active_at": r[8],
     }
+
+def get_active_noise_case_for_owner(owner_uid: str):
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT id::text
+                FROM noise_diary_cases
+                WHERE owner_uid = %s
+                AND status NOT IN ('submitted', 'closed')
+                LIMIT 1
+            """, (owner_uid,))
+            r = cur.fetchone()
+    if not r:
+        return None
+    return r[0]
 
 
 def get_noise_entry(case_id: str, entry_id: str):
@@ -371,13 +387,13 @@ def delete_noise_entry(case_id: str, entry_id: str):
             """, (case_id, entry_id))
         conn.commit()
 
-def delete_expired_noise_cases(retention_days: int):
+def delete_expired_noise_cases(RETENTION_DAYS: int):
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
                 DELETE FROM noise_diary_cases
                 WHERE created_at < NOW() - INTERVAL '%s days'
-            """ % retention_days)
+            """ % RETENTION_DAYS)
         conn.commit()
 
 def update_noise_case(case_id: str, updates: dict) -> bool:
