@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 
 # DB imports (Postgres)
 from db import (
-    count_noise_cases_for_owner,
+    count_noise_cases_for_owner, count_noise_entries_for_case,
     init_db,
     create_case, get_case,
     create_noise_case, list_noise_cases, get_noise_case,
