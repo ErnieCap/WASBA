@@ -18,7 +18,7 @@ from db import (
     create_case, get_case,
     create_noise_case, list_noise_cases, get_noise_case,
     create_noise_entry, list_noise_entries, get_noise_entry,
-    update_noise_entry, delete_noise_entry, get_noise_case_for_owner, delete_expired_noise_cases, get_active_noise_case_for_owner,
+    update_noise_entry, delete_noise_entry, get_noise_case_for_owner, delete_expired_noise_cases, get_active_noise_case_for_owner,update_noise_case
 )
 
 # --- Noise limits / pricing policy ---
@@ -218,29 +218,38 @@ def health():
 @app.route("/noise", methods=["GET"])
 def noise_index():
     """List noise diary cases."""
+    owner_uid = get_owner_uid()  # <-- ALWAYS defined (cookie read or new UID)
+
     if USE_DB:
         # Retention cleanup (free tier)
         delete_expired_noise_cases(RETENTION_DAYS)
 
-        owner_uid = request.cookies.get(COOKIE_NAME)
-        if not owner_uid:
-            cases = []  # no cookie yet → show empty list rather than everyone’s diaries
-        else:
-            cases = list_noise_cases(owner_uid)
+        cases = list_noise_cases(owner_uid)
     else:
-        # local: sort by created_at (string ISO) if present
+        # local: show only this user's cases (not everyone’s)
+        cases = [
+            c for c in NOISE_CASE_STORE.values()
+            if c.get("owner_uid") == owner_uid
+        ]
         cases = sorted(
-            NOISE_CASE_STORE.values(),
+            cases,
             key=lambda c: c.get("created_at", ""),
             reverse=True
         )
 
-    return render_template("noise/index.html", cases=cases, use_db=USE_DB)
+    resp = make_response(
+        render_template("noise/index.html", cases=cases, use_db=USE_DB)
+    )
+    return attach_owner_cookie(resp, owner_uid)
 
 
 
 @app.route("/noise/new", methods=["GET", "POST"])
 def noise_new():
+    existing_case_id = None
+
+    existing_case_id =None
+    existing_count = 0
     """Create a new noise diary case."""
     if request.method == "GET":
         return render_template("noise/case_new.html")
