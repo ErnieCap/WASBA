@@ -249,6 +249,7 @@ def noise_new():
     if not owner_uid:
        abort(400, "Device ID missing.")
 
+    existing_case_id = None
     if USE_DB:
         existing_case_id = get_active_noise_case_for_owner(owner_uid)
     if existing_case_id:
@@ -274,6 +275,8 @@ def noise_new():
         "status": "open",
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
+
+    existing_count = 0
 
     if USE_DB:
         owner_uid = get_owner_uid()
