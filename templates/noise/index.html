@@ -9,6 +9,7 @@
 
     {# Use whichever endpoint name you actually have for "new case" #}
     <a class="btn primary" href="{{ url_for('noise_new') }}">Create a new diary</a>
+    <a class="btn" href="{{ url_for('noise_recover') }}" style="margin-left:8px;">Recover a diary</a>
   </div>
 
   {% if cases and cases|length > 0 %}

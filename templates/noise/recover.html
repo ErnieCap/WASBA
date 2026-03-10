@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Recover a Diary</h1>
+  <p style="color:var(--muted);">
+    If you cleared your browser data or switched devices, enter your reference code below
+    to reconnect to your diary.
+  </p>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="card" style="border-left:4px solid #c0392b; margin-bottom:14px;">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="card" style="margin-top:14px; max-width:420px;">
+    <form method="post">
+      <div>
+        <label style="font-weight:700;">Reference code</label>
+        <div style="color:var(--muted); font-size:13px; margin-bottom:6px;">
+          The 8-character code shown on your diary page, e.g. <strong>ABCD-EF3G</strong>
+        </div>
+        <input
+          name="ref_code"
+          type="text"
+          maxlength="9"
+          placeholder="XXXX-XXXX"
+          style="width:100%; text-transform:uppercase; letter-spacing:2px; font-size:18px;"
+          autofocus
+          required
+        >
+      </div>
+      <div style="margin-top:14px; display:flex; gap:10px; align-items:center;">
+        <button class="btn primary" type="submit">Find my diary</button>
+        <a href="{{ url_for('noise_index') }}">Cancel</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

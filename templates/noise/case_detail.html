@@ -2,6 +2,19 @@
 {% extends "base.html" %}
 {% block content %}
 
+{% if case.ref_code %}
+  <div class="card" style="margin-top:14px; border-left:4px solid #4a7fcb;">
+    <div style="font-weight:700; margin-bottom:4px;">Your diary reference code</div>
+    <div style="font-size:22px; font-weight:800; letter-spacing:4px;">
+      {{ case.ref_code[:4] }}-{{ case.ref_code[4:] }}
+    </div>
+    <div style="color:var(--muted); font-size:13px; margin-top:6px;">
+      Save this code. If you clear your browser data, visit
+      <a href="{{ url_for('noise_recover') }}">the recovery page</a> and enter it to get back to your diary.
+    </div>
+  </div>
+{% endif %}
+
 {% if case.paid is defined and not case.paid %}
   <div class="card" style="margin-top:14px;">
     <div style="display:flex; gap:12px; justify-content:space-between; align-items:center; flex-wrap:wrap;">

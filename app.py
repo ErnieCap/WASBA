@@ -1,4 +1,5 @@
 import os
+import secrets
 import uuid
 
 print("RUNNING APP.PY FROM:", os.path.abspath(__file__))
@@ -18,7 +19,9 @@ from db import (
     create_case, get_case,
     create_noise_case, list_noise_cases, get_noise_case,
     create_noise_entry, list_noise_entries, get_noise_entry,
-    update_noise_entry, delete_noise_entry, get_noise_case_for_owner, delete_expired_noise_cases, get_active_noise_case_for_owner,update_noise_case
+    update_noise_entry, delete_noise_entry, get_noise_case_for_owner,
+    delete_expired_noise_cases, get_active_noise_case_for_owner, update_noise_case,
+    touch_noise_case_activity, get_noise_case_by_ref_code,
 )
 
 # --- Noise limits / pricing policy ---
@@ -55,6 +58,12 @@ else:
 
 #this is a cookie that creates a uuid fir the user and sets up the uid on the users browser 
 COOKIE_NAME = "wasba_uid"
+
+_REF_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"  # no 0/O, 1/I
+
+def _gen_ref_code() -> str:
+    return "".join(secrets.choice(_REF_ALPHABET) for _ in range(8))
+
 
 def get_owner_uid() -> str:
     uid = request.cookies.get(COOKIE_NAME)
@@ -275,6 +284,7 @@ def noise_new():
         "start_date": start_date,
         "status": "open",
         "created_at": datetime.now(timezone.utc).isoformat(),
+        "ref_code": _gen_ref_code(),
     }
 
     existing_count = 0
@@ -291,6 +301,7 @@ def noise_new():
         return attach_owner_cookie(resp, owner_uid)
     else:
         case["entries"] = []
+        case["owner_uid"] = owner_uid
         NOISE_CASE_STORE[case_id] = case
 
     return redirect(url_for("noise_case_detail", case_id=case_id))
@@ -406,8 +417,7 @@ def noise_entry_new(case_id: str):
 
     if USE_DB:
         create_noise_entry(entry_id, case_id, entry)
-        # OPTIONAL but recommended: touch last_active_at here (cheap, helps 60-day retention)
-        # touch_noise_case_activity(case_id)
+        touch_noise_case_activity(case_id)
     else:
         NOISE_ENTRY_STORE[entry_id] = entry
         NOISE_CASE_STORE[case_id]["entries"].append(entry)
@@ -462,6 +472,7 @@ def noise_entry_edit(case_id: str, entry_id: str):
 
     if USE_DB:
         update_noise_entry(case_id, entry_id, updates)
+        touch_noise_case_activity(case_id)
     else:
         # update local store
         NOISE_ENTRY_STORE[entry_id].update(updates)
@@ -486,6 +497,7 @@ def noise_entry_delete(case_id: str, entry_id: str):
 
     if USE_DB:
         delete_noise_entry(case_id, entry_id)
+        touch_noise_case_activity(case_id)
     else:
         NOISE_ENTRY_STORE.pop(entry_id, None)
         NOISE_CASE_STORE[case_id]["entries"] = [
@@ -666,6 +678,41 @@ def noise_export_pdf(case_id: str):
         mimetype="application/pdf",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+
+
+@app.route("/noise/recover", methods=["GET", "POST"])
+def noise_recover():
+    if request.method == "GET":
+        return render_template("noise/recover.html")
+
+    raw = request.form.get("ref_code", "").strip().upper().replace("-", "").replace(" ", "")
+    if not raw:
+        flash("Please enter a reference code.")
+        return render_template("noise/recover.html")
+
+    if USE_DB:
+        case, owner_uid = get_noise_case_by_ref_code(raw)
+        if not case:
+            flash("No diary found with that reference code. Please check and try again.")
+            return render_template("noise/recover.html")
+        resp = make_response(redirect(url_for("noise_case_detail", case_id=case["id"])))
+    else:
+        case = next((c for c in NOISE_CASE_STORE.values() if c.get("ref_code") == raw), None)
+        if not case:
+            flash("No diary found with that reference code. Please check and try again.")
+            return render_template("noise/recover.html")
+        owner_uid = case.get("owner_uid", str(uuid.uuid4()))
+        resp = make_response(redirect(url_for("noise_case_detail", case_id=case["id"])))
+
+    resp.set_cookie(
+        COOKIE_NAME,
+        owner_uid,
+        max_age=60 * 60 * 24 * 365 * 2,
+        httponly=True,
+        samesite="Lax",
+        secure=bool(os.environ.get("RENDER")),
+    )
+    return resp
 
 
 if __name__ == "__main__":

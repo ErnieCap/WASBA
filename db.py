@@ -50,6 +50,8 @@ def init_db() -> None:
             cur.execute("ALTER TABLE noise_diary_cases ADD COLUMN IF NOT EXISTS paid BOOLEAN NOT NULL DEFAULT FALSE;")
             cur.execute("CREATE INDEX IF NOT EXISTS idx_noise_cases_paid ON noise_diary_cases(paid);")
             cur.execute("ALTER TABLE noise_diary_cases ADD COLUMN IF NOT EXISTS last_active_at TIMESTAMPTZ;")
+            cur.execute("ALTER TABLE noise_diary_cases ADD COLUMN IF NOT EXISTS ref_code TEXT;")
+            cur.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_noise_cases_ref_code ON noise_diary_cases(ref_code) WHERE ref_code IS NOT NULL;")
        
 
             cur.execute(
@@ -124,8 +126,8 @@ def create_noise_case(case_id: str, owner_uid: str, case: dict, paid: bool = Fal
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                INSERT INTO noise_diary_cases (id, owner_uid, title, address_text, start_date, status, paid)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO noise_diary_cases (id, owner_uid, title, address_text, start_date, status, paid, ref_code)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 case_id,
                 owner_uid,
@@ -134,6 +136,7 @@ def create_noise_case(case_id: str, owner_uid: str, case: dict, paid: bool = Fal
                 case["start_date"],
                 case.get("status", "open"),
                 paid,
+                case.get("ref_code"),
             ))
         conn.commit()
 
@@ -144,7 +147,7 @@ def list_noise_cases(owner_uid: str):
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT id::text, title, address_text, start_date::text, status,
-                       submitted_at::text, created_at::text, paid
+                       submitted_at::text, created_at::text, paid, ref_code
                 FROM noise_diary_cases
                 WHERE owner_uid = %s
                 ORDER BY created_at DESC
@@ -162,6 +165,7 @@ def list_noise_cases(owner_uid: str):
             "submitted_at": r[5],
             "created_at": r[6],
             "paid": bool(r[7]),
+            "ref_code": r[8],
         }
         for r in rows
     ]
@@ -289,7 +293,7 @@ def get_noise_case_for_owner(case_id: str, owner_uid: str):
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT id::text, title, address_text, start_date::text, status,
-                       submitted_at::text, created_at::text, paid, last_active_at::text
+                       submitted_at::text, created_at::text, paid, last_active_at::text, ref_code
                 FROM noise_diary_cases
                 WHERE id = %s AND owner_uid = %s
             """, (case_id, owner_uid))
@@ -306,6 +310,7 @@ def get_noise_case_for_owner(case_id: str, owner_uid: str):
         "created_at": r[6],
         "paid": bool(r[7]),
         "last_active_at": r[8],
+        "ref_code": r[9],
     }
 
 def get_active_noise_case_for_owner(owner_uid: str):
@@ -387,14 +392,52 @@ def delete_noise_entry(case_id: str, entry_id: str):
             """, (case_id, entry_id))
         conn.commit()
 
-def delete_expired_noise_cases(RETENTION_DAYS: int):
+def delete_expired_noise_cases(retention_days: int):
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
                 DELETE FROM noise_diary_cases
-                WHERE created_at < NOW() - INTERVAL '%s days'
-            """ % RETENTION_DAYS)
+                WHERE paid = FALSE
+                AND COALESCE(last_active_at, created_at) < NOW() - INTERVAL '%s days'
+            """ % retention_days)
         conn.commit()
+
+
+def touch_noise_case_activity(case_id: str):
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE noise_diary_cases SET last_active_at = NOW() WHERE id = %s",
+                (case_id,)
+            )
+        conn.commit()
+
+
+def get_noise_case_by_ref_code(ref_code: str):
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT id::text, owner_uid, title, address_text, start_date::text, status,
+                       submitted_at::text, created_at::text, paid, last_active_at::text, ref_code
+                FROM noise_diary_cases
+                WHERE ref_code = %s
+            """, (ref_code,))
+            r = cur.fetchone()
+    if not r:
+        return None, None
+    case = {
+        "id": r[0],
+        "title": r[2],
+        "address_text": r[3],
+        "start_date": r[4],
+        "status": r[5] or "open",
+        "submitted_at": r[6],
+        "created_at": r[7],
+        "paid": bool(r[8]),
+        "last_active_at": r[9],
+        "ref_code": r[10],
+    }
+    return case, r[1]  # case, owner_uid
 
 def update_noise_case(case_id: str, updates: dict) -> bool:
     allowed = {"title", "address_text", "start_date", "status", "submitted_at"}
