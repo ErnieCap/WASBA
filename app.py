@@ -573,6 +573,99 @@ def noise_export_csv(case_id: str):
     )
 
 
+@app.route("/noise/<case_id>/export.pdf", methods=["GET"])
+def noise_export_pdf(case_id: str):
+    from fpdf import FPDF
+
+    case = _get_noise_case_or_404(case_id)
+    if USE_DB:
+        entries = list_noise_entries(case_id)
+    else:
+        entries = sorted(case.get("entries", []), key=lambda e: e.get("occurred_at", ""))
+
+    pdf = FPDF()
+    pdf.set_margins(15, 15, 15)
+    pdf.add_page()
+
+    # ---- Header ----
+    pdf.set_font("Helvetica", "B", 18)
+    pdf.cell(0, 10, "Noise Diary", new_x="LMARGIN", new_y="NEXT")
+
+    pdf.set_font("Helvetica", "", 11)
+    pdf.set_text_color(100, 100, 100)
+    pdf.cell(0, 7, f"Exported: {datetime.now(timezone.utc).strftime('%d %b %Y %H:%M UTC')}",
+             new_x="LMARGIN", new_y="NEXT")
+    pdf.set_text_color(0, 0, 0)
+    pdf.ln(4)
+
+    # ---- Case details ----
+    pdf.set_font("Helvetica", "B", 13)
+    pdf.cell(0, 8, "Case Details", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_draw_color(200, 200, 200)
+    pdf.line(15, pdf.get_y(), pdf.w - 15, pdf.get_y())
+    pdf.ln(3)
+
+    pdf.set_font("Helvetica", "", 10)
+    details = [
+        ("Title", case.get("title", "")),
+        ("Address", case.get("address_text", "") or "—"),
+        ("Start date", case.get("start_date", "")),
+        ("Status", case.get("status", "open").capitalize()),
+        ("Submitted", case.get("submitted_at", "") or "—"),
+    ]
+    for label, value in details:
+        pdf.set_font("Helvetica", "B", 10)
+        pdf.cell(38, 7, label + ":")
+        pdf.set_font("Helvetica", "", 10)
+        pdf.cell(0, 7, str(value), new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(6)
+
+    # ---- Entries ----
+    pdf.set_font("Helvetica", "B", 13)
+    pdf.cell(0, 8, f"Entries ({len(entries)})", new_x="LMARGIN", new_y="NEXT")
+    pdf.line(15, pdf.get_y(), pdf.w - 15, pdf.get_y())
+    pdf.ln(3)
+
+    if not entries:
+        pdf.set_font("Helvetica", "I", 10)
+        pdf.cell(0, 7, "No entries recorded.", new_x="LMARGIN", new_y="NEXT")
+    else:
+        for i, e in enumerate(entries, 1):
+            # Entry heading
+            pdf.set_fill_color(245, 245, 245)
+            pdf.set_font("Helvetica", "B", 10)
+            pdf.cell(0, 7, f"  {i}.  {e.get('occurred_at', '')}  —  {e.get('noise_type', '')}",
+                     fill=True, new_x="LMARGIN", new_y="NEXT")
+
+            pdf.set_font("Helvetica", "", 9)
+            meta_parts = []
+            if e.get("location"):
+                meta_parts.append(f"Location: {e['location']}")
+            if e.get("duration_minutes"):
+                meta_parts.append(f"Duration: {e['duration_minutes']} mins")
+            if e.get("volume_level"):
+                meta_parts.append(f"Volume: {e['volume_level']}/5")
+            if e.get("impact_level"):
+                meta_parts.append(f"Impact: {e['impact_level']}/5")
+            if meta_parts:
+                pdf.set_text_color(100, 100, 100)
+                pdf.cell(0, 6, "  " + "   |   ".join(meta_parts), new_x="LMARGIN", new_y="NEXT")
+                pdf.set_text_color(0, 0, 0)
+
+            if e.get("notes"):
+                pdf.set_font("Helvetica", "", 9)
+                pdf.set_x(15)
+                pdf.multi_cell(0, 5, "  " + e["notes"], new_x="LMARGIN", new_y="NEXT")
+
+            pdf.ln(3)
+
+    filename = f"noise-diary-{case_id}.pdf"
+    pdf_bytes = bytes(pdf.output())
+    return Response(
+        pdf_bytes,
+        mimetype="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 
 
 if __name__ == "__main__":
