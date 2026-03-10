@@ -49,7 +49,7 @@ def init_db() -> None:
             cur.execute("CREATE INDEX IF NOT EXISTS idx_noise_cases_owner_uid ON noise_diary_cases(owner_uid);")
             cur.execute("ALTER TABLE noise_diary_cases ADD COLUMN IF NOT EXISTS paid BOOLEAN NOT NULL DEFAULT FALSE;")
             cur.execute("CREATE INDEX IF NOT EXISTS idx_noise_cases_paid ON noise_diary_cases(paid);")
-            cur.execute("ALTER TABLE noise_diary_cases ADD COLUMN IF NOT EXISTS paid BOOLEAN NOT NULL DEFAULT FALSE;")
+            cur.execute("ALTER TABLE noise_diary_cases ADD COLUMN IF NOT EXISTS last_active_at TIMESTAMPTZ;")
        
 
             cur.execute(

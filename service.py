@@ -10,10 +10,7 @@ def call_llm_stub(system_prompt: str, user_prompt: str) -> dict:
         "summary": "Premium summary (stub). Replace with real OpenAI output when ready.",
         "risk_factors": ["Example risk factor"],
         "initial_risk_level": "MEDIUM",
-        "actions": [
-            "Example action 1",
-            "Example action 2",
-        ],
+        "safeguarding_concerns": ["Example safeguarding concern"],
     }
 
 
@@ -22,7 +19,21 @@ def call_llm_live(system_prompt: str, user_prompt: str) -> dict:
     Wire your OpenAI call here later.
     Keep all OpenAI logic in this one function.
     """
-    raise NotImplementedError("LLM_MODE=live but call_llm_live() is not implemented yet")
+    import openai
+    client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",  # or gpt-4
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        temperature=0.1,
+        max_tokens=1000,
+    )
+    content = response.choices[0].message.content.strip()
+    # Assume the model returns valid JSON
+    import json
+    return json.loads(content)
 
 
 def call_llm(system_prompt: str, user_prompt: str) -> dict:

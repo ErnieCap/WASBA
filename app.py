@@ -3,7 +3,7 @@ import uuid
 
 print("RUNNING APP.PY FROM:", os.path.abspath(__file__))
 
-from flask import Flask, render_template, request, redirect, url_for, abort, Response, make_response
+from flask import Flask, render_template, request, redirect, url_for, abort, Response, make_response, flash
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from service import assess_case_free, assess_case_premium
@@ -68,7 +68,7 @@ def attach_owner_cookie(resp, owner_uid: str):
             max_age=60 * 60 * 24 * 365 * 2,
             httponly=True,
             samesite="Lax",
-            secure=False,  # change to True in production HTTPS
+            secure=bool(os.environ.get("RENDER")),
         )
     return resp
 
@@ -170,10 +170,6 @@ def noise_pay(case_id):
     )
 
     return redirect(session.url, code=303)
-        
-    
-
-    return redirect(session.url, code=303)
 
 
 @app.route("/premium/<case_id>", methods=["GET"])
@@ -246,10 +242,6 @@ def noise_index():
 
 @app.route("/noise/new", methods=["GET", "POST"])
 def noise_new():
-    existing_case_id = None
-
-    existing_case_id =None
-    existing_count = 0
     """Create a new noise diary case."""
     if request.method == "GET":
         return render_template("noise/case_new.html")
@@ -262,7 +254,7 @@ def noise_new():
     if USE_DB:
         existing_case_id = get_active_noise_case_for_owner(owner_uid)
     if existing_case_id:
-        Flask("You already have an active diary.")
+        flash("You already have an active diary.")
         return redirect(url_for("noise_case_detail", case_id=existing_case_id))
 
     title = request.form.get("title", "").strip()
@@ -288,17 +280,15 @@ def noise_new():
     existing_count = 0
 
     if USE_DB:
-        owner_uid = get_owner_uid()
         existing_count = count_noise_cases_for_owner(owner_uid)
 
     if existing_count >= FREE_MAX_DIARIES:
         abort(403, "Free tier allows 1 diary per device.")
 
+    if USE_DB:
         create_noise_case(case_id, owner_uid, case)
-
         resp = make_response(redirect(url_for("noise_case_detail", case_id=case_id)))
         return attach_owner_cookie(resp, owner_uid)
-
     else:
         case["entries"] = []
         NOISE_CASE_STORE[case_id] = case
@@ -318,6 +308,16 @@ def _get_noise_case_or_404(case_id: str):
     if not row:
         abort(404, "Noise diary case not found.")
     return row
+
+
+def _get_noise_entry_or_404(case_id: str, entry_id: str):
+    if USE_DB:
+        entry = get_noise_entry(case_id, entry_id)
+    else:
+        entry = NOISE_ENTRY_STORE.get(entry_id)
+    if not entry:
+        abort(404, "Noise diary entry not found.")
+    return entry
 
 
 
