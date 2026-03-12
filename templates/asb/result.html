@@ -53,36 +53,25 @@
 
 
 
-      {% set final = (result.get('final_risk_level') or result.get('initial_risk_level') or 'UNKNOWN') | upper %}
-      {% if final == "LOW" %}
-        <span class="badge open">LOW</span>
-      {% elif final == "MEDIUM" %}
-        <span class="badge">MEDIUM</span>
-      {% elif final == "HIGH" %}
-        <span class="badge locked">HIGH</span>
-      {% else %}
-        <span class="badge">{{ result.get('final_risk_level') or result.get('initial_risk_level') or 'UNKNOWN' }}</span>
-      {% endif %}
-    </div>
+  {% if not paid %}
+  <div class="card" style="margin-top:14px;">
+    <p style="margin:0; color:var(--muted);">
+      Want a full case summary you can copy/paste into an email or report?
+      Unlock the full report for <strong>£3</strong>.
+    </p>
 
-    {% if not paid %}
+    {% if payment_pending %}
       <p style="margin:10px 0 0; color:var(--muted);">
-        Want a full case summary you can copy/paste into an email or report?
-        Unlock the full report for <strong>£3</strong>.
+        <strong>Payment not confirmed yet.</strong> If you’ve just paid, wait a few seconds and refresh this page.
       </p>
-
-      {% if payment_pending %}
-        <p style="margin:10px 0 0; color:var(--muted);">
-          <strong>Payment not confirmed yet.</strong> If you’ve just paid, wait a few seconds and refresh this page.
-        </p>
-      {% endif %}
-
-      <form method="post" action="/pay/{{ case_id }}" style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-        <button class="btn primary" type="submit">Unlock full report (£3)</button>
-        <a class="btn" href="/premium/{{ case_id }}">Stay on free result</a>
-      </form>
     {% endif %}
+
+    <form method="post" action="/pay/{{ case_id }}" style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="btn primary" type="submit">Unlock full report (£3)</button>
+      <a class="btn" href="/premium/{{ case_id }}">Stay on free result</a>
+    </form>
   </div>
+  {% endif %}
 
   <div class="card" style="margin-top:14px;">
   <div style="max-width:720px; margin:0 auto;">
