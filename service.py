@@ -7,7 +7,7 @@ from recommendations import build_what_to_do_now
 
 def call_llm_stub(system_prompt: str, user_prompt: str) -> dict:
     return {
-        "summary": "Premium summary (stub). Replace with real OpenAI output when ready.",
+        "summary": "Premium summary (stub). Set LLM_MODE=live and provide ANTHROPIC_API_KEY to enable.",
         "risk_factors": ["Example risk factor"],
         "initial_risk_level": "MEDIUM",
         "safeguarding_concerns": ["Example safeguarding concern"],
@@ -15,24 +15,19 @@ def call_llm_stub(system_prompt: str, user_prompt: str) -> dict:
 
 
 def call_llm_live(system_prompt: str, user_prompt: str) -> dict:
-    """
-    Wire your OpenAI call here later.
-    Keep all OpenAI logic in this one function.
-    """
-    import openai
-    client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",  # or gpt-4
+    import json
+    import anthropic
+    client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+    message = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=1000,
+        temperature=0.1,
+        system=system_prompt,
         messages=[
-            {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
-        temperature=0.1,
-        max_tokens=1000,
     )
-    content = response.choices[0].message.content.strip()
-    # Assume the model returns valid JSON
-    import json
+    content = message.content[0].text.strip()
     return json.loads(content)
 
 
