@@ -28,6 +28,12 @@ def call_llm_live(system_prompt: str, user_prompt: str) -> dict:
         ],
     )
     content = message.content[0].text.strip()
+    # Strip markdown code fences if present
+    if content.startswith("```"):
+        content = content.split("```")[1]
+        if content.startswith("json"):
+            content = content[4:]
+        content = content.strip()
     return json.loads(content)
 
 
