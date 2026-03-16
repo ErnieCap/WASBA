@@ -45,7 +45,10 @@ def call_llm(system_prompt: str, user_prompt: str) -> dict:
 
 
 def _attach_recommendations(case: dict, result: dict) -> dict:
-    result["what_to_do_now"] = build_what_to_do_now(case, result)
+    from recommendations import categorise_case, extract_flags
+    category = categorise_case(case)
+    flags = extract_flags(case)
+    result["what_to_do_now"] = build_what_to_do_now(result.get("initial_risk_level", "MEDIUM"), category, flags)
     return result
 
 
