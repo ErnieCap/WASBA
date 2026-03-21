@@ -74,6 +74,6 @@ def handle_stripe_webhook(payload: bytes, sig_header: str) -> bool:
             owner_uid = metadata.get("owner_uid")
             if not owner_uid:
                 return False
-            return mark_noise_case_paid(case_id, owner_uid)
+            return mark_noise_case_paid(case_id)
 
     return False

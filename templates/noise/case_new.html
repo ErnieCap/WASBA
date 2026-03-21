@@ -1,24 +1,40 @@
 {% extends "base.html" %}
 {% block content %}
-  <h1>Create Noise Diary</h1>
+<div class="container">
 
-  <form method="post">
-    <div>
-      <label>Title *</label><br>
-      <input name="title" type="text" style="width: 420px" required>
-    </div>
+  <div class="hero">
+    <h1>Create a noise diary</h1>
+    <p>Give your diary a short title so you can identify it later. You don't need to include names or exact addresses.</p>
+  </div>
 
-    <div>
-      <label>Address (optional)</label><br>
-      <input name="address_text" type="text" style="width: 420px">
-    </div>
+  <div class="card" style="margin-top:18px; max-width:560px;">
+    <form method="post">
 
-    <div>
-      <label>Start date *</label><br>
-      <input name="start_date" type="date" required>
-    </div>
+      <div class="form-row">
+        <label for="title">Title *</label>
+        <div class="form-hint">A brief description of the issue — e.g. "Loud music from flat above"</div>
+        <input id="title" name="title" type="text" required autofocus>
+      </div>
 
-    <button type="submit">Create</button>
-    <a href="{{ url_for('noise_index') }}">Cancel</a>
-  </form>
+      <div class="form-row">
+        <label for="address_text">General area (optional)</label>
+        <div class="form-hint">Street or area only — avoid full addresses.</div>
+        <input id="address_text" name="address_text" type="text">
+      </div>
+
+      <div class="form-row">
+        <label for="start_date">Start date *</label>
+        <div class="form-hint">When did this issue first occur?</div>
+        <input id="start_date" name="start_date" type="date" required style="max-width:200px;">
+      </div>
+
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <button class="btn primary" type="submit">Create diary</button>
+        <a class="btn" href="{{ url_for('noise_index') }}">Cancel</a>
+      </div>
+
+    </form>
+  </div>
+
+</div>
 {% endblock %}

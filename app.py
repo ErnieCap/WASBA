@@ -19,7 +19,7 @@ from db import (
     create_case, get_case,
     create_noise_case, list_noise_cases, get_noise_case,
     create_noise_entry, list_noise_entries, get_noise_entry,
-    update_noise_entry, delete_noise_entry, get_noise_case_for_owner,
+    update_noise_entry, delete_noise_entry, delete_noise_case, get_noise_case_for_owner,
     delete_expired_noise_cases, get_active_noise_case_for_owner, update_noise_case,
     touch_noise_case_activity, get_noise_case_by_ref_code,
 )
@@ -535,6 +535,21 @@ def noise_case_submit(case_id: str):
 
     return redirect(url_for("noise_case_detail", case_id=case_id))
 
+
+@app.route("/noise/<case_id>/delete", methods=["POST"])
+def noise_case_delete(case_id: str):
+    owner_uid = get_owner_uid()
+    _get_noise_case_or_404(case_id)  # validates ownership
+
+    if USE_DB:
+        delete_noise_case(case_id, owner_uid)
+    else:
+        NOISE_CASE_STORE.pop(case_id, None)
+        to_remove = [k for k, v in NOISE_ENTRY_STORE.items() if v.get("case_id") == case_id]
+        for k in to_remove:
+            NOISE_ENTRY_STORE.pop(k, None)
+
+    return redirect(url_for("noise_index"))
 
 
 @app.route("/noise/<case_id>/export.csv", methods=["GET"])

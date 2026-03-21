@@ -4,64 +4,73 @@
 <div class="container">
 
   <div class="hero">
-    <h1 style="margin:0 0 8px;">WASBA</h1>
-    <p style="margin:0; font-size:18px; color:var(--muted);">
-      Practical tools for anti-social behaviour and noise cases — structured, evidence-focused, and easy to use.
+    <h1>Struggling with anti-social behaviour?</h1>
+    <p>
+      Get the same structured, evidence-based approach used by housing professionals —
+      tools built from 19 years of frontline ASB practice to help you document, assess,
+      and act with confidence.
     </p>
-
-    <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
-      <a class="btn primary" href="{{ url_for('asb') }}">Open ASB Assessment</a>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn primary" href="{{ url_for('asb') }}">Start ASB Assessment</a>
       <a class="btn" href="{{ url_for('noise_index') }}">Open Noise Diary</a>
-    </div>
-
-    <div style="margin-top:12px; color:var(--muted);">
-      Built around real housing and ASB practice. No legal waffle.
     </div>
   </div>
 
-  
-
-  <div class="grid3" style="margin-top:14px;">
+  <div class="grid3" style="margin-top:18px;">
     <div class="card">
-      <h3 style="margin:0 0 8px;">ASB Assessment</h3>
-      <p style="margin:0; color:var(--muted);">
-        Describe what’s happening and get a structured assessment: risk level, key factors, and practical next steps.
+      <h3>ASB Assessment</h3>
+      <p>
+        Describe your situation and receive a structured risk assessment — the same
+        framework housing teams use to triage and prioritise cases.
       </p>
-      <div style="margin-top:12px;">
-        <a class="btn primary" href="{{ url_for('asb') }}">Get help now</a>
+      <div style="margin-top:14px;">
+        <a class="btn primary" href="{{ url_for('asb') }}">Get your assessment</a>
       </div>
     </div>
 
     <div class="card">
-      <h3 style="margin:0 0 8px;">Noise Diary</h3>
-      <p style="margin:0; color:var(--muted);">
-        Log incidents as they occur. A clean timeline you can lock and export.
+      <h3>Noise Diary</h3>
+      <p>
+        Log incidents as they happen — date, time, type, and impact. Build a
+        consistent, time-stamped record you can export and share with your landlord
+        or council.
       </p>
-      <div style="margin-top:12px;">
+      <div style="margin-top:14px;">
         <a class="btn" href="{{ url_for('noise_index') }}">Start a diary</a>
       </div>
     </div>
 
     <div class="card">
-      <h3 style="margin:0 0 8px;">Letters & Reports</h3>
-      <p style="margin:0; color:var(--muted);">
-        Firm-but-fair wording and export-ready summaries (coming soon).
+      <h3>Letters &amp; Reports</h3>
+      <p>
+        Professionally worded complaint letters and export-ready case summaries.
       </p>
-      <div style="margin-top:12px;">
+      <div style="margin-top:14px;">
         <span class="badge">Coming soon</span>
       </div>
     </div>
   </div>
 
   <div class="card" style="margin-top:14px;">
-    <h3 style="margin:0 0 8px;">Privacy</h3>
-    <p style="margin:0; color:var(--muted);">
-      Don’t enter names, exact addresses, or anything you wouldn’t want shared. Keep it factual and time-based.
-    </p>
-  </div>
-
-  <div class="footer" style="margin-top:14px;">
-    Not legal advice. If you are in immediate danger call 999. For ongoing issues, contact your landlord, council, or support services.
+    <div style="display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap;">
+      <div style="flex:1; min-width:220px;">
+        <div style="font-weight:700; margin-bottom:6px;">Why WASBA?</div>
+        <p>
+          WASBA was created by a housing professional who has spent 19 years working
+          directly on ASB cases, leading housing teams, and developing approaches now
+          adopted across the sector. The tools here reflect what actually works in
+          practice — not what looks good on paper.
+        </p>
+      </div>
+      <div style="flex:1; min-width:220px;">
+        <div style="font-weight:700; margin-bottom:6px;">Your privacy</div>
+        <p>
+          WASBA does not ask for your name or address. There are no accounts.
+          Your diary is tied to your device only. Keep notes factual — focus on
+          what happened, when, and how it affected you.
+        </p>
+      </div>
+    </div>
   </div>
 
 </div>

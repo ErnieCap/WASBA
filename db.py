@@ -383,6 +383,17 @@ def update_noise_entry(case_id: str, entry_id: str, updates: dict):
             ))
         conn.commit()
 
+def delete_noise_case(case_id: str, owner_uid: str) -> bool:
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                DELETE FROM noise_diary_cases
+                WHERE id = %s AND owner_uid = %s
+            """, (case_id, owner_uid))
+            deleted = cur.rowcount
+        conn.commit()
+    return deleted > 0
+
 def delete_noise_entry(case_id: str, entry_id: str):
     with get_conn() as conn:
         with conn.cursor() as cur:

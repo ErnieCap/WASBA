@@ -3,43 +3,43 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>WASBA</title>
+  <title>WASBA — Anti-Social Behaviour Tools</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
-
 </head>
 <body>
-  <div style="padding:10px 0;">
-  <div class="container">
-    <div class="card" style="padding:12px 14px;">
-      <div style="display:flex; gap:10px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap;">
-        <div>
-          <div style="font-weight:800;">Alpha release</div>
-          <div style="color:var(--muted); margin-top:4px;">
-            WASBA is in active development. Please avoid names and exact addresses. Features may change.
-          </div>
-        </div>
-        <span class="badge">Feedback welcome</span>
+
+  <div class="trustbar">
+    Built by a Chartered Institute of Housing professional &nbsp;·&nbsp;
+    19 years of frontline ASB and housing experience &nbsp;·&nbsp;
+    Methods pioneered here are in use across the housing sector
+  </div>
+
+  <div class="container" style="padding-bottom:0;">
+    <div class="nav">
+      <div class="brand">
+        <a href="{{ url_for('landing') }}">WASBA</a>
+      </div>
+      <div class="navlinks">
+        <a href="{{ url_for('landing') }}">Home</a>
+        <a href="{{ url_for('noise_index') }}">Noise Diary</a>
+        <a href="{{ url_for('asb') }}">ASB Assessment</a>
       </div>
     </div>
   </div>
-</div>
-
-  <div class="container">
-  <div class="nav">
-    <div class="brand">
-      <a href="{{ url_for('landing') }}">WASBA</a>
-    </div>
-    <div class="navlinks">
-      <a href="{{ url_for('landing') }}">Home</a>
-      <a href="{{ url_for('noise_index') }}">Noise Diary</a>
-      <a href="{{ url_for('asb') }}">ASB Tool</a>
-    </div>
-  </div>
-</div>
-
 
   <main>
     {% block content %}{% endblock %}
   </main>
+
+  <div class="container">
+    <div class="footer">
+      <strong>Not legal advice.</strong> If you are in immediate danger call 999.
+      For ongoing issues, contact your landlord, council, or local support services.
+      &nbsp;·&nbsp;
+      WASBA does not store your name, address, or any personal identifiers.
+      Keep case notes factual and time-based.
+    </div>
+  </div>
+
 </body>
 </html>

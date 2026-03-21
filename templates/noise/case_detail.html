@@ -103,7 +103,23 @@
         <a class="btn" href="{{ url_for('noise_export_csv', case_id=case.id) }}">Download CSV</a>
       </div>
 
+      {% if case.status != "submitted" %}
+        <form method="post" action="{{ url_for('noise_submit', case_id=case.id) }}" style="margin-top:14px;">
+          <button class="btn" type="submit" onclick="return confirm('Submit this diary? It will be locked and no further entries can be added.')">Submit diary</button>
+        </form>
+      {% else %}
+        <div style="margin-top:14px;">
+          <span class="badge locked">Diary submitted — entries are locked.</span>
+        </div>
+      {% endif %}
+
     {% endif %}
+  </div>
+
+  <div style="margin-top:14px; border-top:1px solid var(--line); padding-top:14px;">
+    <form method="post" action="{{ url_for('noise_case_delete', case_id=case.id) }}">
+      <button class="btn" style="color:#c0392b; border-color:#c0392b;" type="submit" onclick="return confirm('Permanently delete this diary and all its entries? This cannot be undone.')">Delete diary</button>
+    </form>
   </div>
 {% endblock %}
 
