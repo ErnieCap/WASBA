@@ -1,6 +1,9 @@
+import logging
 import os
 import secrets
 import uuid
+
+logging.basicConfig(level=logging.INFO)
 
 print("RUNNING APP.PY FROM:", os.path.abspath(__file__))
 
@@ -145,7 +148,7 @@ def pay(case_id: str):
     if not USE_DB:
         abort(400, "Payments disabled in local dev. Deploy to Render (with DATABASE_URL) to test Stripe.")
 
-    success_url = url_for("premium", case_id=case_id, _external=True)
+    success_url = url_for("premium", case_id=case_id, _external=True) + "?session_id={CHECKOUT_SESSION_ID}"
     cancel_url = url_for("premium", case_id=case_id, _external=True)
 
     session = create_checkout_session(case_id, success_url, cancel_url, metadata={"product": "asb_unlock"},)
@@ -186,6 +189,14 @@ def premium(case_id: str):
     row = _get_case_record(case_id)
     if not row:
         abort(404, "Case not found (maybe expired).")
+
+    if not row["paid"]:
+        # Stripe redirects back before the webhook fires — verify directly if
+        # we have a session_id from the success URL.
+        session_id = request.args.get("session_id")
+        if session_id and USE_DB:
+            from payments import verify_and_mark_paid
+            row["paid"] = verify_and_mark_paid(case_id, session_id)
 
     if not row["paid"]:
         return render_template("asb/result.html", result=row["free_result"], case_id=case_id, paid=False)
