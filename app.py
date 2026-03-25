@@ -89,6 +89,27 @@ def attach_owner_cookie(resp, owner_uid: str):
 def landing():
     return render_template("landing.html")
 
+@app.route("/letters", methods=["GET"])
+def letters():
+    return render_template("letters.html")
+
+
+@app.route("/letters/generate", methods=["POST"])
+def letters_generate():
+    import anthropic
+    data = request.get_json()
+    prompt = (data or {}).get("prompt", "").strip()
+    if not prompt:
+        return {"error": "No prompt provided"}, 400
+    client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+    message = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=1500,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    return {"text": message.content[0].text}
+
+
 @app.route("/asb", methods=["GET"])
 def asb():
     return render_template("asb/form.html")

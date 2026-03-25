@@ -1,0 +1,756 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+  /* ── Page-specific styles (light theme) ────────────────── */
+  .letters-wrap { max-width: 900px; margin: 0 auto; padding: 0 24px 48px; }
+
+  /* Hero */
+  .letters-hero {
+    margin-top: 20px;
+    padding: 40px 36px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    margin-bottom: 24px;
+  }
+  .letters-hero .tool-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .letters-hero h1 { margin: 0 0 10px; font-size: 32px; line-height: 1.15; }
+  .letters-hero p  { margin: 0; color: var(--muted); font-size: 16px; max-width: 58ch; }
+
+  /* Steps */
+  .steps {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .step { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+  .step.active { color: var(--text); }
+  .step.done { color: var(--accent); }
+  .step-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    background: var(--panel);
+  }
+  .step.active .step-num { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .step.done .step-num { background: #15803d; border-color: #15803d; color: #fff; }
+  .step-divider { flex: 1; height: 1px; background: var(--line); max-width: 40px; }
+
+  /* Doc type grid */
+  .doc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .doc-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s;
+    position: relative;
+  }
+  .doc-card:hover { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(29,78,216,.08); }
+  .doc-card.selected { border-color: var(--accent); background: #eff6ff; }
+  .doc-card.selected::after {
+    content: "✓";
+    position: absolute; top: 10px; right: 10px;
+    background: var(--accent); color: #fff;
+    width: 20px; height: 20px; border-radius: 50%;
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .doc-icon { font-size: 1.4rem; margin-bottom: 6px; }
+  .doc-card h3 { font-size: 13px; font-weight: 700; margin: 0 0 4px; color: var(--text); }
+  .doc-card p  { font-size: 12px; color: var(--muted); line-height: 1.4; margin: 0; }
+  .doc-tag {
+    display: inline-block;
+    font-size: 11px; font-weight: 500;
+    padding: 2px 8px; border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--bg); color: var(--muted);
+    margin-top: 8px;
+  }
+
+  /* Form panel */
+  .form-panel { max-width: 680px; }
+  .form-section {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  }
+  .form-section-title {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 14px;
+  }
+  .form-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .form-2col.last { margin-bottom: 0; }
+  .form-1col { margin-bottom: 14px; }
+  .form-1col.last { margin-bottom: 0; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+
+  .notice-box {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #1e40af;
+    margin-bottom: 16px;
+  }
+
+  /* Output */
+  .output-box {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 14px;
+    white-space: pre-wrap;
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--text);
+    max-height: 520px;
+    overflow-y: auto;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    font-family: 'Georgia', serif;
+  }
+  .output-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px;
+  }
+  .output-label {
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted);
+  }
+
+  .spinner {
+    display: inline-block; width: 15px; height: 15px;
+    border: 2px solid rgba(255,255,255,.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-box {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #b91c1c;
+    margin-bottom: 12px;
+  }
+
+  @media (max-width: 600px) {
+    .form-2col { grid-template-columns: 1fr; }
+    .letters-hero h1 { font-size: 24px; }
+    .doc-grid { grid-template-columns: 1fr 1fr; }
+    .letters-hero { padding: 24px 20px; }
+  }
+</style>
+
+<div class="container letters-wrap">
+
+  <!-- Hero -->
+  <div class="letters-hero">
+    <div class="tool-label">Tool 3 of 3</div>
+    <h1>Letters &amp; Documents</h1>
+    <p>Generate professionally worded letters and formal documents — the same structured language used by housing professionals, tailored to your situation.</p>
+  </div>
+
+  <!-- Steps -->
+  <div class="steps">
+    <div class="step done" id="step1-indicator">
+      <div class="step-num">1</div>
+      <span>Choose document</span>
+    </div>
+    <div class="step-divider"></div>
+    <div class="step" id="step2-indicator">
+      <div class="step-num">2</div>
+      <span>Your details</span>
+    </div>
+    <div class="step-divider"></div>
+    <div class="step" id="step3-indicator">
+      <div class="step-num">3</div>
+      <span>Download</span>
+    </div>
+  </div>
+
+  <!-- STEP 1: Document type -->
+  <div id="step1">
+    <div class="doc-grid">
+      <div class="doc-card" onclick="selectDoc('landlord')" id="card-landlord">
+        <div class="doc-icon">🏠</div>
+        <h3>Complaint to Landlord / Housing Association</h3>
+        <p>Formal written complaint requesting action on ASB caused by a neighbour.</p>
+        <span class="doc-tag">Letter</span>
+      </div>
+      <div class="doc-card" onclick="selectDoc('council')" id="card-council">
+        <div class="doc-icon">🏛️</div>
+        <h3>Complaint to Local Council</h3>
+        <p>Written complaint to the council's ASB or environmental health team.</p>
+        <span class="doc-tag">Letter</span>
+      </div>
+      <div class="doc-card" onclick="selectDoc('trigger')" id="card-trigger">
+        <div class="doc-icon">📋</div>
+        <h3>Community Trigger Request</h3>
+        <p>Formal request for an ASB case review under the Crime &amp; Policing Act 2014.</p>
+        <span class="doc-tag">Statutory Request</span>
+      </div>
+      <div class="doc-card" onclick="selectDoc('abc')" id="card-abc">
+        <div class="doc-icon">📝</div>
+        <h3>Acceptable Behaviour Contract</h3>
+        <p>Voluntary agreement between a tenant/resident and agency setting out expected conduct.</p>
+        <span class="doc-tag">Contract</span>
+      </div>
+      <div class="doc-card" onclick="selectDoc('neighbourhood')" id="card-neighbourhood">
+        <div class="doc-icon">🤝</div>
+        <h3>Neighbourhood Agreement</h3>
+        <p>Mutual agreement between neighbours setting shared expectations and commitments.</p>
+        <span class="doc-tag">Agreement</span>
+      </div>
+    </div>
+    <button class="btn primary" id="step1-next" onclick="goToStep2()" disabled style="min-width:180px;">
+      Continue →
+    </button>
+  </div>
+
+  <!-- STEP 2: Details form -->
+  <div id="step2" style="display:none;">
+    <div class="form-panel">
+
+      <div class="notice-box">
+        ℹ️ WASBA does not store any of this information. It is used only to generate your document and is never saved.
+      </div>
+
+      <!-- YOUR DETAILS -->
+      <div class="form-section">
+        <div class="form-section-title">Your details</div>
+        <div class="form-2col">
+          <div class="form-group">
+            <label>Your name</label>
+            <input type="text" id="your-name" placeholder="Full name" />
+          </div>
+          <div class="form-group">
+            <label>Your address</label>
+            <input type="text" id="your-address" placeholder="House number, street, postcode" />
+          </div>
+        </div>
+        <div class="form-2col last">
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="letter-date" />
+          </div>
+          <div class="form-group">
+            <label>Reference / case number <span style="color:var(--muted);font-weight:400">(if known)</span></label>
+            <input type="text" id="case-ref" placeholder="Optional" />
+          </div>
+        </div>
+      </div>
+
+      <!-- RECIPIENT -->
+      <div class="form-section" id="recipient-section">
+        <div class="form-section-title">Recipient details</div>
+        <div class="form-2col last">
+          <div class="form-group">
+            <label id="recipient-name-label">Name / organisation</label>
+            <input type="text" id="recipient-name" placeholder="e.g. Housing Officer, ABC Housing Association" />
+          </div>
+          <div class="form-group">
+            <label>Address / department</label>
+            <input type="text" id="recipient-address" placeholder="e.g. ASB Team, 10 Council Road" />
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBJECT PARTY (ABC / Neighbourhood) -->
+      <div class="form-section" id="subject-section" style="display:none;">
+        <div class="form-section-title" id="subject-title">About the person(s) involved</div>
+        <div class="form-2col last">
+          <div class="form-group">
+            <label>Name(s)</label>
+            <input type="text" id="subject-name" placeholder="Full name(s) of the individual(s)" />
+          </div>
+          <div class="form-group">
+            <label>Address</label>
+            <input type="text" id="subject-address" placeholder="Their address" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ASB DESCRIPTION -->
+      <div class="form-section">
+        <div class="form-section-title">The behaviour / situation</div>
+        <div class="form-1col">
+          <div class="form-group">
+            <label>Describe the anti-social behaviour</label>
+            <span class="form-hint">Include what has happened, when it started, how often, and how it has affected you</span>
+            <textarea id="asb-description" rows="5" placeholder="e.g. Since March 2024, my neighbour at [address] has been playing extremely loud music late at night (typically between 11pm and 3am), several nights per week..."></textarea>
+          </div>
+        </div>
+        <div class="form-2col last">
+          <div class="form-group">
+            <label>Have you reported this before?</label>
+            <select id="previous-reports">
+              <option value="no">No — this is my first report</option>
+              <option value="verbal">Yes — verbally / informally</option>
+              <option value="written">Yes — in writing previously</option>
+              <option value="multiple">Yes — multiple times</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Incidents documented?</label>
+            <select id="has-diary">
+              <option value="no">No diary kept</option>
+              <option value="yes">Yes — I have a diary / log</option>
+              <option value="wasba">Yes — using WASBA Noise Diary</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- OUTCOME -->
+      <div class="form-section" id="outcome-section">
+        <div class="form-section-title">What outcome are you requesting?</div>
+        <div class="form-1col last">
+          <div class="form-group">
+            <label>Requested action</label>
+            <span class="form-hint">What specifically are you asking the recipient to do?</span>
+            <textarea id="requested-action" rows="3" placeholder="e.g. I am requesting that you investigate this matter urgently, contact the individual responsible, and take appropriate enforcement action."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- COMMUNITY TRIGGER -->
+      <div class="form-section" id="trigger-section" style="display:none;">
+        <div class="form-section-title">Community Trigger details</div>
+        <div class="form-2col">
+          <div class="form-group">
+            <label>Number of reports made</label>
+            <input type="text" id="trigger-reports" placeholder="e.g. 5 reports in the last 6 months" />
+          </div>
+          <div class="form-group">
+            <label>Agencies already contacted</label>
+            <input type="text" id="trigger-agencies" placeholder="e.g. Housing Association, Police, Council" />
+          </div>
+        </div>
+        <div class="form-1col last">
+          <div class="form-group">
+            <label>Date range of incidents</label>
+            <input type="text" id="trigger-dates" placeholder="e.g. January 2024 to present" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ABC -->
+      <div class="form-section" id="abc-section" style="display:none;">
+        <div class="form-section-title">ABC — specific behaviours</div>
+        <div class="form-1col">
+          <div class="form-group">
+            <label>List the specific behaviours to prohibit</label>
+            <span class="form-hint">Each behaviour will become a clause in the contract. One per line recommended.</span>
+            <textarea id="abc-prohibitions" rows="5" placeholder="e.g. Playing amplified music between 11pm and 7am&#10;Using threatening or abusive language towards neighbours"></textarea>
+          </div>
+        </div>
+        <div class="form-1col last">
+          <div class="form-group">
+            <label>Duration of the contract</label>
+            <input type="text" id="abc-duration" placeholder="e.g. 12 months from the date of signing" />
+          </div>
+        </div>
+      </div>
+
+      <!-- NEIGHBOURHOOD AGREEMENT -->
+      <div class="form-section" id="neighbourhood-section" style="display:none;">
+        <div class="form-section-title">Neighbourhood Agreement — parties &amp; commitments</div>
+        <div class="form-1col">
+          <div class="form-group">
+            <label>Second party name &amp; address</label>
+            <input type="text" id="neighbour2" placeholder="Name and address of other party" />
+          </div>
+        </div>
+        <div class="form-1col last">
+          <div class="form-group">
+            <label>Shared commitments / rules</label>
+            <span class="form-hint">What both parties agree to. One commitment per line.</span>
+            <textarea id="neighbourhood-commitments" rows="5" placeholder="e.g. Keep noise levels reasonable between 10pm and 8am&#10;Dispose of waste in designated areas"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- TONE -->
+      <div class="form-section">
+        <div class="form-section-title">Document tone</div>
+        <div class="form-group" style="max-width:320px;">
+          <label>Tone</label>
+          <select id="tone">
+            <option value="formal">Formal — professional and assertive</option>
+            <option value="firm">Firm — direct and time-pressured</option>
+            <option value="measured">Measured — firm but diplomatic</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="form-error" class="error-box" style="display:none;"></div>
+
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button class="btn" onclick="goToStep1()">← Back</button>
+        <button class="btn primary" id="generate-btn" onclick="generateDocument()" style="min-width:200px;">
+          <span id="btn-text">Generate document</span>
+          <span id="btn-spinner" class="spinner" style="display:none;"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: Output -->
+  <div id="step3" style="display:none;">
+    <div class="form-panel">
+      <div class="output-header">
+        <span class="output-label">Generated document</span>
+        <button class="btn" onclick="goToStep2()">← Edit details</button>
+      </div>
+      <div class="output-box" id="document-output"></div>
+
+      <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+        <button class="btn primary" onclick="downloadDocx()" id="download-btn">
+          ⬇ Download as Word (.docx)
+        </button>
+        <button class="btn" onclick="startOver()">Start new document</button>
+      </div>
+
+      <p style="font-size:13px; color:var(--muted); margin-top:14px;">
+        <strong style="color:var(--text)">Not legal advice.</strong>
+        Review the document before sending. You may edit the downloaded file. If you are in immediate danger, call 999.
+      </p>
+    </div>
+  </div>
+
+</div><!-- /.letters-wrap -->
+
+<!-- docx.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/docx@9.5.3/build/index.js"></script>
+
+<script>
+  let selectedDoc = null;
+  let generatedText = '';
+
+  const docMeta = {
+    landlord: {
+      label: 'Complaint to Landlord / Housing Association',
+      recipientLabel: 'Housing officer / organisation name',
+      showSubject: false, showTrigger: false, showAbc: false, showNeighbourhood: false
+    },
+    council: {
+      label: 'Complaint to Local Council',
+      recipientLabel: 'Council / department name',
+      showSubject: false, showTrigger: false, showAbc: false, showNeighbourhood: false
+    },
+    trigger: {
+      label: 'Community Trigger Request',
+      recipientLabel: 'Responsible authority (council / police / housing)',
+      showSubject: false, showTrigger: true, showAbc: false, showNeighbourhood: false
+    },
+    abc: {
+      label: 'Acceptable Behaviour Contract',
+      recipientLabel: 'Issuing organisation / housing officer',
+      showSubject: true, showTrigger: false, showAbc: true, showNeighbourhood: false,
+      subjectTitle: 'Person entering the contract'
+    },
+    neighbourhood: {
+      label: 'Neighbourhood Agreement',
+      recipientLabel: 'Facilitating agency (if any)',
+      showSubject: true, showTrigger: false, showAbc: false, showNeighbourhood: true,
+      subjectTitle: 'About the parties'
+    }
+  };
+
+  function selectDoc(type) {
+    selectedDoc = type;
+    document.querySelectorAll('.doc-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('card-' + type).classList.add('selected');
+    document.getElementById('step1-next').disabled = false;
+  }
+
+  function goToStep1() { setStep(1); }
+
+  function goToStep2() {
+    if (!selectedDoc) return;
+    const meta = docMeta[selectedDoc];
+    document.getElementById('recipient-name-label').textContent = meta.recipientLabel;
+    document.getElementById('subject-section').style.display = meta.showSubject ? '' : 'none';
+    if (meta.showSubject) document.getElementById('subject-title').textContent = meta.subjectTitle;
+    document.getElementById('trigger-section').style.display = meta.showTrigger ? '' : 'none';
+    document.getElementById('abc-section').style.display = meta.showAbc ? '' : 'none';
+    document.getElementById('neighbourhood-section').style.display = meta.showNeighbourhood ? '' : 'none';
+    document.getElementById('outcome-section').style.display =
+      (selectedDoc === 'abc' || selectedDoc === 'neighbourhood') ? 'none' : '';
+    document.getElementById('recipient-section').style.display =
+      selectedDoc === 'neighbourhood' ? 'none' : '';
+    if (!document.getElementById('letter-date').value) {
+      document.getElementById('letter-date').value = new Date().toISOString().split('T')[0];
+    }
+    setStep(2);
+  }
+
+  function setStep(n) {
+    document.getElementById('step1').style.display = n === 1 ? '' : 'none';
+    document.getElementById('step2').style.display = n === 2 ? '' : 'none';
+    document.getElementById('step3').style.display = n === 3 ? '' : 'none';
+    ['step1-indicator','step2-indicator','step3-indicator'].forEach((id, i) => {
+      const el = document.getElementById(id);
+      el.className = 'step ' + (i + 1 < n ? 'done' : i + 1 === n ? 'active' : '');
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function startOver() {
+    selectedDoc = null;
+    generatedText = '';
+    document.querySelectorAll('.doc-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('step1-next').disabled = true;
+    document.getElementById('form-error').style.display = 'none';
+    setStep(1);
+  }
+
+  async function generateDocument() {
+    const meta = docMeta[selectedDoc];
+    const yourName = document.getElementById('your-name').value.trim() || '[Your Name]';
+    const yourAddress = document.getElementById('your-address').value.trim() || '[Your Address]';
+    const dateVal = document.getElementById('letter-date').value;
+    const formattedDate = dateVal ? new Date(dateVal).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '[Date]';
+    const caseRef = document.getElementById('case-ref').value.trim();
+    const recipientName = document.getElementById('recipient-name')?.value.trim() || '';
+    const recipientAddress = document.getElementById('recipient-address')?.value.trim() || '';
+    const subjectName = document.getElementById('subject-name')?.value.trim() || '';
+    const subjectAddress = document.getElementById('subject-address')?.value.trim() || '';
+    const asbDescription = document.getElementById('asb-description').value.trim();
+    const previousReports = document.getElementById('previous-reports').value;
+    const hasDiary = document.getElementById('has-diary').value;
+    const requestedAction = document.getElementById('requested-action')?.value.trim() || '';
+    const tone = document.getElementById('tone').value;
+    const triggerReports = document.getElementById('trigger-reports')?.value.trim() || '';
+    const triggerAgencies = document.getElementById('trigger-agencies')?.value.trim() || '';
+    const triggerDates = document.getElementById('trigger-dates')?.value.trim() || '';
+    const abcProhibitions = document.getElementById('abc-prohibitions')?.value.trim() || '';
+    const abcDuration = document.getElementById('abc-duration')?.value.trim() || '';
+    const neighbour2 = document.getElementById('neighbour2')?.value.trim() || '';
+    const neighbourhoodCommitments = document.getElementById('neighbourhood-commitments')?.value.trim() || '';
+
+    if (!asbDescription && selectedDoc !== 'neighbourhood') {
+      showError('Please describe the anti-social behaviour before generating the document.');
+      return;
+    }
+
+    setGenerating(true);
+    document.getElementById('form-error').style.display = 'none';
+
+    const toneDescriptions = {
+      formal: 'formal, professional, and assertive — language used by housing professionals',
+      firm: 'firm and direct, implying time pressure and consequences if not acted upon',
+      measured: 'firm but diplomatic — acknowledging the situation while remaining resolute'
+    };
+
+    const docTypePrompts = {
+      landlord: `Write a formal complaint letter from a resident to their landlord or housing association regarding anti-social behaviour caused by a neighbour.`,
+      council: `Write a formal complaint letter from a resident to their local council's ASB or environmental health team regarding anti-social behaviour.`,
+      trigger: `Write a formal Community Trigger (ASB Case Review) request letter under the Anti-social Behaviour, Crime and Policing Act 2014. This is a statutory right to request a review when a threshold of reports has been met.`,
+      abc: `Draft a formal Acceptable Behaviour Contract (ABC) — a voluntary agreement between a housing/support agency and an individual setting out specific behaviours they agree to stop. Format it as a proper contract document with clauses.`,
+      neighbourhood: `Draft a formal Neighbourhood Agreement — a mutual agreement between two or more neighbours (facilitated by an agency if appropriate) setting out shared expectations. Format it as a signed agreement with numbered clauses.`
+    };
+
+    const prompt = `
+${docTypePrompts[selectedDoc]}
+
+Tone: ${toneDescriptions[tone]}
+
+SENDER DETAILS:
+Name: ${yourName}
+Address: ${yourAddress}
+Date: ${formattedDate}
+${caseRef ? 'Reference: ' + caseRef : ''}
+
+${recipientName || recipientAddress ? `RECIPIENT:
+Name/Organisation: ${recipientName || '[Recipient Name]'}
+Address/Department: ${recipientAddress || '[Recipient Address]'}` : ''}
+
+${subjectName ? `SUBJECT PARTY:
+Name: ${subjectName}
+Address: ${subjectAddress}` : ''}
+
+SITUATION:
+${asbDescription}
+
+Previous reports: ${previousReports === 'no' ? 'No previous reports' : previousReports === 'verbal' ? 'Verbal/informal reports made previously' : previousReports === 'written' ? 'Written reports previously submitted' : 'Multiple reports submitted previously'}
+Incident diary: ${hasDiary === 'no' ? 'No diary kept' : hasDiary === 'wasba' ? 'Full incident log maintained using WASBA Noise Diary tool' : 'Written incident log maintained'}
+
+${requestedAction ? `REQUESTED OUTCOME:\n${requestedAction}` : ''}
+
+${meta.showTrigger && triggerReports ? `COMMUNITY TRIGGER DETAILS:
+Number of reports: ${triggerReports}
+Agencies contacted: ${triggerAgencies}
+Date range: ${triggerDates}` : ''}
+
+${meta.showAbc && abcProhibitions ? `ABC PROHIBITED BEHAVIOURS (each should become a numbered clause):
+${abcProhibitions}
+Duration: ${abcDuration}` : ''}
+
+${meta.showNeighbourhood && neighbourhoodCommitments ? `NEIGHBOURHOOD AGREEMENT:
+Party 1: ${yourName}, ${yourAddress}
+Party 2: ${neighbour2}
+Commitments agreed:
+${neighbourhoodCommitments}` : ''}
+
+INSTRUCTIONS:
+- Write the complete document ready to send — do not include notes about what to fill in, just use placeholder text in [SQUARE BRACKETS] only where information is genuinely unknown
+- Use proper letter/document formatting with line breaks between sections
+- For letters: include full address block, date, subject line, Dear [Name], body paragraphs, sign-off, and name
+- For contracts/agreements: include title, parties section, numbered clauses, signature blocks
+- Do not add commentary before or after — output only the document itself
+- Use UK English throughout
+- Do not include any advice, disclaimers, or preamble
+`.trim();
+
+    try {
+      const response = await fetch('/letters/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+      generatedText = data.text;
+      document.getElementById('document-output').textContent = generatedText;
+      setStep(3);
+    } catch (err) {
+      showError('Could not generate the document. Please check your connection and try again. (' + err.message + ')');
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  function setGenerating(on) {
+    document.getElementById('generate-btn').disabled = on;
+    document.getElementById('btn-text').textContent = on ? 'Generating…' : 'Generate document';
+    document.getElementById('btn-spinner').style.display = on ? 'inline-block' : 'none';
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('form-error');
+    el.textContent = msg;
+    el.style.display = '';
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  async function downloadDocx() {
+    if (!generatedText) return;
+    const btn = document.getElementById('download-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Preparing…';
+
+    try {
+      const { Document, Packer, Paragraph, TextRun, BorderStyle } = docx;
+      const rawLines = generatedText.split('\n');
+      const children = [];
+
+      rawLines.forEach((line) => {
+        const trimmed = line.trim();
+        if (trimmed === '') {
+          children.push(new Paragraph({ children: [], spacing: { before: 60, after: 60 } }));
+          return;
+        }
+        const isAllCaps = trimmed === trimmed.toUpperCase() && trimmed.length > 4 && /[A-Z]{3}/.test(trimmed);
+        const isNumberedClause = /^\d+[\.\)]/.test(trimmed);
+
+        if (isAllCaps && !isNumberedClause) {
+          children.push(new Paragraph({
+            children: [new TextRun({ text: trimmed, bold: true, size: 24, font: 'Arial' })],
+            spacing: { before: 240, after: 120 },
+            border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: '1d4ed8', space: 4 } }
+          }));
+        } else if (/^(subject|re):/i.test(trimmed)) {
+          children.push(new Paragraph({
+            children: [new TextRun({ text: trimmed, bold: true, size: 22, font: 'Arial' })],
+            spacing: { before: 120, after: 120 }
+          }));
+        } else if (isNumberedClause) {
+          children.push(new Paragraph({
+            children: [new TextRun({ text: trimmed, size: 22, font: 'Arial' })],
+            indent: { left: 360 },
+            spacing: { before: 80, after: 80 }
+          }));
+        } else {
+          children.push(new Paragraph({
+            children: [new TextRun({ text: trimmed, size: 22, font: 'Arial' })],
+            spacing: { before: 80, after: 80 }
+          }));
+        }
+      });
+
+      children.push(new Paragraph({ children: [], spacing: { before: 240 } }));
+      children.push(new Paragraph({
+        children: [new TextRun({
+          text: 'Generated using WASBA — wasba.onrender.com. This document does not constitute legal advice.',
+          size: 16, color: '64748b', font: 'Arial', italics: true
+        })]
+      }));
+
+      const doc = new Document({
+        styles: { default: { document: { run: { font: 'Arial', size: 22 } } } },
+        sections: [{
+          properties: {
+            page: {
+              size: { width: 11906, height: 16838 },
+              margin: { top: 1440, right: 1440, bottom: 1440, left: 1800 }
+            }
+          },
+          children
+        }]
+      });
+
+      const buffer = await Packer.toBuffer(doc);
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `wasba-${selectedDoc}-${new Date().toISOString().slice(0,10)}.docx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Could not create the Word file: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '⬇ Download as Word (.docx)';
+    }
+  }
+</script>
+
+{% endblock %}
