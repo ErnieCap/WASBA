@@ -200,17 +200,24 @@ def letters_session_status(token):
     if USE_DB:
         from datetime import datetime, timezone
         row = get_letter_session_status(token)
+        logging.info("[poll] token=%s db_row=%s", token, row)
         if not row:
+            logging.warning("[poll] token not found: %s", token)
             return {"error": "Session not found"}, 404
         if row["expires_at"] < datetime.now(timezone.utc):
+            logging.warning("[poll] token expired: %s", token)
             return {"error": "Session expired"}, 410
         if row["paid"]:
+            logging.info("[poll] token already paid in DB: %s", token)
             return {"paid": True}
         # Webhook may not have arrived yet — check Stripe directly
         pi_id = row.get("pi_id", "")
+        logging.info("[poll] not yet paid, checking Stripe directly — pi_id=%s", pi_id)
         if pi_id and check_payment_intent_succeeded(pi_id):
+            logging.info("[poll] Stripe confirms succeeded — marking paid: %s", token)
             mark_letter_session_paid(token)
             return {"paid": True}
+        logging.info("[poll] Stripe says not yet succeeded: %s", token)
         return {"paid": False}
     else:
         entry = _LETTER_SESSIONS.get(token)
@@ -393,45 +400,88 @@ def premium(case_id: str):
 @app.route("/stripe/webhook", methods=["POST"])
 def stripe_webhook():
     import stripe as _stripe
+    import threading
+
+    logging.info("[webhook] request received")
+
     payload = request.get_data()
     sig_header = request.headers.get("Stripe-Signature", "")
     webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET")
 
     if not webhook_secret:
+        logging.warning("[webhook] STRIPE_WEBHOOK_SECRET not set")
         if os.environ.get("RENDER"):
             return ("STRIPE_WEBHOOK_SECRET not configured", 400)
         return ("IGNORED (no webhook secret in local dev)", 200)
 
+    # Verify signature synchronously — must happen before returning 200
     try:
         event = _stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
     except Exception as e:
-        logging.error("Webhook signature error: %s", e)
+        logging.error("[webhook] signature verification failed: %s", e)
         return (str(e), 400)
 
-    event_type = event["type"]
-    logging.info("Stripe webhook: %s", event_type)
+    logging.info("[webhook] signature OK — type=%s id=%s", event["type"], event.get("id", ""))
 
-    # ── Letter payment ───────────────────────────────────────────────────────
-    if event_type == "payment_intent.succeeded":
-        pi = event["data"]["object"]
-        meta = pi.get("metadata") or {}
-        if meta.get("product") == "letter":
-            token = meta.get("letter_token", "")
-            if USE_DB:
-                mark_letter_session_paid(token)
-            elif token in _LETTER_SESSIONS:
-                _LETTER_SESSIONS[token]["paid"] = True
-            return ("OK", 200)
-        return ("IGNORED", 200)
+    # All processing happens in a background thread so 200 goes back to
+    # Stripe immediately — prevents Stripe from treating slow DB writes
+    # as failures and retrying unnecessarily
+    def _process(ev):
+        etype = ev["type"]
+        logging.info("[webhook] _process started: %s", etype)
 
-    # ── Existing checkout events (ASB + noise diary unlocks) ─────────────────
-    if event_type == "checkout.session.completed":
-        if not USE_DB:
-            return ("IGNORED (local dev without DB)", 200)
-        ok = handle_stripe_webhook(payload, sig_header)
-        return ("OK" if ok else "IGNORED", 200)
+        if etype == "payment_intent.succeeded":
+            pi = ev["data"]["object"]
+            pi_id = pi.get("id", "")
+            meta = pi.get("metadata") or {}
+            product = meta.get("product", "")
+            logging.info("[webhook] PI succeeded — pi_id=%s product=%s metadata=%s",
+                         pi_id, product, meta)
 
-    return ("IGNORED", 200)
+            if product == "letter":
+                token = meta.get("letter_token", "")
+                logging.info("[webhook] letter payment — token=%s USE_DB=%s", token, USE_DB)
+                if not token:
+                    logging.error("[webhook] letter payment missing letter_token in metadata")
+                    return
+                if USE_DB:
+                    result = mark_letter_session_paid(token)
+                    logging.info("[webhook] mark_letter_session_paid(%s) -> %s", token, result)
+                else:
+                    if token in _LETTER_SESSIONS:
+                        _LETTER_SESSIONS[token]["paid"] = True
+                        logging.info("[webhook] in-memory session marked paid: %s", token)
+                    else:
+                        logging.warning("[webhook] token not found in _LETTER_SESSIONS: %s", token)
+            else:
+                logging.info("[webhook] PI succeeded but product=%r — not a letter, ignoring", product)
+
+        elif etype == "checkout.session.completed":
+            session = ev["data"]["object"]
+            metadata = session.get("metadata") or {}
+            product = metadata.get("product")
+            case_id = metadata.get("case_id")
+            logging.info("[webhook] checkout completed — product=%s case_id=%s", product, case_id)
+            if not USE_DB:
+                logging.info("[webhook] no DB in local dev, skipping checkout event")
+                return
+            from db import mark_paid as _mark_paid, mark_noise_case_paid as _mark_noise_paid
+            if (product == "asb_unlock" or product is None) and case_id:
+                result = _mark_paid(case_id)
+                logging.info("[webhook] mark_paid(%s) -> %s", case_id, result)
+            elif product == "noise_unlock" and case_id:
+                result = _mark_noise_paid(case_id)
+                logging.info("[webhook] mark_noise_case_paid(%s) -> %s", case_id, result)
+            else:
+                logging.warning("[webhook] checkout.session.completed unhandled — product=%s", product)
+        else:
+            logging.info("[webhook] unhandled event type: %s — ignoring", etype)
+
+        logging.info("[webhook] _process complete: %s", etype)
+
+    threading.Thread(target=_process, args=(event,), daemon=True).start()
+    logging.info("[webhook] 200 returned, background thread started")
+    return ("OK", 200)
 
 
 @app.route("/health")
