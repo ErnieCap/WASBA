@@ -75,6 +75,23 @@ def init_db() -> None:
             cur.execute("CREATE INDEX IF NOT EXISTS idx_noise_entries_case_time ON noise_diary_entries(case_id, occurred_at DESC);")
             cur.execute("ALTER TABLE noise_diary_cases ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMPTZ;")
 
+            # Letter payment sessions — shared across all Gunicorn workers
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS letter_sessions (
+                    token TEXT PRIMARY KEY,
+                    text TEXT NOT NULL,
+                    paid BOOLEAN NOT NULL DEFAULT FALSE,
+                    pi_id TEXT NOT NULL,
+                    expires_at TIMESTAMPTZ NOT NULL,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                );
+                """
+            )
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_letter_sessions_expires ON letter_sessions(expires_at);"
+            )
+
         conn.commit()
 
 
@@ -470,5 +487,64 @@ def update_noise_case(case_id: str, updates: dict) -> bool:
 
     return updated == 1
 
-    
-      
+
+# ── Letter payment sessions ──────────────────────────────────────────────────
+
+def create_letter_session(token: str, text: str, pi_id: str, expires_at) -> None:
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO letter_sessions (token, text, pi_id, expires_at)
+                VALUES (%s, %s, %s, %s)
+                """,
+                (token, text, pi_id, expires_at),
+            )
+        conn.commit()
+
+
+def mark_letter_session_paid(token: str) -> bool:
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE letter_sessions SET paid=TRUE WHERE token=%s",
+                (token,),
+            )
+            updated = cur.rowcount
+        conn.commit()
+    return updated == 1
+
+
+def get_letter_session_status(token: str) -> Optional[Dict[str, Any]]:
+    """Returns {paid, expires_at} or None if not found."""
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT paid, expires_at FROM letter_sessions WHERE token=%s",
+                (token,),
+            )
+            row = cur.fetchone()
+    if not row:
+        return None
+    return {"paid": row[0], "expires_at": row[1]}
+
+
+def consume_letter_session_text(token: str) -> Optional[str]:
+    """Return letter text for a paid token and delete it (one-time use)."""
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM letter_sessions WHERE token=%s AND paid=TRUE RETURNING text",
+                (token,),
+            )
+            row = cur.fetchone()
+        conn.commit()
+    return row[0] if row else None
+
+
+def purge_expired_letter_sessions() -> None:
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM letter_sessions WHERE expires_at < NOW()")
+        conn.commit()
+

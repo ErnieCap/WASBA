@@ -29,6 +29,9 @@ from db import (
     update_noise_entry, delete_noise_entry, delete_noise_case, get_noise_case_for_owner,
     delete_expired_noise_cases, get_active_noise_case_for_owner, update_noise_case,
     touch_noise_case_activity, get_noise_case_by_ref_code,
+    create_letter_session, mark_letter_session_paid,
+    get_letter_session_status, consume_letter_session_text,
+    purge_expired_letter_sessions,
 )
 
 # --- Noise limits / pricing policy ---
@@ -169,13 +172,19 @@ def letters_create_session():
     except Exception as e:
         return {"error": f"Payment setup failed: {e}"}, 500
 
-    _purge_expired_letter_sessions()
-    _LETTER_SESSIONS[token] = {
-        "text": text,
-        "paid": False,
-        "pi_id": pi_id,
-        "expires": time.time() + _LETTER_SESSION_TTL,
-    }
+    if USE_DB:
+        from datetime import datetime, timezone, timedelta
+        expires_at = datetime.now(timezone.utc) + timedelta(seconds=_LETTER_SESSION_TTL)
+        purge_expired_letter_sessions()
+        create_letter_session(token, text, pi_id, expires_at)
+    else:
+        _purge_expired_letter_sessions()
+        _LETTER_SESSIONS[token] = {
+            "text": text,
+            "paid": False,
+            "pi_id": pi_id,
+            "expires": time.time() + _LETTER_SESSION_TTL,
+        }
 
     return {"token": token, "client_secret": client_secret}
 
@@ -183,13 +192,22 @@ def letters_create_session():
 @app.route("/letters/session-status/<token>")
 def letters_session_status(token):
     """Poll endpoint: returns {paid: bool}.  Frontend polls until paid=true."""
-    entry = _LETTER_SESSIONS.get(token)
-    if not entry:
-        return {"error": "Session not found"}, 404
-    if time.time() > entry.get("expires", 0):
-        _LETTER_SESSIONS.pop(token, None)
-        return {"error": "Session expired"}, 410
-    return {"paid": entry["paid"]}
+    if USE_DB:
+        row = get_letter_session_status(token)
+        if not row:
+            return {"error": "Session not found"}, 404
+        from datetime import datetime, timezone
+        if row["expires_at"] < datetime.now(timezone.utc):
+            return {"error": "Session expired"}, 410
+        return {"paid": row["paid"]}
+    else:
+        entry = _LETTER_SESSIONS.get(token)
+        if not entry:
+            return {"error": "Session not found"}, 404
+        if time.time() > entry.get("expires", 0):
+            _LETTER_SESSIONS.pop(token, None)
+            return {"error": "Session expired"}, 410
+        return {"paid": entry["paid"]}
 
 
 @app.route("/letters/session-text/<token>")
@@ -198,14 +216,24 @@ def letters_session_text(token):
 
     Consumes the token on read — one-time use.
     """
-    entry = _LETTER_SESSIONS.get(token)
-    if not entry:
-        return {"error": "Session not found or already used"}, 404
-    if not entry["paid"]:
-        return {"error": "Payment not yet confirmed"}, 403
-    text = entry["text"]
-    _LETTER_SESSIONS.pop(token, None)
-    return {"text": text}
+    if USE_DB:
+        text = consume_letter_session_text(token)
+        if text is None:
+            # Either not found or not paid yet
+            row = get_letter_session_status(token)
+            if not row:
+                return {"error": "Session not found or already used"}, 404
+            return {"error": "Payment not yet confirmed"}, 403
+        return {"text": text}
+    else:
+        entry = _LETTER_SESSIONS.get(token)
+        if not entry:
+            return {"error": "Session not found or already used"}, 404
+        if not entry["paid"]:
+            return {"error": "Payment not yet confirmed"}, 403
+        text = entry["text"]
+        _LETTER_SESSIONS.pop(token, None)
+        return {"text": text}
 
 
 @app.route("/letters/donate", methods=["POST"])
@@ -345,25 +373,46 @@ def premium(case_id: str):
 
 @app.route("/stripe/webhook", methods=["POST"])
 def stripe_webhook():
+    import stripe as _stripe
     payload = request.get_data()
     sig_header = request.headers.get("Stripe-Signature", "")
+    webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET")
 
-    # Letter sessions are in-memory and need no DB — always process them.
-    # Existing checkout events (ASB/noise unlocks) still require DB.
-    try:
-        ok = handle_stripe_webhook(
-            payload, sig_header,
-            letter_sessions=_LETTER_SESSIONS,
-        )
-    except RuntimeError as e:
-        # STRIPE_WEBHOOK_SECRET not set — only a hard error in production
+    if not webhook_secret:
         if os.environ.get("RENDER"):
-            return (str(e), 400)
-        return ("IGNORED (webhook secret not configured)", 200)
+            return ("STRIPE_WEBHOOK_SECRET not configured", 400)
+        return ("IGNORED (no webhook secret in local dev)", 200)
+
+    try:
+        event = _stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
     except Exception as e:
+        logging.error("Webhook signature error: %s", e)
         return (str(e), 400)
 
-    return ("OK" if ok else "IGNORED", 200)
+    event_type = event["type"]
+    logging.info("Stripe webhook: %s", event_type)
+
+    # ── Letter payment ───────────────────────────────────────────────────────
+    if event_type == "payment_intent.succeeded":
+        pi = event["data"]["object"]
+        meta = pi.get("metadata") or {}
+        if meta.get("product") == "letter":
+            token = meta.get("letter_token", "")
+            if USE_DB:
+                mark_letter_session_paid(token)
+            elif token in _LETTER_SESSIONS:
+                _LETTER_SESSIONS[token]["paid"] = True
+            return ("OK", 200)
+        return ("IGNORED", 200)
+
+    # ── Existing checkout events (ASB + noise diary unlocks) ─────────────────
+    if event_type == "checkout.session.completed":
+        if not USE_DB:
+            return ("IGNORED (local dev without DB)", 200)
+        ok = handle_stripe_webhook(payload, sig_header)
+        return ("OK" if ok else "IGNORED", 200)
+
+    return ("IGNORED", 200)
 
 
 @app.route("/health")

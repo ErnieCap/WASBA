@@ -98,13 +98,8 @@ def create_donation_intent(amount_pence: int) -> str:
     return intent.client_secret
 
 
-def handle_stripe_webhook(payload: bytes, sig_header: str, letter_sessions: Optional[dict] = None) -> bool:
-    """Handle incoming Stripe webhook events.
-
-    letter_sessions: the in-memory dict from app.py (_LETTER_SESSIONS).
-    Passing it here lets the webhook mark letter tokens as paid without
-    touching the database — letter payments are entirely stateless w.r.t. DB.
-    """
+def handle_stripe_webhook(payload: bytes, sig_header: str) -> bool:
+    """Handle checkout.session.completed events (ASB + noise diary unlocks)."""
     webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET")
     if not webhook_secret:
         raise RuntimeError("STRIPE_WEBHOOK_SECRET is not set")
@@ -121,20 +116,6 @@ def handle_stripe_webhook(payload: bytes, sig_header: str, letter_sessions: Opti
 
     logger.info("Stripe webhook event received: %s", event["type"])
 
-    # ── Letter payment (PaymentIntent, no DB required) ──────────────────────
-    if event["type"] == "payment_intent.succeeded":
-        pi = event["data"]["object"]
-        meta = pi.get("metadata") or {}
-        if meta.get("product") == "letter" and letter_sessions is not None:
-            token = meta.get("letter_token", "")
-            if token and token in letter_sessions:
-                letter_sessions[token]["paid"] = True
-                logger.info("Letter token %s marked as paid", token)
-                return True
-        logger.info("payment_intent.succeeded: not a letter payment, ignoring")
-        return False
-
-    # ── Checkout session (existing ASB + noise diary flows) ─────────────────
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
         metadata = session.get("metadata") or {}
