@@ -7,16 +7,16 @@ from db import mark_paid, mark_noise_case_paid
 logger = logging.getLogger(__name__)
 
 
-
 # Required env vars:
 # STRIPE_SECRET_KEY
 # STRIPE_PRICE_ID        (create a £3 Price in Stripe dashboard)
 # STRIPE_WEBHOOK_SECRET  (webhook signing secret)
+# STRIPE_PUBLISHABLE_KEY (used by Stripe.js on the frontend)
 
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 
 
-from typing import Optional, Dict
+from typing import Optional, Dict, Tuple
 
 def create_checkout_session(
     case_id: str,
@@ -70,7 +70,41 @@ def verify_and_mark_paid(case_id: str, session_id: str) -> bool:
     return result
 
 
-def handle_stripe_webhook(payload: bytes, sig_header: str) -> bool:
+def create_letter_payment_intent(token: str) -> Tuple[str, str]:
+    """Create a £1 PaymentIntent for a letter download.
+
+    Returns (client_secret, intent_id).
+    Template-agnostic: works for any letter type via the same token mechanism.
+    """
+    if not stripe.api_key:
+        raise RuntimeError("STRIPE_SECRET_KEY is not set")
+    intent = stripe.PaymentIntent.create(
+        amount=100,  # £1 in pence
+        currency="gbp",
+        metadata={"product": "letter", "letter_token": token},
+    )
+    return intent.client_secret, intent.id
+
+
+def create_donation_intent(amount_pence: int) -> str:
+    """Create a PaymentIntent for a voluntary donation. Returns client_secret."""
+    if not stripe.api_key:
+        raise RuntimeError("STRIPE_SECRET_KEY is not set")
+    intent = stripe.PaymentIntent.create(
+        amount=amount_pence,
+        currency="gbp",
+        metadata={"product": "donation"},
+    )
+    return intent.client_secret
+
+
+def handle_stripe_webhook(payload: bytes, sig_header: str, letter_sessions: Optional[dict] = None) -> bool:
+    """Handle incoming Stripe webhook events.
+
+    letter_sessions: the in-memory dict from app.py (_LETTER_SESSIONS).
+    Passing it here lets the webhook mark letter tokens as paid without
+    touching the database — letter payments are entirely stateless w.r.t. DB.
+    """
     webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET")
     if not webhook_secret:
         raise RuntimeError("STRIPE_WEBHOOK_SECRET is not set")
@@ -87,23 +121,35 @@ def handle_stripe_webhook(payload: bytes, sig_header: str) -> bool:
 
     logger.info("Stripe webhook event received: %s", event["type"])
 
+    # ── Letter payment (PaymentIntent, no DB required) ──────────────────────
+    if event["type"] == "payment_intent.succeeded":
+        pi = event["data"]["object"]
+        meta = pi.get("metadata") or {}
+        if meta.get("product") == "letter" and letter_sessions is not None:
+            token = meta.get("letter_token", "")
+            if token and token in letter_sessions:
+                letter_sessions[token]["paid"] = True
+                logger.info("Letter token %s marked as paid", token)
+                return True
+        logger.info("payment_intent.succeeded: not a letter payment, ignoring")
+        return False
+
+    # ── Checkout session (existing ASB + noise diary flows) ─────────────────
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
         metadata = session.get("metadata") or {}
 
-        product = metadata.get("product")  # we'll set this in checkout creation
+        product = metadata.get("product")
         case_id = metadata.get("case_id")
         logger.info("checkout.session.completed: product=%s case_id=%s", product, case_id)
 
         # ASB unlock (existing)
         if (product == "asb_unlock" or product is None) and case_id:
-            # Backward-compatible: if you didn't set product before,
-            # treat it as ASB unlock.
             result = mark_paid(case_id)
             logger.info("mark_paid(%s) returned %s", case_id, result)
             return result
 
-        # Noise diary unlock (new)
+        # Noise diary unlock
         if product == "noise_unlock" and case_id:
             owner_uid = metadata.get("owner_uid")
             if not owner_uid:

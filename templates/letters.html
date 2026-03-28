@@ -169,11 +169,66 @@
     margin-bottom: 12px;
   }
 
+  /* Waiver */
+  .waiver-label {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 14px; font-weight: 600; color: var(--text);
+    cursor: pointer; margin-bottom: 4px;
+  }
+  .waiver-label input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  .waiver-subtext { margin: 0 0 0 26px; font-size: 12px; color: var(--muted); }
+
+  /* Modals */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.45);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; padding: 16px;
+  }
+  .modal-box {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 28px 28px 24px;
+    max-width: 460px; width: 100%;
+    box-shadow: 0 8px 32px rgba(0,0,0,.12);
+  }
+  .modal-heading { font-size: 18px; font-weight: 700; margin: 0 0 8px; }
+  .modal-subtext { font-size: 13px; color: var(--muted); margin: 0 0 4px; line-height: 1.5; }
+
+  /* Donation amounts */
+  .donation-amounts {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin: 18px 0 4px;
+  }
+  .donation-btn {
+    min-width: 56px; font-weight: 600;
+  }
+  .donation-btn.selected {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+  }
+  .donation-custom {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .donation-symbol { font-weight: 600; color: var(--muted); }
+  .donation-custom input {
+    width: 76px; padding: 6px 8px;
+    border: 1px solid var(--line); border-radius: 6px;
+    font-size: 13px; background: var(--bg); color: var(--text);
+  }
+  .skip-link {
+    display: block; text-align: center;
+    font-size: 13px; color: var(--muted);
+    margin-top: 10px; text-decoration: none;
+  }
+  .skip-link:hover { color: var(--text); }
+
   @media (max-width: 600px) {
     .form-2col { grid-template-columns: 1fr; }
     .letters-hero h1 { font-size: 24px; }
     .doc-grid { grid-template-columns: 1fr 1fr; }
     .letters-hero { padding: 24px 20px; }
+    .modal-box { padding: 20px 16px 18px; }
   }
 </style>
 
@@ -276,6 +331,17 @@
         </div>
       </div>
 
+      <!-- CONTACT (landlord only) -->
+      <div class="form-section" id="contact-section" style="display:none;">
+        <div class="form-section-title">Your contact details</div>
+        <div class="form-1col last">
+          <div class="form-group">
+            <label>Phone number and/or email address</label>
+            <input type="text" id="your-contact" placeholder="e.g. 07700 900000 / jane@example.com" />
+          </div>
+        </div>
+      </div>
+
       <!-- RECIPIENT -->
       <div class="form-section" id="recipient-section">
         <div class="form-section-title">Recipient details</div>
@@ -287,6 +353,32 @@
           <div class="form-group">
             <label>Address / department</label>
             <input type="text" id="recipient-address" placeholder="e.g. ASB Team, 10 Council Road" />
+          </div>
+        </div>
+      </div>
+
+      <!-- JURISDICTION (landlord only) -->
+      <div class="form-section" id="jurisdiction-section" style="display:none;">
+        <div class="form-section-title">Jurisdiction</div>
+        <div class="form-group" style="max-width:320px;">
+          <label>Where is the property located?</label>
+          <select id="jurisdiction">
+            <option value="England">England</option>
+            <option value="Wales">Wales</option>
+            <option value="Scotland">Scotland</option>
+            <option value="Northern Ireland">Northern Ireland</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- PERPETRATOR (landlord only) -->
+      <div class="form-section" id="perpetrator-section" style="display:none;">
+        <div class="form-section-title">Who is responsible?</div>
+        <div class="form-1col last">
+          <div class="form-group">
+            <label>Description of the person causing the behaviour</label>
+            <span class="form-hint">e.g. "an individual residing at Flat 4, [address]" or "a person known to me as [first name]"</span>
+            <input type="text" id="perpetrator-desc" placeholder="e.g. an individual residing at Flat 4, 10 Example Street" />
           </div>
         </div>
       </div>
@@ -319,7 +411,7 @@
         <div class="form-2col last">
           <div class="form-group">
             <label>Have you reported this before?</label>
-            <select id="previous-reports">
+            <select id="previous-reports" onchange="onPrevReportsChange(this.value)">
               <option value="no">No — this is my first report</option>
               <option value="verbal">Yes — verbally / informally</option>
               <option value="written">Yes — in writing previously</option>
@@ -333,6 +425,29 @@
               <option value="yes">Yes — I have a diary / log</option>
               <option value="wasba">Yes — using WASBA Noise Diary</option>
             </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- IMPACT (landlord only) -->
+      <div class="form-section" id="impact-section" style="display:none;">
+        <div class="form-section-title">Impact on your household</div>
+        <div class="form-1col last">
+          <div class="form-group">
+            <label>Who is affected and how?</label>
+            <span class="form-hint">Specify who is affected and describe the impact in factual terms</span>
+            <textarea id="impact-desc" rows="3" placeholder="e.g. myself and my two children — I have been unable to sleep due to noise between 11pm and 3am on repeated occasions"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- PREVIOUS COMPLAINT DATES (landlord escalation only) -->
+      <div class="form-section" id="previous-dates-section" style="display:none;">
+        <div class="form-section-title">Previous correspondence</div>
+        <div class="form-1col last">
+          <div class="form-group">
+            <label>Date(s) of your previous complaint(s)</label>
+            <input type="text" id="previous-dates" placeholder="e.g. 5 January 2025, 12 February 2025" />
           </div>
         </div>
       </div>
@@ -421,6 +536,15 @@
 
       <div id="form-error" class="error-box" style="display:none;"></div>
 
+      <!-- WAIVER — shown only for returning users (wasba_letter_count > 0) -->
+      <div id="waiver-section" style="display:none; margin-bottom:14px;">
+        <label class="waiver-label">
+          <input type="checkbox" id="waiver-check" />
+          <span>I am unable to pay at this time</span>
+        </label>
+        <p class="waiver-subtext">No further information needed. WASBA exists to help everyone.</p>
+      </div>
+
       <div style="display:flex; gap:10px; align-items:center;">
         <button class="btn" onclick="goToStep1()">← Back</button>
         <button class="btn primary" id="generate-btn" onclick="generateDocument()" style="min-width:200px;">
@@ -456,18 +580,78 @@
 
 </div><!-- /.letters-wrap -->
 
+<!-- ── PAYMENT MODAL ──────────────────────────────────────────────────── -->
+<div id="payment-modal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <h2 class="modal-heading">This is not your first letter</h2>
+    <p class="modal-subtext">Your first letter was free. A £1 contribution helps WASBA stay free for people who need it most.</p>
+    <div id="stripe-payment-element" style="margin:20px 0;"></div>
+    <div id="payment-error" class="error-box" style="display:none; margin-bottom:12px;"></div>
+    <button class="btn primary" id="pay-btn" style="width:100%; margin-bottom:10px;">
+      <span id="pay-btn-text">Pay £1 and download</span>
+      <span id="pay-btn-spinner" class="spinner" style="display:none;"></span>
+    </button>
+    <button class="btn" style="width:100%;" onclick="cancelPayment()">Cancel</button>
+  </div>
+</div>
+
+<!-- ── DONATION MODAL ─────────────────────────────────────────────────── -->
+<div id="donation-modal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true">
+  <div class="modal-box" id="donation-box">
+    <h2 class="modal-heading">Did this letter help you?</h2>
+    <p class="modal-subtext">WASBA is free for those who need it. If you are able to, a small contribution helps keep it running for everyone.</p>
+    <div class="donation-amounts" id="donation-amounts">
+      <button class="btn donation-btn" onclick="selectDonation(100)">£1</button>
+      <button class="btn donation-btn" onclick="selectDonation(200)">£2</button>
+      <button class="btn donation-btn" onclick="selectDonation(300)">£3</button>
+      <div class="donation-custom">
+        <span class="donation-symbol">£</span>
+        <input type="number" id="custom-amount" min="1" max="100" placeholder="Other" />
+        <button class="btn" onclick="selectCustomDonation()">Go</button>
+      </div>
+    </div>
+    <div id="stripe-donation-element" style="margin:16px 0; display:none;"></div>
+    <div id="donation-error" class="error-box" style="display:none; margin-bottom:12px;"></div>
+    <button class="btn primary" id="donate-btn" style="width:100%; display:none; margin-bottom:10px;">
+      <span id="donate-btn-text">Donate</span>
+      <span id="donate-btn-spinner" class="spinner" style="display:none;"></span>
+    </button>
+    <a href="#" class="skip-link" onclick="closeDonationModal(); return false;">No thanks, close</a>
+  </div>
+</div>
+
+<!-- Stripe.js -->
+<script src="https://js.stripe.com/v3/"></script>
+
 <!-- docx.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/docx@9.5.3/build/index.js"></script>
 
 <script>
+  // Stripe publishable key injected by Flask
+  const STRIPE_PK = {{ stripe_pk | tojson }};
+  const stripeClient = STRIPE_PK ? Stripe(STRIPE_PK) : null;
+
   let selectedDoc = null;
   let generatedText = '';
+
+  // ── Letter count (localStorage) ──────────────────────────────────────────
+  // Tracks all generations across ALL template types combined.
+  // wasba_letter_count = 0 or missing → first letter → always free.
+
+  function getLetterCount() {
+    return parseInt(localStorage.getItem('wasba_letter_count') || '0', 10);
+  }
+
+  function incrementLetterCount() {
+    localStorage.setItem('wasba_letter_count', String(getLetterCount() + 1));
+  }
 
   const docMeta = {
     landlord: {
       label: 'Complaint to Landlord / Housing Association',
-      recipientLabel: 'Housing officer / organisation name',
-      showSubject: false, showTrigger: false, showAbc: false, showNeighbourhood: false
+      recipientLabel: 'Landlord / housing association name',
+      showSubject: false, showTrigger: false, showAbc: false, showNeighbourhood: false,
+      showContact: true, showJurisdiction: true, showPerpetrator: true, showImpact: true, hideOutcome: true
     },
     council: {
       label: 'Complaint to Local Council',
@@ -512,12 +696,30 @@
     document.getElementById('abc-section').style.display = meta.showAbc ? '' : 'none';
     document.getElementById('neighbourhood-section').style.display = meta.showNeighbourhood ? '' : 'none';
     document.getElementById('outcome-section').style.display =
-      (selectedDoc === 'abc' || selectedDoc === 'neighbourhood') ? 'none' : '';
+      (selectedDoc === 'abc' || selectedDoc === 'neighbourhood' || meta.hideOutcome) ? 'none' : '';
     document.getElementById('recipient-section').style.display =
       selectedDoc === 'neighbourhood' ? 'none' : '';
+
+    // Landlord-specific sections
+    document.getElementById('contact-section').style.display = meta.showContact ? '' : 'none';
+    document.getElementById('jurisdiction-section').style.display = meta.showJurisdiction ? '' : 'none';
+    document.getElementById('perpetrator-section').style.display = meta.showPerpetrator ? '' : 'none';
+    document.getElementById('impact-section').style.display = meta.showImpact ? '' : 'none';
+    // previous-dates shown only when escalating
+    const prevVal = document.getElementById('previous-reports').value;
+    document.getElementById('previous-dates-section').style.display =
+      (meta.showImpact && prevVal !== 'no') ? '' : 'none';
+    // Relabel recipient address field for landlord
+    const recipAddrLabel = document.querySelector('label[for="recipient-address"]') ||
+      document.getElementById('recipient-address')?.previousElementSibling;
+    if (selectedDoc === 'landlord') {
+      document.querySelector('#recipient-section .form-2col.last .form-group:last-child label').textContent = 'Landlord postal address';
+    }
     if (!document.getElementById('letter-date').value) {
       document.getElementById('letter-date').value = new Date().toISOString().split('T')[0];
     }
+    // Show waiver only for returning users — first letter is always free
+    document.getElementById('waiver-section').style.display = getLetterCount() > 0 ? '' : 'none';
     setStep(2);
   }
 
@@ -539,6 +741,194 @@
     document.getElementById('step1-next').disabled = true;
     document.getElementById('form-error').style.display = 'none';
     setStep(1);
+  }
+
+  function onPrevReportsChange(val) {
+    if (selectedDoc === 'landlord') {
+      document.getElementById('previous-dates-section').style.display = val !== 'no' ? '' : 'none';
+    }
+  }
+
+  function buildLandlordPrompt(d) {
+    const isEscalation = d.previousReports !== 'no';
+
+    const diaryText = d.hasDiary === 'wasba'
+      ? 'Full incident log maintained using WASBA Noise Diary tool (available on request)'
+      : d.hasDiary === 'yes'
+      ? 'Written incident log maintained (available on request)'
+      : 'No incident diary kept';
+
+    const toneNote = d.tone === 'firm'
+      ? 'Tone: firm and direct — where the template allows natural variation in phrasing choose the stronger option.'
+      : d.tone === 'measured'
+      ? 'Tone: measured and diplomatic while remaining resolute.'
+      : 'Tone: formal and professional throughout.';
+
+    const jurisdictionBullets = `England (Renters' Rights Act 2025 applies):
+• Renters' Rights Act 2025
+• Anti-Social Behaviour, Crime and Policing Act 2014
+• Housing Act 1988 (as amended)
+• Equality Act 2010 (where applicable)
+
+Wales (Renting Homes (Wales) Act 2016 applies):
+• Renting Homes (Wales) Act 2016
+• Anti-Social Behaviour, Crime and Policing Act 2014
+• Equality Act 2010 (where applicable)
+
+Scotland:
+• Housing (Scotland) Act 2001 / 2006
+• Anti-Social Behaviour etc. (Scotland) Act 2004
+• Equality Act 2010 (where applicable)
+
+Northern Ireland:
+• Housing (Northern Ireland) Order 1983 / 2003
+• Private Tenancies (Northern Ireland) Order 2006
+• Anti-Social Behaviour (Northern Ireland) Order 2004
+• Justice Act (Northern Ireland) 2015 (ASB provisions)
+• Section 75 Northern Ireland Act 1998 / Equality Act (where applicable)`;
+
+    const header = `${d.yourName || '[Your Name]'}
+${d.yourAddress || '[Your Address]'}
+${d.yourContact || '[Phone / Email]'}
+
+${d.formattedDate}
+
+${d.recipientName || '[Landlord / Housing Association Name]'}
+${d.recipientAddress || '[Address / Department]'}
+`;
+
+    const footer = `Yours faithfully,
+
+
+
+[Signature]
+
+${d.yourName || '[Your Name]'}
+${d.yourAddress || '[Your Address]'}
+${d.formattedDate}
+
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+This letter was produced with the support of WASBA (wasba.co.uk). WASBA provides information and template tools to assist individuals experiencing anti-social behaviour. This letter does not constitute legal advice. Recipients who require legal representation should seek independent legal advice.`;
+
+    const instructions = `You are completing a formal letter. Rules:
+- Keep ALL fixed wording exactly as written — do not rephrase, add to, or reorder it
+- Replace every [PLACEHOLDER] with the supplied data
+- Delete the three jurisdiction bullet-point sections that do not apply — keep only the ${d.jurisdiction} section
+- If the incident log is free text rather than a table, convert it into rows: Date | Time | Description of Incident | Evidence / Witnesses — use [date] / [time] where not stated
+- Output only the completed letter — no preamble, no commentary
+- ${toneNote}
+- Use UK English throughout
+
+SUPPLIED DATA:
+Name: ${d.yourName || '[Your Name]'}
+Address: ${d.yourAddress || '[Your Address]'}
+Contact: ${d.yourContact || '[Phone / Email]'}
+Date: ${d.formattedDate}
+Reference: ${d.caseRef || (isEscalation ? '[previous correspondence reference]' : 'N/A — Initial Report')}
+Landlord / Organisation: ${d.recipientName || '[Landlord / Housing Association Name]'}
+Landlord Address / Dept: ${d.recipientAddress || '[Address]'}
+Jurisdiction: ${d.jurisdiction}
+Perpetrator: ${d.perpetratorDesc || '[description of perpetrator]'}
+Incident log: ${d.asbDescription}
+Diary / evidence: ${diaryText}
+Impact on household: ${d.impactDesc || '[impact on household]'}
+${isEscalation ? 'Previous complaint dates: ' + (d.previousDates || '[dates of previous complaints]') : ''}
+
+--- LETTER ---
+
+`;
+
+    if (!isEscalation) {
+      return instructions + header + `Reference: N/A — Initial Report${d.caseRef ? ' (' + d.caseRef + ')' : ''}
+
+FORMAL COMPLAINT — ANTI-SOCIAL BEHAVIOUR: REQUEST FOR IMMEDIATE ACTION
+
+Dear ${d.recipientName || 'Sir or Madam'},
+
+OPENING STATEMENT
+
+I am writing to formally notify you of an ongoing situation of anti-social behaviour (ASB) which I am experiencing at my property, ${d.yourAddress || '[property address]'}. This matter requires your urgent attention and action in accordance with your legal obligations as my landlord/housing association.
+
+SUBJECT OF COMPLAINT
+
+The behaviour described in this letter is being perpetrated by ${d.perpetratorDesc || '[description of perpetrator — e.g. an individual residing at (address)]'}. The incidents detailed below are documented and evidenced.
+
+APPLICABLE LEGISLATION
+
+This letter references the statutory obligations applicable in ${d.jurisdiction}.
+
+${jurisdictionBullets}
+
+[KEEP ONLY THE ${d.jurisdiction.toUpperCase()} SECTION ABOVE — DELETE THE OTHER THREE]
+
+RECORD OF INCIDENTS
+
+The following incidents have occurred and have been recorded:
+
+Date\tTime\tDescription of Incident\tEvidence / Witnesses
+[REFORMAT INCIDENT LOG INTO TABLE ROWS]
+
+IMPACT ON MY HOUSEHOLD
+
+The behaviour described above has had a significant and ongoing impact upon ${d.impactDesc || '[me / my household — specify who is affected and the nature of the impact]'}.
+
+YOUR OBLIGATIONS
+
+As my landlord/housing association, you have a legal duty to investigate reports of ASB and to take appropriate and proportionate action. This duty arises under the legislation referenced above. You are required to act in a timely and effective manner to protect the health, safety and wellbeing of residents in your properties.
+
+ACTION REQUIRED
+
+I require a written response from you within 14 calendar days of the date of this letter, confirming the steps you intend to take to investigate and address this matter. I also request that you provide me with a copy of your formal complaints procedure.
+
+This letter is being sent by recorded post. I am retaining a copy for my records.
+
+` + footer;
+    } else {
+      return instructions + header + `Reference: ${d.caseRef || '[Previous correspondence reference]'}
+
+FORMAL ESCALATION — ANTI-SOCIAL BEHAVIOUR: FAILURE TO ACT — NOTICE OF FURTHER ACTION
+
+Dear ${d.recipientName || 'Sir or Madam'},
+
+OPENING STATEMENT
+
+I refer to my previous correspondence dated ${d.previousDates || '[date(s) of previous letter(s)/reports]'}, in which I formally notified you of ongoing anti-social behaviour (ASB) at my property, ${d.yourAddress || '[property address]'}. To date, I have received no satisfactory response and no evidence of meaningful action. I am therefore formally escalating this matter.
+
+SUBJECT OF COMPLAINT
+
+The behaviour described in this letter is being perpetrated by ${d.perpetratorDesc || '[description of perpetrator]'}. The incidents detailed below are documented and evidenced.
+
+APPLICABLE LEGISLATION
+
+This letter references the statutory obligations applicable in ${d.jurisdiction}.
+
+${jurisdictionBullets}
+
+[KEEP ONLY THE ${d.jurisdiction.toUpperCase()} SECTION ABOVE — DELETE THE OTHER THREE]
+
+RECORD OF INCIDENTS
+
+The following incidents have occurred since my initial complaint and remain unaddressed:
+
+Date\tTime\tDescription of Incident\tEvidence / Witnesses
+[REFORMAT INCIDENT LOG INTO TABLE ROWS]
+
+IMPACT ON MY HOUSEHOLD
+
+The behaviour described above has had a significant and ongoing impact upon ${d.impactDesc || '[me / my household — specify who is affected and the nature of the impact]'}.
+
+YOUR OBLIGATIONS
+
+As a contract holder/tenant I have upheld and honoured my obligations. It is therefore deeply disappointing that ${d.recipientName || '[Landlord/Housing Association Name]'} has taken a cavalier attitude to honouring their obligations. Your failure to act upon my formal report constitutes a serious breach of your duties as set out in the legislation referenced above, and has caused ongoing and demonstrable harm to my health, safety and wellbeing.
+
+ACTION REQUIRED
+
+I require a written response from you within 7 calendar days of the date of this letter, setting out the specific actions you have taken or will take to address this matter, together with a clear timeline for resolution. Should you fail to respond adequately within this timeframe, I will have no alternative but to pursue this matter further, including referral to [Housing Ombudsman / Public Services Ombudsman for Wales / Scottish Public Services Ombudsman / relevant local authority — delete as applicable] and/or seek independent legal advice.
+
+This letter is being sent by recorded post. I am retaining a copy for my records.
+
+` + footer;
+    }
   }
 
   async function generateDocument() {
@@ -565,6 +955,13 @@
     const neighbour2 = document.getElementById('neighbour2')?.value.trim() || '';
     const neighbourhoodCommitments = document.getElementById('neighbourhood-commitments')?.value.trim() || '';
 
+    // Landlord-specific fields
+    const yourContact = document.getElementById('your-contact')?.value.trim() || '';
+    const jurisdiction = document.getElementById('jurisdiction')?.value || 'England';
+    const perpetratorDesc = document.getElementById('perpetrator-desc')?.value.trim() || '';
+    const impactDesc = document.getElementById('impact-desc')?.value.trim() || '';
+    const previousDates = document.getElementById('previous-dates')?.value.trim() || '';
+
     if (!asbDescription && selectedDoc !== 'neighbourhood') {
       showError('Please describe the anti-social behaviour before generating the document.');
       return;
@@ -573,21 +970,29 @@
     setGenerating(true);
     document.getElementById('form-error').style.display = 'none';
 
-    const toneDescriptions = {
-      formal: 'formal, professional, and assertive — language used by housing professionals',
-      firm: 'firm and direct, implying time pressure and consequences if not acted upon',
-      measured: 'firm but diplomatic — acknowledging the situation while remaining resolute'
-    };
+    let prompt;
 
-    const docTypePrompts = {
-      landlord: `Write a formal complaint letter from a resident to their landlord or housing association regarding anti-social behaviour caused by a neighbour.`,
-      council: `Write a formal complaint letter from a resident to their local council's ASB or environmental health team regarding anti-social behaviour.`,
-      trigger: `Write a formal Community Trigger (ASB Case Review) request letter under the Anti-social Behaviour, Crime and Policing Act 2014. This is a statutory right to request a review when a threshold of reports has been met.`,
-      abc: `Draft a formal Acceptable Behaviour Contract (ABC) — a voluntary agreement between a housing/support agency and an individual setting out specific behaviours they agree to stop. Format it as a proper contract document with clauses.`,
-      neighbourhood: `Draft a formal Neighbourhood Agreement — a mutual agreement between two or more neighbours (facilitated by an agency if appropriate) setting out shared expectations. Format it as a signed agreement with numbered clauses.`
-    };
+    if (selectedDoc === 'landlord') {
+      prompt = buildLandlordPrompt({
+        yourName, yourAddress, yourContact, formattedDate, caseRef,
+        recipientName, recipientAddress, jurisdiction, perpetratorDesc,
+        asbDescription, hasDiary, impactDesc, previousReports, previousDates, tone
+      });
+    } else {
+      const toneDescriptions = {
+        formal: 'formal, professional, and assertive — language used by housing professionals',
+        firm: 'firm and direct, implying time pressure and consequences if not acted upon',
+        measured: 'firm but diplomatic — acknowledging the situation while remaining resolute'
+      };
 
-    const prompt = `
+      const docTypePrompts = {
+        council: `Write a formal complaint letter from a resident to their local council's ASB or environmental health team regarding anti-social behaviour.`,
+        trigger: `Write a formal Community Trigger (ASB Case Review) request letter under the Anti-social Behaviour, Crime and Policing Act 2014. This is a statutory right to request a review when a threshold of reports has been met.`,
+        abc: `Draft a formal Acceptable Behaviour Contract (ABC) — a voluntary agreement between a housing/support agency and an individual setting out specific behaviours they agree to stop. Format it as a proper contract document with clauses.`,
+        neighbourhood: `Draft a formal Neighbourhood Agreement — a mutual agreement between two or more neighbours (facilitated by an agency if appropriate) setting out shared expectations. Format it as a signed agreement with numbered clauses.`
+      };
+
+      prompt = `
 ${docTypePrompts[selectedDoc]}
 
 Tone: ${toneDescriptions[tone]}
@@ -638,23 +1043,248 @@ INSTRUCTIONS:
 - Use UK English throughout
 - Do not include any advice, disclaimers, or preamble
 `.trim();
+    }
+
+    // ── Decide free vs paid path ─────────────────────────────────────────
+    const letterCount = getLetterCount();
+    const waiverChecked = document.getElementById('waiver-check').checked;
+    const isFree = (letterCount === 0) || waiverChecked;
+
+    if (isFree) {
+      // Free path: call /letters/generate directly, no payment step
+      try {
+        const response = await fetch('/letters/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+        setGenerating(false);
+        onLetterSuccess(data.text);
+      } catch (err) {
+        showError('Could not generate the document. Please check your connection and try again. (' + err.message + ')');
+        setGenerating(false);
+      }
+    } else {
+      // Paid path: generate + create Stripe PaymentIntent, then show payment modal
+      try {
+        const response = await fetch('/letters/create-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+        setGenerating(false);
+        await showPaymentModal(data.token, data.client_secret);
+      } catch (err) {
+        showError('Could not set up payment. Please check your connection and try again. (' + err.message + ')');
+        setGenerating(false);
+      }
+    }
+  }
+
+  // ── Called after every successful generation (free, paid, or waived) ────
+  function onLetterSuccess(text) {
+    generatedText = text;
+    document.getElementById('document-output').textContent = generatedText;
+    incrementLetterCount();
+    setStep(3);
+    // Small delay so the user sees the letter before the donation prompt
+    setTimeout(showDonationModal, 1200);
+  }
+
+  // ── Payment modal ────────────────────────────────────────────────────────
+  let _paymentElements = null;
+
+  async function showPaymentModal(token, clientSecret) {
+    if (!stripeClient) {
+      // Stripe not configured (local dev) — release letter directly
+      try {
+        const r = await fetch(`/letters/session-text/${token}`);
+        const d = await r.json();
+        if (d.text) { onLetterSuccess(d.text); return; }
+      } catch (_) {}
+      showError('Stripe is not configured. Cannot process payment.');
+      return;
+    }
+
+    document.getElementById('payment-modal').style.display = 'flex';
+    document.getElementById('payment-error').style.display = 'none';
+
+    const elements = stripeClient.elements({ clientSecret });
+    const paymentElement = elements.create('payment');
+    paymentElement.mount('#stripe-payment-element');
+    _paymentElements = elements;
+
+    document.getElementById('pay-btn').onclick = async () => {
+      setPayBtnState(true);
+      document.getElementById('payment-error').style.display = 'none';
+
+      const { error } = await stripeClient.confirmPayment({
+        elements,
+        redirect: 'if_required',
+      });
+
+      if (error) {
+        document.getElementById('payment-error').textContent = error.message;
+        document.getElementById('payment-error').style.display = '';
+        setPayBtnState(false);
+        return;
+      }
+
+      // Frontend confirmation done — poll for webhook confirmation before releasing letter
+      document.getElementById('pay-btn-text').textContent = 'Confirming payment…';
+      await pollSessionStatus(token);
+    };
+  }
+
+  async function pollSessionStatus(token) {
+    const maxAttempts = 30;  // 30 × 2s = 60s max
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise(r => setTimeout(r, 2000));
+      try {
+        const resp = await fetch(`/letters/session-status/${token}`);
+        if (resp.status === 410) {
+          showPaymentError('Session expired. Please refresh and try again.');
+          return;
+        }
+        const data = await resp.json();
+        if (data.paid) {
+          const textResp = await fetch(`/letters/session-text/${token}`);
+          const textData = await textResp.json();
+          if (textData.text) {
+            document.getElementById('payment-modal').style.display = 'none';
+            _paymentElements = null;
+            onLetterSuccess(textData.text);
+            return;
+          }
+        }
+      } catch (_) { /* network blip — keep polling */ }
+    }
+    showPaymentError('Payment confirmed but timed out waiting for server confirmation. Please contact support.');
+  }
+
+  function showPaymentError(msg) {
+    const el = document.getElementById('payment-error');
+    el.textContent = msg;
+    el.style.display = '';
+    setPayBtnState(false);
+  }
+
+  function setPayBtnState(loading) {
+    document.getElementById('pay-btn').disabled = loading;
+    document.getElementById('pay-btn-text').textContent = loading ? 'Processing…' : 'Pay £1 and download';
+    document.getElementById('pay-btn-spinner').style.display = loading ? 'inline-block' : 'none';
+  }
+
+  function cancelPayment() {
+    document.getElementById('payment-modal').style.display = 'none';
+    _paymentElements = null;
+    document.getElementById('stripe-payment-element').innerHTML = '';
+  }
+
+  // ── Donation modal ───────────────────────────────────────────────────────
+  let _donationElements = null;
+
+  function showDonationModal() {
+    if (!stripeClient) return;  // skip if Stripe not configured
+    // Reset to amount-selection state
+    document.getElementById('donation-box').innerHTML = `
+      <h2 class="modal-heading">Did this letter help you?</h2>
+      <p class="modal-subtext">WASBA is free for those who need it. If you are able to, a small contribution helps keep it running for everyone.</p>
+      <div class="donation-amounts" id="donation-amounts">
+        <button class="btn donation-btn" onclick="selectDonation(100)">£1</button>
+        <button class="btn donation-btn" onclick="selectDonation(200)">£2</button>
+        <button class="btn donation-btn" onclick="selectDonation(300)">£3</button>
+        <div class="donation-custom">
+          <span class="donation-symbol">£</span>
+          <input type="number" id="custom-amount" min="1" max="100" placeholder="Other" />
+          <button class="btn" onclick="selectCustomDonation()">Go</button>
+        </div>
+      </div>
+      <div id="stripe-donation-element" style="margin:16px 0; display:none;"></div>
+      <div id="donation-error" class="error-box" style="display:none; margin-bottom:12px;"></div>
+      <button class="btn primary" id="donate-btn" style="width:100%; display:none; margin-bottom:10px;">
+        <span id="donate-btn-text">Donate</span>
+        <span id="donate-btn-spinner" class="spinner" style="display:none;"></span>
+      </button>
+      <a href="#" class="skip-link" onclick="closeDonationModal(); return false;">No thanks, close</a>
+    `;
+    _donationElements = null;
+    document.getElementById('donation-modal').style.display = 'flex';
+  }
+
+  function selectCustomDonation() {
+    const val = parseInt(document.getElementById('custom-amount')?.value || '0', 10);
+    if (val >= 1 && val <= 100) selectDonation(val * 100);
+  }
+
+  async function selectDonation(amountPence) {
+    document.querySelectorAll('.donation-btn').forEach(b => b.classList.remove('selected'));
+    const clicked = Array.from(document.querySelectorAll('.donation-btn'))
+      .find(b => b.textContent === `£${amountPence / 100}`);
+    if (clicked) clicked.classList.add('selected');
+
+    document.getElementById('donation-error').style.display = 'none';
 
     try {
-      const response = await fetch('/letters/generate', {
+      const resp = await fetch('/letters/donate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt })
+        body: JSON.stringify({ amount: amountPence })
       });
-      const data = await response.json();
+      const data = await resp.json();
       if (data.error) throw new Error(data.error);
-      generatedText = data.text;
-      document.getElementById('document-output').textContent = generatedText;
-      setStep(3);
+
+      const donationEl = document.getElementById('stripe-donation-element');
+      donationEl.innerHTML = '';
+      const elements = stripeClient.elements({ clientSecret: data.client_secret });
+      const payEl = elements.create('payment');
+      payEl.mount('#stripe-donation-element');
+      _donationElements = elements;
+      donationEl.style.display = '';
+
+      const btn = document.getElementById('donate-btn');
+      btn.style.display = '';
+      btn.onclick = async () => {
+        setDonateBtnState(true);
+        const { error } = await stripeClient.confirmPayment({
+          elements,
+          redirect: 'if_required',
+        });
+        if (error) {
+          document.getElementById('donation-error').textContent = error.message;
+          document.getElementById('donation-error').style.display = '';
+          setDonateBtnState(false);
+          return;
+        }
+        // Donation confirmed — show thank-you
+        document.getElementById('donation-box').innerHTML = `
+          <h2 class="modal-heading">Thank you</h2>
+          <p class="modal-subtext" style="margin-bottom:20px;">Your contribution helps WASBA stay free for everyone who needs it.</p>
+          <button class="btn primary" style="width:100%;" onclick="closeDonationModal()">Close</button>
+        `;
+        _donationElements = null;
+      };
     } catch (err) {
-      showError('Could not generate the document. Please check your connection and try again. (' + err.message + ')');
-    } finally {
-      setGenerating(false);
+      const errEl = document.getElementById('donation-error');
+      if (errEl) { errEl.textContent = err.message; errEl.style.display = ''; }
     }
+  }
+
+  function setDonateBtnState(loading) {
+    const btn = document.getElementById('donate-btn');
+    if (!btn) return;
+    btn.disabled = loading;
+    document.getElementById('donate-btn-text').textContent = loading ? 'Processing…' : 'Donate';
+    document.getElementById('donate-btn-spinner').style.display = loading ? 'inline-block' : 'none';
+  }
+
+  function closeDonationModal() {
+    document.getElementById('donation-modal').style.display = 'none';
+    _donationElements = null;
   }
 
   function setGenerating(on) {

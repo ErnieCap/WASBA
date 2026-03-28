@@ -1,6 +1,7 @@
 import logging
 import os
 import secrets
+import time
 import uuid
 
 logging.basicConfig(level=logging.INFO)
@@ -11,7 +12,10 @@ from flask import Flask, render_template, request, redirect, url_for, abort, Res
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from service import assess_case_free, assess_case_premium
-from payments import create_checkout_session, handle_stripe_webhook
+from payments import (
+    create_checkout_session, handle_stripe_webhook,
+    create_letter_payment_intent, create_donation_intent,
+)
 
 from datetime import datetime, timezone
 
@@ -45,6 +49,23 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-only-change-me")
 
 # On Render, TLS is terminated at the edge; ProxyFix makes _external URLs HTTPS.
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
+# ---------- Letter payment session store ----------
+# Keyed by one-time UUID token.  Holds pre-generated letter text until
+# payment_intent.succeeded webhook confirms payment.  No DB required.
+# Template-agnostic: every letter type uses the same mechanism.
+_LETTER_SESSIONS = {}   # token -> {text, paid, pi_id, expires}
+
+_LETTER_SESSION_TTL = 3600  # 1 hour
+
+
+def _purge_expired_letter_sessions():
+    """Remove sessions older than TTL to avoid unbounded memory growth."""
+    now = time.time()
+    expired = [t for t, s in _LETTER_SESSIONS.items() if s.get("expires", 0) < now]
+    for t in expired:
+        _LETTER_SESSIONS.pop(t, None)
+
 
 # ---------- Local dev fallback ----------
 USE_DB = bool(os.environ.get("DATABASE_URL"))
@@ -91,7 +112,10 @@ def landing():
 
 @app.route("/letters", methods=["GET"])
 def letters():
-    return render_template("letters.html")
+    return render_template(
+        "letters.html",
+        stripe_pk=os.environ.get("STRIPE_PUBLISHABLE_KEY", ""),
+    )
 
 
 @app.route("/letters/generate", methods=["POST"])
@@ -108,6 +132,99 @@ def letters_generate():
         messages=[{"role": "user", "content": prompt}],
     )
     return {"text": message.content[0].text}
+
+
+@app.route("/letters/create-session", methods=["POST"])
+def letters_create_session():
+    """Generate letter text and create a £1 Stripe PaymentIntent.
+
+    Returns {token, client_secret} to the frontend.  The token unlocks the
+    pre-generated letter once the webhook confirms payment.  Works for every
+    letter template type — payment logic is entirely template-agnostic.
+    """
+    import anthropic
+    data = request.get_json()
+    prompt = (data or {}).get("prompt", "").strip()
+    if not prompt:
+        return {"error": "No prompt provided"}, 400
+
+    # Generate letter text first so the spinner runs before the payment step
+    try:
+        client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+        message = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=1500,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        text = message.content[0].text
+    except Exception as e:
+        return {"error": f"Letter generation failed: {e}"}, 500
+
+    token = str(uuid.uuid4())
+
+    try:
+        client_secret, pi_id = create_letter_payment_intent(token)
+    except RuntimeError as e:
+        return {"error": str(e)}, 503
+    except Exception as e:
+        return {"error": f"Payment setup failed: {e}"}, 500
+
+    _purge_expired_letter_sessions()
+    _LETTER_SESSIONS[token] = {
+        "text": text,
+        "paid": False,
+        "pi_id": pi_id,
+        "expires": time.time() + _LETTER_SESSION_TTL,
+    }
+
+    return {"token": token, "client_secret": client_secret}
+
+
+@app.route("/letters/session-status/<token>")
+def letters_session_status(token):
+    """Poll endpoint: returns {paid: bool}.  Frontend polls until paid=true."""
+    entry = _LETTER_SESSIONS.get(token)
+    if not entry:
+        return {"error": "Session not found"}, 404
+    if time.time() > entry.get("expires", 0):
+        _LETTER_SESSIONS.pop(token, None)
+        return {"error": "Session expired"}, 410
+    return {"paid": entry["paid"]}
+
+
+@app.route("/letters/session-text/<token>")
+def letters_session_text(token):
+    """Return the pre-generated letter text for a confirmed-paid token.
+
+    Consumes the token on read — one-time use.
+    """
+    entry = _LETTER_SESSIONS.get(token)
+    if not entry:
+        return {"error": "Session not found or already used"}, 404
+    if not entry["paid"]:
+        return {"error": "Payment not yet confirmed"}, 403
+    text = entry["text"]
+    _LETTER_SESSIONS.pop(token, None)
+    return {"text": text}
+
+
+@app.route("/letters/donate", methods=["POST"])
+def letters_donate():
+    """Create a voluntary donation PaymentIntent. Amount in pence."""
+    data = request.get_json()
+    try:
+        amount = int((data or {}).get("amount", 0))
+    except (ValueError, TypeError):
+        amount = 0
+    if amount < 50 or amount > 10000:
+        return {"error": "Amount must be between 50p and £100"}, 400
+    try:
+        client_secret = create_donation_intent(amount)
+    except RuntimeError as e:
+        return {"error": str(e)}, 503
+    except Exception as e:
+        return {"error": str(e)}, 500
+    return {"client_secret": client_secret}
 
 
 @app.route("/asb", methods=["GET"])
@@ -228,13 +345,24 @@ def premium(case_id: str):
 
 @app.route("/stripe/webhook", methods=["POST"])
 def stripe_webhook():
-    # In local dev without DB, ignore webhooks.
-    if not USE_DB:
-        return ("IGNORED (local dev without DB)", 200)
-
     payload = request.get_data()
     sig_header = request.headers.get("Stripe-Signature", "")
-    ok = handle_stripe_webhook(payload, sig_header)
+
+    # Letter sessions are in-memory and need no DB — always process them.
+    # Existing checkout events (ASB/noise unlocks) still require DB.
+    try:
+        ok = handle_stripe_webhook(
+            payload, sig_header,
+            letter_sessions=_LETTER_SESSIONS,
+        )
+    except RuntimeError as e:
+        # STRIPE_WEBHOOK_SECRET not set — only a hard error in production
+        if os.environ.get("RENDER"):
+            return (str(e), 400)
+        return ("IGNORED (webhook secret not configured)", 200)
+    except Exception as e:
+        return (str(e), 400)
+
     return ("OK" if ok else "IGNORED", 200)
 
 
