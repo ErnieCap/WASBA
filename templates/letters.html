@@ -623,8 +623,8 @@
 <!-- Stripe.js -->
 <script src="https://js.stripe.com/v3/"></script>
 
-<!-- docx.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/docx@9.5.3/build/index.js"></script>
+<!-- docx.js (self-hosted to avoid CDN tracking blocks) -->
+<script src="/static/docx.js"></script>
 
 <script>
   // Stripe publishable key injected by Flask
@@ -737,6 +737,7 @@
   function startOver() {
     selectedDoc = null;
     generatedText = '';
+    if (_donationTimer !== null) { clearTimeout(_donationTimer); _donationTimer = null; }
     document.querySelectorAll('.doc-card').forEach(c => c.classList.remove('selected'));
     document.getElementById('step1-next').disabled = true;
     document.getElementById('form-error').style.display = 'none';
@@ -1050,6 +1051,7 @@ INSTRUCTIONS:
     const letterCount = getLetterCount();
     const waiverChecked = document.getElementById('waiver-check').checked;
     const isFree = (letterCount === 0) || waiverChecked;
+    console.log('[generate] letterCount=%d waiverChecked=%s isFree=%s', letterCount, waiverChecked, isFree);
 
     if (isFree) {
       // Free path: call /letters/generate directly, no payment step
@@ -1086,14 +1088,17 @@ INSTRUCTIONS:
     }
   }
 
-  // ── Called after every successful generation (free, paid, or waived) ────
-  function onLetterSuccess(text) {
+  // ── Called after every successful generation ────────────────────────────
+  // showDonation=true only for free/waived letters; skip after a paid letter
+  function onLetterSuccess(text, showDonation = true) {
     generatedText = text;
     document.getElementById('document-output').textContent = generatedText;
     incrementLetterCount();
     setStep(3);
-    // Small delay so the user sees the letter before the donation prompt
-    setTimeout(showDonationModal, 1200);
+    if (showDonation) {
+      // Small delay so the user sees the letter before the donation prompt
+      _donationTimer = setTimeout(showDonationModal, 1200);
+    }
   }
 
   // ── Payment modal ────────────────────────────────────────────────────────
@@ -1105,7 +1110,7 @@ INSTRUCTIONS:
       try {
         const r = await fetch(`/letters/session-text/${token}`);
         const d = await r.json();
-        if (d.text) { onLetterSuccess(d.text); return; }
+        if (d.text) { onLetterSuccess(d.text, false); return; }
       } catch (_) {}
       showError('Stripe is not configured. Cannot process payment.');
       return;
@@ -1158,7 +1163,7 @@ INSTRUCTIONS:
           if (textData.text) {
             document.getElementById('payment-modal').style.display = 'none';
             _paymentElements = null;
-            onLetterSuccess(textData.text);
+            onLetterSuccess(textData.text, false);
             return;
           }
         }
@@ -1188,8 +1193,10 @@ INSTRUCTIONS:
 
   // ── Donation modal ───────────────────────────────────────────────────────
   let _donationElements = null;
+  let _donationTimer = null;
 
   function showDonationModal() {
+    console.log('[donation] showDonationModal called — stack:', new Error().stack);
     if (!stripeClient) return;  // skip if Stripe not configured
     // Reset to amount-selection state
     document.getElementById('donation-box').innerHTML = `
