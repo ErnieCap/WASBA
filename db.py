@@ -516,17 +516,17 @@ def mark_letter_session_paid(token: str) -> bool:
 
 
 def get_letter_session_status(token: str) -> Optional[Dict[str, Any]]:
-    """Returns {paid, expires_at} or None if not found."""
+    """Returns {paid, expires_at, pi_id} or None if not found."""
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT paid, expires_at FROM letter_sessions WHERE token=%s",
+                "SELECT paid, expires_at, pi_id FROM letter_sessions WHERE token=%s",
                 (token,),
             )
             row = cur.fetchone()
     if not row:
         return None
-    return {"paid": row[0], "expires_at": row[1]}
+    return {"paid": row[0], "expires_at": row[1], "pi_id": row[2]}
 
 
 def consume_letter_session_text(token: str) -> Optional[str]:

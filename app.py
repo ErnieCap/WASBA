@@ -15,6 +15,7 @@ from service import assess_case_free, assess_case_premium
 from payments import (
     create_checkout_session, handle_stripe_webhook,
     create_letter_payment_intent, create_donation_intent,
+    check_payment_intent_succeeded,
 )
 
 from datetime import datetime, timezone
@@ -191,15 +192,26 @@ def letters_create_session():
 
 @app.route("/letters/session-status/<token>")
 def letters_session_status(token):
-    """Poll endpoint: returns {paid: bool}.  Frontend polls until paid=true."""
+    """Poll endpoint: returns {paid: bool}.  Frontend polls until paid=true.
+
+    Falls back to a direct Stripe API check if the webhook hasn't arrived yet,
+    mirroring the verify_and_mark_paid pattern used by the checkout flow.
+    """
     if USE_DB:
+        from datetime import datetime, timezone
         row = get_letter_session_status(token)
         if not row:
             return {"error": "Session not found"}, 404
-        from datetime import datetime, timezone
         if row["expires_at"] < datetime.now(timezone.utc):
             return {"error": "Session expired"}, 410
-        return {"paid": row["paid"]}
+        if row["paid"]:
+            return {"paid": True}
+        # Webhook may not have arrived yet — check Stripe directly
+        pi_id = row.get("pi_id", "")
+        if pi_id and check_payment_intent_succeeded(pi_id):
+            mark_letter_session_paid(token)
+            return {"paid": True}
+        return {"paid": False}
     else:
         entry = _LETTER_SESSIONS.get(token)
         if not entry:
@@ -207,7 +219,14 @@ def letters_session_status(token):
         if time.time() > entry.get("expires", 0):
             _LETTER_SESSIONS.pop(token, None)
             return {"error": "Session expired"}, 410
-        return {"paid": entry["paid"]}
+        if entry["paid"]:
+            return {"paid": True}
+        # Local dev fallback — check Stripe directly
+        pi_id = entry.get("pi_id", "")
+        if pi_id and check_payment_intent_succeeded(pi_id):
+            entry["paid"] = True
+            return {"paid": True}
+        return {"paid": False}
 
 
 @app.route("/letters/session-text/<token>")

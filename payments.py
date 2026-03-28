@@ -86,6 +86,21 @@ def create_letter_payment_intent(token: str) -> Tuple[str, str]:
     return intent.client_secret, intent.id
 
 
+def check_payment_intent_succeeded(pi_id: str) -> bool:
+    """Directly verify a PaymentIntent status with Stripe.
+
+    Used as a fallback in the polling endpoint when the webhook is delayed
+    or hasn't arrived yet — mirrors the verify_and_mark_paid pattern used
+    by the existing ASB/noise checkout flow.
+    """
+    try:
+        intent = stripe.PaymentIntent.retrieve(pi_id)
+        return intent.get("status") == "succeeded"
+    except Exception as e:
+        logger.error("Failed to retrieve PaymentIntent %s: %s", pi_id, e)
+        return False
+
+
 def create_donation_intent(amount_pence: int) -> str:
     """Create a PaymentIntent for a voluntary donation. Returns client_secret."""
     if not stripe.api_key:
