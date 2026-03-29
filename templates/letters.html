@@ -280,6 +280,45 @@
         ℹ️ ASB Guide does not store any of this information. It is used only to generate your document and is never saved.
       </div>
 
+      <!-- COMMUNITY TRIGGER -->
+      <div class="form-section" id="trigger-section" style="display:none;">
+        <div class="form-section-title">Community Trigger details</div>
+        <div class="notice-box" style="background:#f0fdf4; border-color:#bbf7d0; color:#166534; margin-bottom:16px;">
+          <strong>What is the Community Trigger?</strong><br>
+          The Anti-Social Behaviour Case Review (Community Trigger) is a statutory right under the Anti-Social Behaviour, Crime and Policing Act 2014. You can request a case review if you have made <strong>3 or more complaints about the same issue within 6 months</strong> — although your local area may set a lower threshold. The threshold is about complaints made, not whether agencies responded. Send your request to your local council or police; they will confirm whether the threshold is met and arrange a multi-agency review involving all relevant agencies.
+        </div>
+        <div class="form-2col">
+          <div class="form-group">
+            <label>Number of reports made</label>
+            <input type="text" id="trigger-reports" placeholder="e.g. 5 reports in the last 6 months" />
+          </div>
+          <div class="form-group">
+            <label>Agencies already contacted</label>
+            <input type="text" id="trigger-agencies" placeholder="e.g. Housing Association, Police, Council" />
+          </div>
+        </div>
+        <div class="form-2col">
+          <div class="form-group">
+            <label>Date range of incidents</label>
+            <input type="text" id="trigger-dates" placeholder="e.g. January 2024 to present" />
+          </div>
+          <div class="form-group">
+            <label>Complaint / reference numbers <span style="color:var(--muted);font-weight:400">(if known)</span></label>
+            <input type="text" id="trigger-refs" placeholder="e.g. REF-001, CRM-2024-456" />
+          </div>
+        </div>
+        <div class="form-1col last">
+          <div class="form-group">
+            <label>Have the agencies responded to your previous reports?</label>
+            <select id="trigger-response">
+              <option value="no_response">No — I have received no meaningful response</option>
+              <option value="inadequate">Yes — but the response was inadequate and the behaviour continued</option>
+              <option value="some_action">Yes — some action was taken but the problem remains unresolved</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <!-- YOUR DETAILS -->
       <div class="form-section">
         <div class="form-section-title">Your details</div>
@@ -434,45 +473,6 @@
             <label>Requested action</label>
             <span class="form-hint">What specifically are you asking the recipient to do?</span>
             <textarea id="requested-action" rows="3" placeholder="e.g. I am requesting that you investigate this matter urgently, contact the individual responsible, and take appropriate enforcement action."></textarea>
-          </div>
-        </div>
-      </div>
-
-      <!-- COMMUNITY TRIGGER -->
-      <div class="form-section" id="trigger-section" style="display:none;">
-        <div class="form-section-title">Community Trigger details</div>
-        <div class="notice-box" style="background:#f0fdf4; border-color:#bbf7d0; color:#166534; margin-bottom:16px;">
-          <strong>What is the Community Trigger?</strong><br>
-          The Anti-Social Behaviour Case Review (Community Trigger) is a statutory right under the Anti-Social Behaviour, Crime and Policing Act 2014. You can request a case review if you have made <strong>3 or more complaints about the same issue within 6 months</strong> — although your local area may set a lower threshold. The threshold is about complaints made, not whether agencies responded. Send your request to your local council or police; they will confirm whether the threshold is met and arrange a multi-agency review involving all relevant agencies.
-        </div>
-        <div class="form-2col">
-          <div class="form-group">
-            <label>Number of reports made</label>
-            <input type="text" id="trigger-reports" placeholder="e.g. 5 reports in the last 6 months" />
-          </div>
-          <div class="form-group">
-            <label>Agencies already contacted</label>
-            <input type="text" id="trigger-agencies" placeholder="e.g. Housing Association, Police, Council" />
-          </div>
-        </div>
-        <div class="form-2col">
-          <div class="form-group">
-            <label>Date range of incidents</label>
-            <input type="text" id="trigger-dates" placeholder="e.g. January 2024 to present" />
-          </div>
-          <div class="form-group">
-            <label>Complaint / reference numbers <span style="color:var(--muted);font-weight:400">(if known)</span></label>
-            <input type="text" id="trigger-refs" placeholder="e.g. REF-001, CRM-2024-456" />
-          </div>
-        </div>
-        <div class="form-1col last">
-          <div class="form-group">
-            <label>Have the agencies responded to your previous reports?</label>
-            <select id="trigger-response">
-              <option value="no_response">No — I have received no meaningful response</option>
-              <option value="inadequate">Yes — but the response was inadequate and the behaviour continued</option>
-              <option value="some_action">Yes — some action was taken but the problem remains unresolved</option>
-            </select>
           </div>
         </div>
       </div>
