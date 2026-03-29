@@ -196,32 +196,6 @@
   .modal-heading { font-size: 18px; font-weight: 700; margin: 0 0 8px; }
   .modal-subtext { font-size: 13px; color: var(--muted); margin: 0 0 4px; line-height: 1.5; }
 
-  /* Donation amounts */
-  .donation-amounts {
-    display: flex; flex-wrap: wrap; gap: 8px;
-    margin: 18px 0 4px;
-  }
-  .donation-btn {
-    min-width: 56px; font-weight: 600;
-  }
-  .donation-btn.selected {
-    background: var(--accent); color: #fff; border-color: var(--accent);
-  }
-  .donation-custom {
-    display: flex; align-items: center; gap: 6px;
-  }
-  .donation-symbol { font-weight: 600; color: var(--muted); }
-  .donation-custom input {
-    width: 76px; padding: 6px 8px;
-    border: 1px solid var(--line); border-radius: 6px;
-    font-size: 13px; background: var(--bg); color: var(--text);
-  }
-  .skip-link {
-    display: block; text-align: center;
-    font-size: 13px; color: var(--muted);
-    margin-top: 10px; text-decoration: none;
-  }
-  .skip-link:hover { color: var(--text); }
 
   @media (max-width: 600px) {
     .form-2col { grid-template-columns: 1fr; }
@@ -467,6 +441,10 @@
       <!-- COMMUNITY TRIGGER -->
       <div class="form-section" id="trigger-section" style="display:none;">
         <div class="form-section-title">Community Trigger details</div>
+        <div class="notice-box" style="background:#f0fdf4; border-color:#bbf7d0; color:#166534; margin-bottom:16px;">
+          <strong>What is the Community Trigger?</strong><br>
+          The Anti-Social Behaviour Case Review (Community Trigger) is a statutory right under the Anti-Social Behaviour, Crime and Policing Act 2014. You can request a case review if you have made <strong>3 or more complaints about the same issue within 6 months</strong> — although your local area may set a lower threshold. The threshold is about complaints made, not whether agencies responded. Send your request to your local council or police; they will confirm whether the threshold is met and arrange a multi-agency review involving all relevant agencies.
+        </div>
         <div class="form-2col">
           <div class="form-group">
             <label>Number of reports made</label>
@@ -477,10 +455,24 @@
             <input type="text" id="trigger-agencies" placeholder="e.g. Housing Association, Police, Council" />
           </div>
         </div>
-        <div class="form-1col last">
+        <div class="form-2col">
           <div class="form-group">
             <label>Date range of incidents</label>
             <input type="text" id="trigger-dates" placeholder="e.g. January 2024 to present" />
+          </div>
+          <div class="form-group">
+            <label>Complaint / reference numbers <span style="color:var(--muted);font-weight:400">(if known)</span></label>
+            <input type="text" id="trigger-refs" placeholder="e.g. REF-001, CRM-2024-456" />
+          </div>
+        </div>
+        <div class="form-1col last">
+          <div class="form-group">
+            <label>Have the agencies responded to your previous reports?</label>
+            <select id="trigger-response">
+              <option value="no_response">No — I have received no meaningful response</option>
+              <option value="inadequate">Yes — but the response was inadequate and the behaviour continued</option>
+              <option value="some_action">Yes — some action was taken but the problem remains unresolved</option>
+            </select>
           </div>
         </div>
       </div>
@@ -595,30 +587,6 @@
   </div>
 </div>
 
-<!-- ── DONATION MODAL ─────────────────────────────────────────────────── -->
-<div id="donation-modal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true">
-  <div class="modal-box" id="donation-box">
-    <h2 class="modal-heading">Did this letter help you?</h2>
-    <p class="modal-subtext">WASBA is free for those who need it. If you are able to, a small contribution helps keep it running for everyone.</p>
-    <div class="donation-amounts" id="donation-amounts">
-      <button class="btn donation-btn" onclick="selectDonation(100)">£1</button>
-      <button class="btn donation-btn" onclick="selectDonation(200)">£2</button>
-      <button class="btn donation-btn" onclick="selectDonation(300)">£3</button>
-      <div class="donation-custom">
-        <span class="donation-symbol">£</span>
-        <input type="number" id="custom-amount" min="1" max="100" placeholder="Other" />
-        <button class="btn" onclick="selectCustomDonation()">Go</button>
-      </div>
-    </div>
-    <div id="stripe-donation-element" style="margin:16px 0; display:none;"></div>
-    <div id="donation-error" class="error-box" style="display:none; margin-bottom:12px;"></div>
-    <button class="btn primary" id="donate-btn" style="width:100%; display:none; margin-bottom:10px;">
-      <span id="donate-btn-text">Donate</span>
-      <span id="donate-btn-spinner" class="spinner" style="display:none;"></span>
-    </button>
-    <a href="#" class="skip-link" onclick="closeDonationModal(); return false;">No thanks, close</a>
-  </div>
-</div>
 
 <!-- Stripe.js -->
 <script src="https://js.stripe.com/v3/"></script>
@@ -737,7 +705,6 @@
   function startOver() {
     selectedDoc = null;
     generatedText = '';
-    if (_donationTimer !== null) { clearTimeout(_donationTimer); _donationTimer = null; }
     document.querySelectorAll('.doc-card').forEach(c => c.classList.remove('selected'));
     document.getElementById('step1-next').disabled = true;
     document.getElementById('form-error').style.display = 'none';
@@ -933,6 +900,112 @@ This letter is being sent by recorded post. I am retaining a copy for my records
     }
   }
 
+  function buildTriggerPrompt(d) {
+    const toneNote = d.tone === 'firm'
+      ? 'Tone: firm and direct — choose the stronger option where phrasing varies.'
+      : d.tone === 'measured'
+      ? 'Tone: measured and diplomatic while remaining resolute.'
+      : 'Tone: formal and professional throughout.';
+
+    const diaryText = d.hasDiary === 'wasba'
+      ? 'Full incident log maintained using ASB Guide Noise Diary tool (available on request)'
+      : d.hasDiary === 'yes'
+      ? 'Written incident log maintained (available on request)'
+      : 'No incident diary kept';
+
+    const header = `${d.yourName || '[Your Name]'}
+${d.yourAddress || '[Your Address]'}
+
+${d.formattedDate}
+
+${d.recipientName || '[Responsible Authority Name]'}
+${d.recipientAddress || '[Address / Department]'}
+`;
+
+    const footer = `Yours faithfully,
+
+
+
+[Signature]
+
+${d.yourName || '[Your Name]'}
+${d.yourAddress || '[Your Address]'}
+${d.formattedDate}
+
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+This document was produced with the support of ASB Guide (asbguide.com). ASB Guide provides information and template tools to assist individuals experiencing anti-social behaviour. This does not constitute legal advice.`;
+
+    const instructions = `You are completing a formal Community Trigger (ASB Case Review) request letter. Rules:
+- Keep ALL fixed wording exactly as written — do not rephrase, add to, or reorder it
+- Replace every [PLACEHOLDER] with the supplied data
+- Output only the completed letter — no preamble, no commentary
+- ${toneNote}
+- Use UK English throughout
+
+SUPPLIED DATA:
+Name: ${d.yourName || '[Your Name]'}
+Address: ${d.yourAddress || '[Your Address]'}
+Date: ${d.formattedDate}
+Reference: ${d.caseRef || 'N/A'}
+Responsible Authority: ${d.recipientName || '[Responsible Authority]'}
+Authority Address: ${d.recipientAddress || '[Address]'}
+Number of reports made: ${d.triggerReports || '[number of reports]'}
+Agencies contacted: ${d.triggerAgencies || '[agencies contacted]'}
+Date range of incidents: ${d.triggerDates || '[date range]'}
+Complaint/reference numbers: ${d.triggerRefs || 'Not provided'}
+Agency response to date: ${d.triggerResponse === 'no_response' ? 'No meaningful response received' : d.triggerResponse === 'inadequate' ? 'Response received but inadequate — behaviour continued' : 'Some action taken but problem remains unresolved'}
+Description of ASB: ${d.asbDescription}
+Evidence/diary: ${diaryText}
+Requested outcome: ${d.requestedAction || '[outcome requested]'}
+
+--- LETTER ---
+
+`;
+
+    return instructions + header + `${d.caseRef ? 'Reference: ' + d.caseRef + '\n\n' : ''}FORMAL REQUEST FOR COMMUNITY TRIGGER (ASB CASE REVIEW)
+Under sections 104\u2013107 of the Anti-Social Behaviour, Crime and Policing Act 2014
+
+Dear ${d.recipientName || 'Sir or Madam'},
+
+RIGHT TO REQUEST A REVIEW
+
+I am writing to formally invoke my statutory right to request an Anti-Social Behaviour Case Review, commonly referred to as the Community Trigger, under sections 104 to 107 of the Anti-Social Behaviour, Crime and Policing Act 2014.
+
+I reside at ${d.yourAddress || '[your address]'} and have been experiencing persistent anti-social behaviour. I have made ${d.triggerReports || '[number of reports]'} reports to relevant agencies over the period ${d.triggerDates || '[date range]'}, including to ${d.triggerAgencies || '[agencies contacted]'}. I believe the qualifying threshold for a review has been met.
+
+DESCRIPTION OF THE ANTI-SOCIAL BEHAVIOUR
+
+[REPLACE WITH CLEAR AND FACTUAL SUMMARY OF THE SITUATION DESCRIBED BELOW — DO NOT USE PLACEHOLDER TEXT]
+${d.asbDescription}
+
+REPORTS MADE
+
+I have formally reported this matter on ${d.triggerReports || '[number]'} separate occasions during the period ${d.triggerDates || '[date range]'}. The agencies to whom I have reported include: ${d.triggerAgencies || '[agencies]'}.${d.triggerRefs ? ' The reference numbers assigned to my complaints include: ' + d.triggerRefs + '.' : ''}
+
+${d.triggerResponse === 'no_response'
+  ? 'Despite these reports, I have received no meaningful response and the anti-social behaviour has continued unaddressed.'
+  : d.triggerResponse === 'inadequate'
+  ? 'Whilst I received a response to some of my reports, the action taken was inadequate and the anti-social behaviour has continued.'
+  : 'Some action has been taken in response to my reports; however, the anti-social behaviour remains unresolved and continues to affect me.'
+}
+
+EVIDENCE
+
+${diaryText}.
+
+OUTCOME REQUESTED
+
+${d.requestedAction || 'I am requesting that the relevant agencies conduct a formal review of my case, coordinate their response, and provide me with a written outcome setting out the steps taken and any further actions planned.'}
+
+RESPONSE REQUESTED
+
+I request that you acknowledge this Community Trigger request in writing and confirm the arrangements for the case review, including the date, time and format of any review meeting, within 20 working days of the date of this letter.
+
+This letter is being retained for my records.
+
+` + footer;
+  }
+
   async function generateDocument() {
     const meta = docMeta[selectedDoc];
     const yourName = document.getElementById('your-name').value.trim() || '[Your Name]';
@@ -952,6 +1025,8 @@ This letter is being sent by recorded post. I am retaining a copy for my records
     const triggerReports = document.getElementById('trigger-reports')?.value.trim() || '';
     const triggerAgencies = document.getElementById('trigger-agencies')?.value.trim() || '';
     const triggerDates = document.getElementById('trigger-dates')?.value.trim() || '';
+    const triggerRefs = document.getElementById('trigger-refs')?.value.trim() || '';
+    const triggerResponse = document.getElementById('trigger-response')?.value || 'no_response';
     const abcProhibitions = document.getElementById('abc-prohibitions')?.value.trim() || '';
     const abcDuration = document.getElementById('abc-duration')?.value.trim() || '';
     const neighbour2 = document.getElementById('neighbour2')?.value.trim() || '';
@@ -979,6 +1054,13 @@ This letter is being sent by recorded post. I am retaining a copy for my records
         yourName, yourAddress, yourContact, formattedDate, caseRef,
         recipientName, recipientAddress, jurisdiction, perpetratorDesc,
         asbDescription, hasDiary, impactDesc, previousReports, previousDates, tone
+      });
+    } else if (selectedDoc === 'trigger') {
+      prompt = buildTriggerPrompt({
+        yourName, yourAddress, formattedDate, caseRef,
+        recipientName, recipientAddress,
+        asbDescription, hasDiary, requestedAction, tone,
+        triggerReports, triggerAgencies, triggerDates, triggerRefs, triggerResponse
       });
     } else {
       const toneDescriptions = {
@@ -1088,17 +1170,11 @@ INSTRUCTIONS:
     }
   }
 
-  // ── Called after every successful generation ────────────────────────────
-  // showDonation=true only for free/waived letters; skip after a paid letter
-  function onLetterSuccess(text, showDonation = true) {
+  function onLetterSuccess(text) {
     generatedText = text;
     document.getElementById('document-output').textContent = generatedText;
     incrementLetterCount();
     setStep(3);
-    if (showDonation) {
-      // Small delay so the user sees the letter before the donation prompt
-      _donationTimer = setTimeout(showDonationModal, 1200);
-    }
   }
 
   // ── Payment modal ────────────────────────────────────────────────────────
@@ -1110,7 +1186,7 @@ INSTRUCTIONS:
       try {
         const r = await fetch(`/letters/session-text/${token}`);
         const d = await r.json();
-        if (d.text) { onLetterSuccess(d.text, false); return; }
+        if (d.text) { onLetterSuccess(d.text); return; }
       } catch (_) {}
       showError('Stripe is not configured. Cannot process payment.');
       return;
@@ -1189,110 +1265,6 @@ INSTRUCTIONS:
     document.getElementById('payment-modal').style.display = 'none';
     _paymentElements = null;
     document.getElementById('stripe-payment-element').innerHTML = '';
-  }
-
-  // ── Donation modal ───────────────────────────────────────────────────────
-  let _donationElements = null;
-  let _donationTimer = null;
-
-  function showDonationModal() {
-    console.log('[donation] showDonationModal called — stack:', new Error().stack);
-    if (!stripeClient) return;  // skip if Stripe not configured
-    // Reset to amount-selection state
-    document.getElementById('donation-box').innerHTML = `
-      <h2 class="modal-heading">Did this letter help you?</h2>
-      <p class="modal-subtext">WASBA is free for those who need it. If you are able to, a small contribution helps keep it running for everyone.</p>
-      <div class="donation-amounts" id="donation-amounts">
-        <button class="btn donation-btn" onclick="selectDonation(100)">£1</button>
-        <button class="btn donation-btn" onclick="selectDonation(200)">£2</button>
-        <button class="btn donation-btn" onclick="selectDonation(300)">£3</button>
-        <div class="donation-custom">
-          <span class="donation-symbol">£</span>
-          <input type="number" id="custom-amount" min="1" max="100" placeholder="Other" />
-          <button class="btn" onclick="selectCustomDonation()">Go</button>
-        </div>
-      </div>
-      <div id="stripe-donation-element" style="margin:16px 0; display:none;"></div>
-      <div id="donation-error" class="error-box" style="display:none; margin-bottom:12px;"></div>
-      <button class="btn primary" id="donate-btn" style="width:100%; display:none; margin-bottom:10px;">
-        <span id="donate-btn-text">Donate</span>
-        <span id="donate-btn-spinner" class="spinner" style="display:none;"></span>
-      </button>
-      <a href="#" class="skip-link" onclick="closeDonationModal(); return false;">No thanks, close</a>
-    `;
-    _donationElements = null;
-    document.getElementById('donation-modal').style.display = 'flex';
-  }
-
-  function selectCustomDonation() {
-    const val = parseInt(document.getElementById('custom-amount')?.value || '0', 10);
-    if (val >= 1 && val <= 100) selectDonation(val * 100);
-  }
-
-  async function selectDonation(amountPence) {
-    document.querySelectorAll('.donation-btn').forEach(b => b.classList.remove('selected'));
-    const clicked = Array.from(document.querySelectorAll('.donation-btn'))
-      .find(b => b.textContent === `£${amountPence / 100}`);
-    if (clicked) clicked.classList.add('selected');
-
-    document.getElementById('donation-error').style.display = 'none';
-
-    try {
-      const resp = await fetch('/letters/donate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: amountPence })
-      });
-      const data = await resp.json();
-      if (data.error) throw new Error(data.error);
-
-      const donationEl = document.getElementById('stripe-donation-element');
-      donationEl.innerHTML = '';
-      const elements = stripeClient.elements({ clientSecret: data.client_secret });
-      const payEl = elements.create('payment');
-      payEl.mount('#stripe-donation-element');
-      _donationElements = elements;
-      donationEl.style.display = '';
-
-      const btn = document.getElementById('donate-btn');
-      btn.style.display = '';
-      btn.onclick = async () => {
-        setDonateBtnState(true);
-        const { error } = await stripeClient.confirmPayment({
-          elements,
-          redirect: 'if_required',
-        });
-        if (error) {
-          document.getElementById('donation-error').textContent = error.message;
-          document.getElementById('donation-error').style.display = '';
-          setDonateBtnState(false);
-          return;
-        }
-        // Donation confirmed — show thank-you
-        document.getElementById('donation-box').innerHTML = `
-          <h2 class="modal-heading">Thank you</h2>
-          <p class="modal-subtext" style="margin-bottom:20px;">Your contribution helps WASBA stay free for everyone who needs it.</p>
-          <button class="btn primary" style="width:100%;" onclick="closeDonationModal()">Close</button>
-        `;
-        _donationElements = null;
-      };
-    } catch (err) {
-      const errEl = document.getElementById('donation-error');
-      if (errEl) { errEl.textContent = err.message; errEl.style.display = ''; }
-    }
-  }
-
-  function setDonateBtnState(loading) {
-    const btn = document.getElementById('donate-btn');
-    if (!btn) return;
-    btn.disabled = loading;
-    document.getElementById('donate-btn-text').textContent = loading ? 'Processing…' : 'Donate';
-    document.getElementById('donate-btn-spinner').style.display = loading ? 'inline-block' : 'none';
-  }
-
-  function closeDonationModal() {
-    document.getElementById('donation-modal').style.display = 'none';
-    _donationElements = null;
   }
 
   function setGenerating(on) {
