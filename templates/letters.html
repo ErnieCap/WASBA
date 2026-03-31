@@ -113,6 +113,15 @@
   .form-1col { margin-bottom: 14px; }
   .form-1col.last { margin-bottom: 0; }
   .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-hint { font-size: 12px; color: var(--muted); }
+  .radio-group, .check-group {
+    display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 6px;
+  }
+  .radio-group label, .check-group label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 14px; font-weight: 400; color: var(--text); cursor: pointer;
+  }
+  .radio-group input, .check-group input { accent-color: var(--accent); width: 15px; height: 15px; flex-shrink: 0; }
 
   .notice-box {
     background: #eff6ff;
@@ -504,27 +513,52 @@
       <!-- EH: NOISE FIELDS -->
       <div class="form-section" id="eh-noise-section" style="display:none;">
         <div class="form-section-title">Noise details</div>
-        <div class="form-2col">
+        <div class="form-1col">
           <div class="form-group">
             <label>Type of noise</label>
-            <select id="eh-noise-type">
-              <option value="loud music or TV">Loud music or TV</option>
-              <option value="parties or gatherings">Parties or gatherings</option>
-              <option value="DIY or machinery">DIY or machinery</option>
-              <option value="voices or shouting">Voices or shouting</option>
-              <option value="dogs barking">Dogs barking</option>
-              <option value="other noise">Other</option>
+            <div class="radio-group">
+              <label><input type="radio" name="eh-noise-type" value="loud music or TV"> Loud music / TV</label>
+              <label><input type="radio" name="eh-noise-type" value="parties or gatherings"> Parties / gatherings</label>
+              <label><input type="radio" name="eh-noise-type" value="DIY or power tools"> DIY / power tools</label>
+              <label><input type="radio" name="eh-noise-type" value="machinery or vehicles"> Machinery / vehicles</label>
+              <label><input type="radio" name="eh-noise-type" value="voices or shouting"> Voices / shouting</label>
+              <label><input type="radio" name="eh-noise-type" value="other noise"> Other</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-1col">
+          <div class="form-group">
+            <label>Times of day <span style="color:var(--muted);font-weight:400">(tick all that apply)</span></label>
+            <div class="check-group">
+              <label><input type="checkbox" name="eh-noise-times" value="early morning (6am–9am)"> Early morning (6am–9am)</label>
+              <label><input type="checkbox" name="eh-noise-times" value="morning (9am–12pm)"> Morning (9am–12pm)</label>
+              <label><input type="checkbox" name="eh-noise-times" value="afternoon (12pm–5pm)"> Afternoon (12pm–5pm)</label>
+              <label><input type="checkbox" name="eh-noise-times" value="evening (5pm–10pm)"> Evening (5pm–10pm)</label>
+              <label><input type="checkbox" name="eh-noise-times" value="late night (10pm–1am)"> Late night (10pm–1am)</label>
+              <label><input type="checkbox" name="eh-noise-times" value="early hours (1am–6am)"> Early hours (1am–6am)</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-2col">
+          <div class="form-group">
+            <label>How often does it occur?</label>
+            <select id="eh-noise-frequency">
+              <option value="daily or near-daily">Daily or near-daily</option>
+              <option value="several times a week">Several times a week</option>
+              <option value="once or twice a week">Once or twice a week</option>
+              <option value="occasionally but persistently">Occasionally but persistently</option>
             </select>
           </div>
           <div class="form-group">
-            <label>When does it occur?</label>
-            <input type="text" id="eh-noise-times" placeholder="e.g. weeknights 11pm–2am, weekend afternoons" />
+            <label>When did this start?</label>
+            <input type="date" id="eh-noise-start" />
           </div>
         </div>
         <div class="form-1col last">
           <div class="form-group">
-            <label>How long has this been happening?</label>
-            <input type="text" id="eh-noise-duration" placeholder="e.g. since January 2025, approximately 3 months" />
+            <label>Describe the noise and its impact on you</label>
+            <span class="form-hint">Include how it affects your sleep, health, daily life, or ability to work from home</span>
+            <textarea id="eh-noise-desc" rows="4" placeholder="e.g. The music is so loud the walls vibrate. I have been unable to sleep on multiple nights and it is affecting my health and ability to work..."></textarea>
           </div>
         </div>
       </div>
@@ -532,25 +566,52 @@
       <!-- EH: NUISANCE DOGS FIELDS -->
       <div class="form-section" id="eh-dogs-section" style="display:none;">
         <div class="form-section-title">Nuisance dog details</div>
+        <div class="form-1col">
+          <div class="form-group">
+            <label>Type of nuisance</label>
+            <div class="radio-group">
+              <label><input type="radio" name="eh-dogs-type" value="excessive barking"> Excessive barking</label>
+              <label><input type="radio" name="eh-dogs-type" value="fouling in public areas"> Fouling in public areas</label>
+              <label><input type="radio" name="eh-dogs-type" value="straying or running loose"> Straying / running loose</label>
+              <label><input type="radio" name="eh-dogs-type" value="aggressive or threatening behaviour"> Aggressive / threatening</label>
+              <label><input type="radio" name="eh-dogs-type" value="multiple issues"> Multiple issues</label>
+            </div>
+          </div>
+        </div>
         <div class="form-2col">
           <div class="form-group">
-            <label>Type of issue</label>
-            <select id="eh-dogs-type">
-              <option value="excessive barking">Excessive barking</option>
-              <option value="fouling in public areas">Fouling in public areas</option>
-              <option value="straying or running loose">Straying or running loose</option>
-              <option value="aggressive or threatening behaviour">Aggressive or threatening behaviour</option>
-            </select>
+            <label>Number of dogs involved</label>
+            <input type="number" id="eh-dogs-count" min="1" max="20" placeholder="e.g. 2" style="max-width:120px;" />
           </div>
           <div class="form-group">
-            <label>How often does this occur?</label>
-            <input type="text" id="eh-dogs-frequency" placeholder="e.g. daily, several times a week" />
+            <label>Fouling location <span style="color:var(--muted);font-weight:400">(if applicable)</span></label>
+            <input type="text" id="eh-dogs-fouling" placeholder="e.g. public footpath, communal garden, front path" />
+          </div>
+        </div>
+        <div class="form-1col">
+          <div class="form-group">
+            <label>Barking times <span style="color:var(--muted);font-weight:400">(tick all that apply)</span></label>
+            <div class="check-group">
+              <label><input type="checkbox" name="eh-dogs-times" value="early morning (6am–9am)"> Early morning (6am–9am)</label>
+              <label><input type="checkbox" name="eh-dogs-times" value="morning (9am–12pm)"> Morning (9am–12pm)</label>
+              <label><input type="checkbox" name="eh-dogs-times" value="afternoon (12pm–5pm)"> Afternoon (12pm–5pm)</label>
+              <label><input type="checkbox" name="eh-dogs-times" value="evening (5pm–10pm)"> Evening (5pm–10pm)</label>
+              <label><input type="checkbox" name="eh-dogs-times" value="late night (10pm–1am)"> Late night (10pm–1am)</label>
+              <label><input type="checkbox" name="eh-dogs-times" value="early hours (1am–6am)"> Early hours (1am–6am)</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-2col">
+          <div class="form-group">
+            <label>When did this start?</label>
+            <input type="date" id="eh-dogs-start" />
           </div>
         </div>
         <div class="form-1col last">
           <div class="form-group">
-            <label>Location or source</label>
-            <input type="text" id="eh-dogs-location" placeholder="e.g. dog at neighbouring property, public park on [street]" />
+            <label>Describe the problem and its impact</label>
+            <span class="form-hint">Include where the dog is kept, owner details if known, and how it has affected you</span>
+            <textarea id="eh-dogs-desc" rows="4" placeholder="e.g. The dog at number 12 barks continuously for several hours each day when the owner is out. The noise is constant and distressing..."></textarea>
           </div>
         </div>
       </div>
@@ -558,30 +619,58 @@
       <!-- EH: FLY-TIPPING & WASTE FIELDS -->
       <div class="form-section" id="eh-flytipping-section" style="display:none;">
         <div class="form-section-title">Fly-tipping / waste details</div>
-        <div class="form-2col">
-          <div class="form-group">
-            <label>Location of the waste / fly-tipping</label>
-            <input type="text" id="eh-flytipping-location" placeholder="e.g. alleyway behind [street], public footpath at [location]" />
-          </div>
+        <div class="form-1col">
           <div class="form-group">
             <label>Type of waste</label>
-            <select id="eh-flytipping-type">
-              <option value="household waste and furniture">Household waste / furniture</option>
-              <option value="commercial or trade waste">Commercial or trade waste</option>
-              <option value="garden waste">Garden waste</option>
-              <option value="building or construction waste">Building / construction waste</option>
-              <option value="mixed or unknown waste">Mixed / unknown waste</option>
+            <div class="radio-group">
+              <label><input type="radio" name="eh-ft-waste-type" value="household waste and furniture"> Household waste / furniture</label>
+              <label><input type="radio" name="eh-ft-waste-type" value="commercial or trade waste"> Commercial / trade waste</label>
+              <label><input type="radio" name="eh-ft-waste-type" value="garden waste"> Garden waste</label>
+              <label><input type="radio" name="eh-ft-waste-type" value="building and construction waste"> Building / construction waste</label>
+              <label><input type="radio" name="eh-ft-waste-type" value="mixed or unknown waste"> Mixed / unknown</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-2col">
+          <div class="form-group">
+            <label>Exact location</label>
+            <input type="text" id="eh-ft-location" placeholder="e.g. alleyway behind 14 Example Street, public car park on High Road" />
+          </div>
+          <div class="form-group">
+            <label>Approximate volume</label>
+            <select id="eh-ft-volume">
+              <option value="a small amount (bin bag sized)">Small — bin bag sized</option>
+              <option value="a medium amount (several bags or boxes)">Medium — several bags / boxes</option>
+              <option value="a large amount (van load or more)">Large — van load or more</option>
+              <option value="an extensive amount covering a significant area">Extensive — covering a significant area</option>
             </select>
+          </div>
+        </div>
+        <div class="form-2col">
+          <div class="form-group">
+            <label>Is this recurring?</label>
+            <div class="radio-group" style="margin-top:8px;">
+              <label><input type="radio" name="eh-ft-recurring" value="a one-off incident"> One-off</label>
+              <label><input type="radio" name="eh-ft-recurring" value="a recurring problem at this location"> Recurring</label>
+              <label><input type="radio" name="eh-ft-recurring" value="an ongoing problem — waste has not been cleared"> Ongoing / not cleared</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Date first noticed</label>
+            <input type="date" id="eh-ft-date" />
+          </div>
+        </div>
+        <div class="form-1col">
+          <div class="form-group">
+            <label>Suspected person or vehicle <span style="color:var(--muted);font-weight:400">(if known)</span></label>
+            <span class="form-hint">Description only — do not include full personal details</span>
+            <textarea id="eh-ft-suspect" rows="3" placeholder="e.g. a white transit van, partial plate XY72, seen depositing waste on the morning of [date]"></textarea>
           </div>
         </div>
         <div class="form-1col last">
           <div class="form-group">
-            <label>Is this a one-off or ongoing problem?</label>
-            <select id="eh-flytipping-frequency">
-              <option value="a single incident">Single incident</option>
-              <option value="a recurring problem at this location">Recurring at this location</option>
-              <option value="an ongoing problem that has not been cleared">Ongoing — waste not yet cleared</option>
-            </select>
+            <label>Health or safety hazards <span style="color:var(--muted);font-weight:400">(if any)</span></label>
+            <textarea id="eh-ft-hazards" rows="3" placeholder="e.g. broken glass visible, possible asbestos, near a watercourse, accessible to children"></textarea>
           </div>
         </div>
       </div>
@@ -1070,20 +1159,29 @@ This document was produced with the support of ASB Guide (asbguide.com). ASB Gui
       subjectLine = 'FORMAL COMPLAINT — NOISE NUISANCE';
       legislationNote = `This complaint is made under the Environmental Protection Act 1990 (statutory nuisance) and the Noise Act 1996. Under section 79 of the Environmental Protection Act 1990 you have a statutory duty to inspect and investigate complaints of noise nuisance and, where a statutory nuisance exists, to serve an abatement notice.`;
       detailsBlock = `Type of noise: ${d.ehNoiseType || '[type of noise]'}
-When it occurs: ${d.ehNoiseTimes || '[times and days]'}
-How long this has been happening: ${d.ehNoiseDuration || '[duration]'}`;
+Times of day: ${d.ehNoiseTimes || '[not specified]'}
+Frequency: ${d.ehNoiseFrequency || '[not specified]'}
+Problem started: ${d.ehNoiseStart || '[not specified]'}
+Description and impact: ${d.ehNoiseDesc || '[not provided]'}`;
     } else if (d.ehSubcat === 'dogs') {
       subjectLine = 'FORMAL COMPLAINT — NUISANCE DOG(S)';
       legislationNote = `This complaint is made under the Environmental Protection Act 1990 (statutory nuisance), the Clean Neighbourhoods and Environment Act 2005, and the Anti-social Behaviour, Crime and Policing Act 2014. The council has powers to issue Community Protection Notices and Dog Control Orders where dog nuisance is established.`;
-      detailsBlock = `Type of issue: ${d.ehDogsType || '[type of dog nuisance]'}
-Frequency: ${d.ehDogsFrequency || '[how often]'}
-Location or source: ${d.ehDogsLocation || '[location or source]'}`;
+      detailsBlock = `Type of nuisance: ${d.ehDogsType || '[type of nuisance]'}
+Number of dogs: ${d.ehDogsCount || '[not specified]'}
+Barking times: ${d.ehDogsTimes || '[not specified]'}
+Fouling location: ${d.ehDogsFouling || 'N/A'}
+Problem started: ${d.ehDogsStart || '[not specified]'}
+Description and impact: ${d.ehDogsDesc || '[not provided]'}`;
     } else {
       subjectLine = 'FORMAL COMPLAINT — FLY-TIPPING / WASTE';
       legislationNote = `This complaint is made under the Environmental Protection Act 1990 and the Clean Neighbourhoods and Environment Act 2005. Fly-tipping is a criminal offence under section 33 of the Environmental Protection Act 1990. The council has a duty under section 89 of the same Act to keep public land clear of litter and refuse, and powers to investigate and prosecute fly-tipping offences.`;
-      detailsBlock = `Location of waste / fly-tipping: ${d.ehFlytippingLocation || '[location]'}
-Type of waste: ${d.ehFlytippingType || '[type of waste]'}
-Frequency: ${d.ehFlytippingFrequency || '[one-off or recurring]'}`;
+      detailsBlock = `Type of waste: ${d.ehFtWasteType || '[type of waste]'}
+Exact location: ${d.ehFtLocation || '[not specified]'}
+Approximate volume: ${d.ehFtVolume || '[not specified]'}
+Recurring: ${d.ehFtRecurring || '[not specified]'}
+Date first noticed: ${d.ehFtDate || '[not specified]'}
+Suspected person / vehicle: ${d.ehFtSuspect || 'Unknown'}
+Health or safety hazards: ${d.ehFtHazards || 'None specified'}`;
     }
 
     const instructions = `You are completing a formal complaint letter to a local council's Environmental Health department. Rules:
@@ -1102,8 +1200,6 @@ Council / Authority: ${d.recipientName || '[Council Name]'}
 Department address: ${d.recipientAddress || '[Address]'}
 Complaint type: ${d.ehSubcat}
 ${detailsBlock}
-Additional details: ${d.asbDescription || 'None provided'}
-Evidence / diary: ${diaryText}
 Requested outcome: ${d.requestedAction || '[outcome requested]'}
 
 --- LETTER ---
@@ -1122,13 +1218,9 @@ DETAILS
 
 ${detailsBlock}
 
-${d.asbDescription ? 'ADDITIONAL DETAILS\n\n' + d.asbDescription + '\n\n' : ''}YOUR STATUTORY DUTY
+YOUR STATUTORY DUTY
 
 ${legislationNote}
-
-EVIDENCE
-
-${diaryText}.
 
 REQUESTED ACTION
 
@@ -1268,15 +1360,27 @@ This letter is being retained for my records.
     const triggerDates = document.getElementById('trigger-dates')?.value.trim() || '';
     const triggerRefs = document.getElementById('trigger-refs')?.value.trim() || '';
     const triggerResponse = document.getElementById('trigger-response')?.value || 'no_response';
-    const ehNoiseType = document.getElementById('eh-noise-type')?.value || '';
-    const ehNoiseTimes = document.getElementById('eh-noise-times')?.value.trim() || '';
-    const ehNoiseDuration = document.getElementById('eh-noise-duration')?.value.trim() || '';
-    const ehDogsType = document.getElementById('eh-dogs-type')?.value || '';
-    const ehDogsFrequency = document.getElementById('eh-dogs-frequency')?.value.trim() || '';
-    const ehDogsLocation = document.getElementById('eh-dogs-location')?.value.trim() || '';
-    const ehFlytippingLocation = document.getElementById('eh-flytipping-location')?.value.trim() || '';
-    const ehFlytippingType = document.getElementById('eh-flytipping-type')?.value || '';
-    const ehFlytippingFrequency = document.getElementById('eh-flytipping-frequency')?.value || '';
+    // EH: Noise
+    const ehNoiseType = document.querySelector('input[name="eh-noise-type"]:checked')?.value || '';
+    const ehNoiseTimes = Array.from(document.querySelectorAll('input[name="eh-noise-times"]:checked')).map(el => el.value).join(', ');
+    const ehNoiseFrequency = document.getElementById('eh-noise-frequency')?.value || '';
+    const ehNoiseStart = document.getElementById('eh-noise-start')?.value || '';
+    const ehNoiseDesc = document.getElementById('eh-noise-desc')?.value.trim() || '';
+    // EH: Dogs
+    const ehDogsType = document.querySelector('input[name="eh-dogs-type"]:checked')?.value || '';
+    const ehDogsCount = document.getElementById('eh-dogs-count')?.value.trim() || '';
+    const ehDogsTimes = Array.from(document.querySelectorAll('input[name="eh-dogs-times"]:checked')).map(el => el.value).join(', ');
+    const ehDogsFouling = document.getElementById('eh-dogs-fouling')?.value.trim() || '';
+    const ehDogsStart = document.getElementById('eh-dogs-start')?.value || '';
+    const ehDogsDesc = document.getElementById('eh-dogs-desc')?.value.trim() || '';
+    // EH: Fly-tipping
+    const ehFtWasteType = document.querySelector('input[name="eh-ft-waste-type"]:checked')?.value || '';
+    const ehFtLocation = document.getElementById('eh-ft-location')?.value.trim() || '';
+    const ehFtVolume = document.getElementById('eh-ft-volume')?.value || '';
+    const ehFtRecurring = document.querySelector('input[name="eh-ft-recurring"]:checked')?.value || '';
+    const ehFtDate = document.getElementById('eh-ft-date')?.value || '';
+    const ehFtSuspect = document.getElementById('eh-ft-suspect')?.value.trim() || '';
+    const ehFtHazards = document.getElementById('eh-ft-hazards')?.value.trim() || '';
     const abcProhibitions = document.getElementById('abc-prohibitions')?.value.trim() || '';
     const abcDuration = document.getElementById('abc-duration')?.value.trim() || '';
     const neighbour2 = document.getElementById('neighbour2')?.value.trim() || '';
@@ -1314,11 +1418,11 @@ This letter is being retained for my records.
       prompt = buildCouncilEhPrompt({
         yourName, yourAddress, formattedDate, caseRef,
         recipientName, recipientAddress,
-        asbDescription, hasDiary, requestedAction, tone,
+        requestedAction, tone,
         ehSubcat: selectedEhSubcat,
-        ehNoiseType, ehNoiseTimes, ehNoiseDuration,
-        ehDogsType, ehDogsFrequency, ehDogsLocation,
-        ehFlytippingLocation, ehFlytippingType, ehFlytippingFrequency
+        ehNoiseType, ehNoiseTimes, ehNoiseFrequency, ehNoiseStart, ehNoiseDesc,
+        ehDogsType, ehDogsCount, ehDogsTimes, ehDogsFouling, ehDogsStart, ehDogsDesc,
+        ehFtWasteType, ehFtLocation, ehFtVolume, ehFtRecurring, ehFtDate, ehFtSuspect, ehFtHazards
       });
     } else if (selectedDoc === 'trigger') {
       prompt = buildTriggerPrompt({
