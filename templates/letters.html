@@ -328,164 +328,6 @@
         </div>
       </div>
 
-      <!-- YOUR DETAILS -->
-      <div class="form-section">
-        <div class="form-section-title">Your details</div>
-        <div class="form-2col">
-          <div class="form-group">
-            <label>Your name</label>
-            <input type="text" id="your-name" placeholder="Full name" />
-          </div>
-          <div class="form-group">
-            <label>Your address</label>
-            <input type="text" id="your-address" placeholder="House number, street, postcode" />
-          </div>
-        </div>
-        <div class="form-2col last">
-          <div class="form-group">
-            <label>Date</label>
-            <input type="date" id="letter-date" />
-          </div>
-          <div class="form-group">
-            <label>Reference / case number <span style="color:var(--muted);font-weight:400">(if known)</span></label>
-            <input type="text" id="case-ref" placeholder="Optional" />
-          </div>
-        </div>
-      </div>
-
-      <!-- CONTACT (landlord only) -->
-      <div class="form-section" id="contact-section" style="display:none;">
-        <div class="form-section-title">Your contact details</div>
-        <div class="form-1col last">
-          <div class="form-group">
-            <label>Phone number and/or email address</label>
-            <input type="text" id="your-contact" placeholder="e.g. 07700 900000 / jane@example.com" />
-          </div>
-        </div>
-      </div>
-
-      <!-- RECIPIENT -->
-      <div class="form-section" id="recipient-section">
-        <div class="form-section-title">Recipient details</div>
-        <div class="form-2col last">
-          <div class="form-group">
-            <label id="recipient-name-label">Name / organisation</label>
-            <input type="text" id="recipient-name" placeholder="e.g. Housing Officer, ABC Housing Association" />
-          </div>
-          <div class="form-group">
-            <label>Address / department</label>
-            <input type="text" id="recipient-address" placeholder="e.g. ASB Team, 10 Council Road" />
-          </div>
-        </div>
-      </div>
-
-      <!-- JURISDICTION (landlord only) -->
-      <div class="form-section" id="jurisdiction-section" style="display:none;">
-        <div class="form-section-title">Jurisdiction</div>
-        <div class="form-group" style="max-width:320px;">
-          <label>Where is the property located?</label>
-          <select id="jurisdiction">
-            <option value="England">England</option>
-            <option value="Wales">Wales</option>
-            <option value="Scotland">Scotland</option>
-            <option value="Northern Ireland">Northern Ireland</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- PERPETRATOR (landlord only) -->
-      <div class="form-section" id="perpetrator-section" style="display:none;">
-        <div class="form-section-title">Who is responsible?</div>
-        <div class="form-1col last">
-          <div class="form-group">
-            <label>Description of the person causing the behaviour</label>
-            <span class="form-hint">e.g. "an individual residing at Flat 4, [address]" or "a person known to me as [first name]"</span>
-            <input type="text" id="perpetrator-desc" placeholder="e.g. an individual residing at Flat 4, 10 Example Street" />
-          </div>
-        </div>
-      </div>
-
-      <!-- SUBJECT PARTY (ABC / Neighbourhood) -->
-      <div class="form-section" id="subject-section" style="display:none;">
-        <div class="form-section-title" id="subject-title">About the person(s) involved</div>
-        <div class="form-2col last">
-          <div class="form-group">
-            <label>Name(s)</label>
-            <input type="text" id="subject-name" placeholder="Full name(s) of the individual(s)" />
-          </div>
-          <div class="form-group">
-            <label>Address</label>
-            <input type="text" id="subject-address" placeholder="Their address" />
-          </div>
-        </div>
-      </div>
-
-      <!-- ASB DESCRIPTION -->
-      <div class="form-section">
-        <div class="form-section-title">The behaviour / situation</div>
-        <div class="form-1col">
-          <div class="form-group">
-            <label>Describe the anti-social behaviour</label>
-            <span class="form-hint">Include what has happened, when it started, how often, and how it has affected you</span>
-            <textarea id="asb-description" rows="5" placeholder="e.g. Since March 2024, my neighbour at [address] has been playing extremely loud music late at night (typically between 11pm and 3am), several nights per week..."></textarea>
-          </div>
-        </div>
-        <div class="form-2col last">
-          <div class="form-group">
-            <label>Have you reported this before?</label>
-            <select id="previous-reports" onchange="onPrevReportsChange(this.value)">
-              <option value="no">No — this is my first report</option>
-              <option value="verbal">Yes — verbally / informally</option>
-              <option value="written">Yes — in writing previously</option>
-              <option value="multiple">Yes — multiple times</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Incidents documented?</label>
-            <select id="has-diary">
-              <option value="no">No diary kept</option>
-              <option value="yes">Yes — I have a diary / log</option>
-              <option value="wasba">Yes — using ASB Guide Noise Diary</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- IMPACT (landlord only) -->
-      <div class="form-section" id="impact-section" style="display:none;">
-        <div class="form-section-title">Impact on your household</div>
-        <div class="form-1col last">
-          <div class="form-group">
-            <label>Who is affected and how?</label>
-            <span class="form-hint">Specify who is affected and describe the impact in factual terms</span>
-            <textarea id="impact-desc" rows="3" placeholder="e.g. myself and my two children — I have been unable to sleep due to noise between 11pm and 3am on repeated occasions"></textarea>
-          </div>
-        </div>
-      </div>
-
-      <!-- PREVIOUS COMPLAINT DATES (landlord escalation only) -->
-      <div class="form-section" id="previous-dates-section" style="display:none;">
-        <div class="form-section-title">Previous correspondence</div>
-        <div class="form-1col last">
-          <div class="form-group">
-            <label>Date(s) of your previous complaint(s)</label>
-            <input type="text" id="previous-dates" placeholder="e.g. 5 January 2025, 12 February 2025" />
-          </div>
-        </div>
-      </div>
-
-      <!-- OUTCOME -->
-      <div class="form-section" id="outcome-section">
-        <div class="form-section-title">What outcome are you requesting?</div>
-        <div class="form-1col last">
-          <div class="form-group">
-            <label>Requested action</label>
-            <span class="form-hint">What specifically are you asking the recipient to do?</span>
-            <textarea id="requested-action" rows="3" placeholder="e.g. I am requesting that you investigate this matter urgently, contact the individual responsible, and take appropriate enforcement action."></textarea>
-          </div>
-        </div>
-      </div>
-
       <!-- ENVIRONMENTAL HEALTH SUB-CATEGORY -->
       <div id="council-subcat-section" style="display:none;">
         <div class="form-section">
@@ -678,6 +520,164 @@
           <div class="form-group">
             <label>Health or safety hazards <span style="color:var(--muted);font-weight:400">(if any)</span></label>
             <textarea id="eh-ft-hazards" rows="3" placeholder="e.g. broken glass visible, possible asbestos, near a watercourse, accessible to children"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- YOUR DETAILS -->
+      <div class="form-section">
+        <div class="form-section-title">Your details</div>
+        <div class="form-2col">
+          <div class="form-group">
+            <label>Your name</label>
+            <input type="text" id="your-name" placeholder="Full name" />
+          </div>
+          <div class="form-group">
+            <label>Your address</label>
+            <input type="text" id="your-address" placeholder="House number, street, postcode" />
+          </div>
+        </div>
+        <div class="form-2col last">
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="letter-date" />
+          </div>
+          <div class="form-group">
+            <label>Reference / case number <span style="color:var(--muted);font-weight:400">(if known)</span></label>
+            <input type="text" id="case-ref" placeholder="Optional" />
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTACT (landlord only) -->
+      <div class="form-section" id="contact-section" style="display:none;">
+        <div class="form-section-title">Your contact details</div>
+        <div class="form-1col last">
+          <div class="form-group">
+            <label>Phone number and/or email address</label>
+            <input type="text" id="your-contact" placeholder="e.g. 07700 900000 / jane@example.com" />
+          </div>
+        </div>
+      </div>
+
+      <!-- RECIPIENT -->
+      <div class="form-section" id="recipient-section">
+        <div class="form-section-title">Recipient details</div>
+        <div class="form-2col last">
+          <div class="form-group">
+            <label id="recipient-name-label">Name / organisation</label>
+            <input type="text" id="recipient-name" placeholder="e.g. Housing Officer, ABC Housing Association" />
+          </div>
+          <div class="form-group">
+            <label>Address / department</label>
+            <input type="text" id="recipient-address" placeholder="e.g. ASB Team, 10 Council Road" />
+          </div>
+        </div>
+      </div>
+
+      <!-- JURISDICTION (landlord only) -->
+      <div class="form-section" id="jurisdiction-section" style="display:none;">
+        <div class="form-section-title">Jurisdiction</div>
+        <div class="form-group" style="max-width:320px;">
+          <label>Where is the property located?</label>
+          <select id="jurisdiction">
+            <option value="England">England</option>
+            <option value="Wales">Wales</option>
+            <option value="Scotland">Scotland</option>
+            <option value="Northern Ireland">Northern Ireland</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- PERPETRATOR (landlord only) -->
+      <div class="form-section" id="perpetrator-section" style="display:none;">
+        <div class="form-section-title">Who is responsible?</div>
+        <div class="form-1col last">
+          <div class="form-group">
+            <label>Description of the person causing the behaviour</label>
+            <span class="form-hint">e.g. "an individual residing at Flat 4, [address]" or "a person known to me as [first name]"</span>
+            <input type="text" id="perpetrator-desc" placeholder="e.g. an individual residing at Flat 4, 10 Example Street" />
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBJECT PARTY (ABC / Neighbourhood) -->
+      <div class="form-section" id="subject-section" style="display:none;">
+        <div class="form-section-title" id="subject-title">About the person(s) involved</div>
+        <div class="form-2col last">
+          <div class="form-group">
+            <label>Name(s)</label>
+            <input type="text" id="subject-name" placeholder="Full name(s) of the individual(s)" />
+          </div>
+          <div class="form-group">
+            <label>Address</label>
+            <input type="text" id="subject-address" placeholder="Their address" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ASB DESCRIPTION -->
+      <div class="form-section">
+        <div class="form-section-title">The behaviour / situation</div>
+        <div class="form-1col">
+          <div class="form-group">
+            <label>Describe the anti-social behaviour</label>
+            <span class="form-hint">Include what has happened, when it started, how often, and how it has affected you</span>
+            <textarea id="asb-description" rows="5" placeholder="e.g. Since March 2024, my neighbour at [address] has been playing extremely loud music late at night (typically between 11pm and 3am), several nights per week..."></textarea>
+          </div>
+        </div>
+        <div class="form-2col last">
+          <div class="form-group">
+            <label>Have you reported this before?</label>
+            <select id="previous-reports" onchange="onPrevReportsChange(this.value)">
+              <option value="no">No — this is my first report</option>
+              <option value="verbal">Yes — verbally / informally</option>
+              <option value="written">Yes — in writing previously</option>
+              <option value="multiple">Yes — multiple times</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Incidents documented?</label>
+            <select id="has-diary">
+              <option value="no">No diary kept</option>
+              <option value="yes">Yes — I have a diary / log</option>
+              <option value="wasba">Yes — using ASB Guide Noise Diary</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- IMPACT (landlord only) -->
+      <div class="form-section" id="impact-section" style="display:none;">
+        <div class="form-section-title">Impact on your household</div>
+        <div class="form-1col last">
+          <div class="form-group">
+            <label>Who is affected and how?</label>
+            <span class="form-hint">Specify who is affected and describe the impact in factual terms</span>
+            <textarea id="impact-desc" rows="3" placeholder="e.g. myself and my two children — I have been unable to sleep due to noise between 11pm and 3am on repeated occasions"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- PREVIOUS COMPLAINT DATES (landlord escalation only) -->
+      <div class="form-section" id="previous-dates-section" style="display:none;">
+        <div class="form-section-title">Previous correspondence</div>
+        <div class="form-1col last">
+          <div class="form-group">
+            <label>Date(s) of your previous complaint(s)</label>
+            <input type="text" id="previous-dates" placeholder="e.g. 5 January 2025, 12 February 2025" />
+          </div>
+        </div>
+      </div>
+
+      <!-- OUTCOME -->
+      <div class="form-section" id="outcome-section">
+        <div class="form-section-title">What outcome are you requesting?</div>
+        <div class="form-1col last">
+          <div class="form-group">
+            <label>Requested action</label>
+            <span class="form-hint">What specifically are you asking the recipient to do?</span>
+            <textarea id="requested-action" rows="3" placeholder="e.g. I am requesting that you investigate this matter urgently, contact the individual responsible, and take appropriate enforcement action."></textarea>
           </div>
         </div>
       </div>
