@@ -445,7 +445,7 @@
             <select id="has-diary">
               <option value="no">No diary kept</option>
               <option value="yes">Yes — I have a diary / log</option>
-              <option value="wasba">Yes — using WASBA Noise Diary</option>
+              <option value="wasba">Yes — using ASB Guide Noise Diary</option>
             </select>
           </div>
         </div>
@@ -513,6 +513,13 @@
       <!-- EH: NOISE FIELDS -->
       <div class="form-section" id="eh-noise-section" style="display:none;">
         <div class="form-section-title">Noise details</div>
+        <div class="notice-box" style="margin-bottom:16px;">
+          <strong>Tip: a noise diary strengthens your complaint.</strong>
+          If you haven't logged your incidents yet, use the
+          <a href="/noise" target="_blank" style="color:var(--accent); font-weight:600;">ASB Guide Noise Diary</a>
+          before generating this letter — councils respond better to dated, evidenced logs.
+          If you already have one, select <em>"Yes — using ASB Guide Noise Diary"</em> in the Incidents Documented field below.
+        </div>
         <div class="form-1col">
           <div class="form-group">
             <label>Type of noise</label>
@@ -857,6 +864,19 @@
       document.getElementById('eh-card-' + t).classList.toggle('selected', t === type);
       document.getElementById('eh-' + t + '-section').style.display = t === type ? '' : 'none';
     });
+    // For noise: highlight the diary question so the user notices it
+    const diaryGroup = document.getElementById('has-diary')?.closest('.form-group');
+    if (diaryGroup) {
+      if (type === 'noise') {
+        diaryGroup.style.outline = '2px solid var(--accent)';
+        diaryGroup.style.borderRadius = '6px';
+        diaryGroup.style.padding = '6px';
+      } else {
+        diaryGroup.style.outline = '';
+        diaryGroup.style.borderRadius = '';
+        diaryGroup.style.padding = '';
+      }
+    }
   }
 
   function goToStep1() { setStep(1); }
@@ -939,7 +959,7 @@
     const isEscalation = d.previousReports !== 'no';
 
     const diaryText = d.hasDiary === 'wasba'
-      ? 'Full incident log maintained using WASBA Noise Diary tool (available on request)'
+      ? 'Full incident log maintained using ASB Guide Noise Diary tool (available on request)'
       : d.hasDiary === 'yes'
       ? 'Written incident log maintained (available on request)'
       : 'No incident diary kept';
@@ -1468,7 +1488,7 @@ SITUATION:
 ${asbDescription}
 
 Previous reports: ${previousReports === 'no' ? 'No previous reports' : previousReports === 'verbal' ? 'Verbal/informal reports made previously' : previousReports === 'written' ? 'Written reports previously submitted' : 'Multiple reports submitted previously'}
-Incident diary: ${hasDiary === 'no' ? 'No diary kept' : hasDiary === 'wasba' ? 'Full incident log maintained using WASBA Noise Diary tool' : 'Written incident log maintained'}
+Incident diary: ${hasDiary === 'no' ? 'No diary kept' : hasDiary === 'wasba' ? 'Full incident log maintained using ASB Guide Noise Diary tool' : 'Written incident log maintained'}
 
 ${requestedAction ? `REQUESTED OUTCOME:\n${requestedAction}` : ''}
 
