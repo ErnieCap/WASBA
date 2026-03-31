@@ -477,6 +477,115 @@
         </div>
       </div>
 
+      <!-- ENVIRONMENTAL HEALTH SUB-CATEGORY -->
+      <div id="council-subcat-section" style="display:none;">
+        <div class="form-section">
+          <div class="form-section-title">What is your complaint about?</div>
+          <div class="doc-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom:0;">
+            <div class="doc-card" onclick="selectEhSubcat('noise')" id="eh-card-noise">
+              <div class="doc-icon">🔊</div>
+              <h3>Noise</h3>
+              <p>Loud music, machinery, parties, voices</p>
+            </div>
+            <div class="doc-card" onclick="selectEhSubcat('dogs')" id="eh-card-dogs">
+              <div class="doc-icon">🐕</div>
+              <h3>Nuisance Dogs</h3>
+              <p>Excessive barking, fouling, straying, aggression</p>
+            </div>
+            <div class="doc-card" onclick="selectEhSubcat('flytipping')" id="eh-card-flytipping">
+              <div class="doc-icon">🗑️</div>
+              <h3>Fly-tipping &amp; Waste</h3>
+              <p>Illegal dumping, excess waste, commercial waste</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EH: NOISE FIELDS -->
+      <div class="form-section" id="eh-noise-section" style="display:none;">
+        <div class="form-section-title">Noise details</div>
+        <div class="form-2col">
+          <div class="form-group">
+            <label>Type of noise</label>
+            <select id="eh-noise-type">
+              <option value="loud music or TV">Loud music or TV</option>
+              <option value="parties or gatherings">Parties or gatherings</option>
+              <option value="DIY or machinery">DIY or machinery</option>
+              <option value="voices or shouting">Voices or shouting</option>
+              <option value="dogs barking">Dogs barking</option>
+              <option value="other noise">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>When does it occur?</label>
+            <input type="text" id="eh-noise-times" placeholder="e.g. weeknights 11pm–2am, weekend afternoons" />
+          </div>
+        </div>
+        <div class="form-1col last">
+          <div class="form-group">
+            <label>How long has this been happening?</label>
+            <input type="text" id="eh-noise-duration" placeholder="e.g. since January 2025, approximately 3 months" />
+          </div>
+        </div>
+      </div>
+
+      <!-- EH: NUISANCE DOGS FIELDS -->
+      <div class="form-section" id="eh-dogs-section" style="display:none;">
+        <div class="form-section-title">Nuisance dog details</div>
+        <div class="form-2col">
+          <div class="form-group">
+            <label>Type of issue</label>
+            <select id="eh-dogs-type">
+              <option value="excessive barking">Excessive barking</option>
+              <option value="fouling in public areas">Fouling in public areas</option>
+              <option value="straying or running loose">Straying or running loose</option>
+              <option value="aggressive or threatening behaviour">Aggressive or threatening behaviour</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>How often does this occur?</label>
+            <input type="text" id="eh-dogs-frequency" placeholder="e.g. daily, several times a week" />
+          </div>
+        </div>
+        <div class="form-1col last">
+          <div class="form-group">
+            <label>Location or source</label>
+            <input type="text" id="eh-dogs-location" placeholder="e.g. dog at neighbouring property, public park on [street]" />
+          </div>
+        </div>
+      </div>
+
+      <!-- EH: FLY-TIPPING & WASTE FIELDS -->
+      <div class="form-section" id="eh-flytipping-section" style="display:none;">
+        <div class="form-section-title">Fly-tipping / waste details</div>
+        <div class="form-2col">
+          <div class="form-group">
+            <label>Location of the waste / fly-tipping</label>
+            <input type="text" id="eh-flytipping-location" placeholder="e.g. alleyway behind [street], public footpath at [location]" />
+          </div>
+          <div class="form-group">
+            <label>Type of waste</label>
+            <select id="eh-flytipping-type">
+              <option value="household waste and furniture">Household waste / furniture</option>
+              <option value="commercial or trade waste">Commercial or trade waste</option>
+              <option value="garden waste">Garden waste</option>
+              <option value="building or construction waste">Building / construction waste</option>
+              <option value="mixed or unknown waste">Mixed / unknown waste</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-1col last">
+          <div class="form-group">
+            <label>Is this a one-off or ongoing problem?</label>
+            <select id="eh-flytipping-frequency">
+              <option value="a single incident">Single incident</option>
+              <option value="a recurring problem at this location">Recurring at this location</option>
+              <option value="an ongoing problem that has not been cleared">Ongoing — waste not yet cleared</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <!-- ABC -->
       <div class="form-section" id="abc-section" style="display:none;">
         <div class="form-section-title">ABC — specific behaviours</div>
@@ -600,6 +709,7 @@
   const stripeClient = STRIPE_PK ? Stripe(STRIPE_PK) : null;
 
   let selectedDoc = null;
+  let selectedEhSubcat = null;
   let generatedText = '';
 
   // ── Letter count (localStorage) ──────────────────────────────────────────
@@ -652,6 +762,14 @@
     document.getElementById('step1-next').disabled = false;
   }
 
+  function selectEhSubcat(type) {
+    selectedEhSubcat = type;
+    ['noise','dogs','flytipping'].forEach(t => {
+      document.getElementById('eh-card-' + t).classList.toggle('selected', t === type);
+      document.getElementById('eh-' + t + '-section').style.display = t === type ? '' : 'none';
+    });
+  }
+
   function goToStep1() { setStep(1); }
 
   function goToStep2() {
@@ -667,6 +785,15 @@
       (selectedDoc === 'abc' || selectedDoc === 'neighbourhood' || meta.hideOutcome) ? 'none' : '';
     document.getElementById('recipient-section').style.display =
       selectedDoc === 'neighbourhood' ? 'none' : '';
+
+    // Council EH sub-category
+    const isCouncil = selectedDoc === 'council';
+    document.getElementById('council-subcat-section').style.display = isCouncil ? '' : 'none';
+    if (!isCouncil) {
+      ['noise','dogs','flytipping'].forEach(t => {
+        document.getElementById('eh-' + t + '-section').style.display = 'none';
+      });
+    }
 
     // Landlord-specific sections
     document.getElementById('contact-section').style.display = meta.showContact ? '' : 'none';
@@ -704,6 +831,7 @@
 
   function startOver() {
     selectedDoc = null;
+    selectedEhSubcat = null;
     generatedText = '';
     document.querySelectorAll('.doc-card').forEach(c => c.classList.remove('selected'));
     document.getElementById('step1-next').disabled = true;
@@ -900,6 +1028,119 @@ This letter is being sent by recorded post. I am retaining a copy for my records
     }
   }
 
+  function buildCouncilEhPrompt(d) {
+    const toneNote = d.tone === 'firm'
+      ? 'Tone: firm and direct — choose the stronger option where phrasing varies.'
+      : d.tone === 'measured'
+      ? 'Tone: measured and diplomatic while remaining resolute.'
+      : 'Tone: formal and professional throughout.';
+
+    const diaryText = d.hasDiary === 'wasba'
+      ? 'Full incident log maintained using ASB Guide Noise Diary tool (available on request)'
+      : d.hasDiary === 'yes'
+      ? 'Written incident log maintained (available on request)'
+      : 'No incident diary kept';
+
+    const header = `${d.yourName || '[Your Name]'}
+${d.yourAddress || '[Your Address]'}
+
+${d.formattedDate}
+
+Environmental Health Department
+${d.recipientName || '[Council Name]'}
+${d.recipientAddress || '[Address / Department]'}
+`;
+
+    const footer = `Yours faithfully,
+
+
+
+[Signature]
+
+${d.yourName || '[Your Name]'}
+${d.yourAddress || '[Your Address]'}
+${d.formattedDate}
+
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+This document was produced with the support of ASB Guide (asbguide.com). ASB Guide provides information and template tools to assist individuals experiencing anti-social behaviour. This does not constitute legal advice.`;
+
+    let subjectLine, legislationNote, detailsBlock;
+
+    if (d.ehSubcat === 'noise') {
+      subjectLine = 'FORMAL COMPLAINT — NOISE NUISANCE';
+      legislationNote = `This complaint is made under the Environmental Protection Act 1990 (statutory nuisance) and the Noise Act 1996. Under section 79 of the Environmental Protection Act 1990 you have a statutory duty to inspect and investigate complaints of noise nuisance and, where a statutory nuisance exists, to serve an abatement notice.`;
+      detailsBlock = `Type of noise: ${d.ehNoiseType || '[type of noise]'}
+When it occurs: ${d.ehNoiseTimes || '[times and days]'}
+How long this has been happening: ${d.ehNoiseDuration || '[duration]'}`;
+    } else if (d.ehSubcat === 'dogs') {
+      subjectLine = 'FORMAL COMPLAINT — NUISANCE DOG(S)';
+      legislationNote = `This complaint is made under the Environmental Protection Act 1990 (statutory nuisance), the Clean Neighbourhoods and Environment Act 2005, and the Anti-social Behaviour, Crime and Policing Act 2014. The council has powers to issue Community Protection Notices and Dog Control Orders where dog nuisance is established.`;
+      detailsBlock = `Type of issue: ${d.ehDogsType || '[type of dog nuisance]'}
+Frequency: ${d.ehDogsFrequency || '[how often]'}
+Location or source: ${d.ehDogsLocation || '[location or source]'}`;
+    } else {
+      subjectLine = 'FORMAL COMPLAINT — FLY-TIPPING / WASTE';
+      legislationNote = `This complaint is made under the Environmental Protection Act 1990 and the Clean Neighbourhoods and Environment Act 2005. Fly-tipping is a criminal offence under section 33 of the Environmental Protection Act 1990. The council has a duty under section 89 of the same Act to keep public land clear of litter and refuse, and powers to investigate and prosecute fly-tipping offences.`;
+      detailsBlock = `Location of waste / fly-tipping: ${d.ehFlytippingLocation || '[location]'}
+Type of waste: ${d.ehFlytippingType || '[type of waste]'}
+Frequency: ${d.ehFlytippingFrequency || '[one-off or recurring]'}`;
+    }
+
+    const instructions = `You are completing a formal complaint letter to a local council's Environmental Health department. Rules:
+- Keep ALL fixed wording exactly as written — do not rephrase, add to, or reorder it
+- Replace every [PLACEHOLDER] with the supplied data
+- Output only the completed letter — no preamble, no commentary
+- ${toneNote}
+- Use UK English throughout
+
+SUPPLIED DATA:
+Name: ${d.yourName || '[Your Name]'}
+Address: ${d.yourAddress || '[Your Address]'}
+Date: ${d.formattedDate}
+Reference: ${d.caseRef || 'N/A'}
+Council / Authority: ${d.recipientName || '[Council Name]'}
+Department address: ${d.recipientAddress || '[Address]'}
+Complaint type: ${d.ehSubcat}
+${detailsBlock}
+Additional details: ${d.asbDescription || 'None provided'}
+Evidence / diary: ${diaryText}
+Requested outcome: ${d.requestedAction || '[outcome requested]'}
+
+--- LETTER ---
+
+`;
+
+    return instructions + header + `${d.caseRef ? 'Reference: ' + d.caseRef + '\n\n' : ''}${subjectLine}
+
+Dear Sir or Madam,
+
+NATURE OF COMPLAINT
+
+I am writing to formally report a complaint to your Environmental Health Department. I reside at ${d.yourAddress || '[your address]'} and the matter I am reporting is causing significant nuisance and distress.
+
+DETAILS
+
+${detailsBlock}
+
+${d.asbDescription ? 'ADDITIONAL DETAILS\n\n' + d.asbDescription + '\n\n' : ''}YOUR STATUTORY DUTY
+
+${legislationNote}
+
+EVIDENCE
+
+${diaryText}.
+
+REQUESTED ACTION
+
+${d.requestedAction || 'I am requesting that you investigate this matter promptly, take appropriate enforcement action, and provide me with a written response setting out the steps you intend to take and the expected timescale for resolution.'}
+
+I would be grateful for a written acknowledgement within 14 calendar days of the date of this letter, confirming receipt of this complaint and advising me of the next steps.
+
+This letter is being retained for my records.
+
+` + footer;
+  }
+
   function buildTriggerPrompt(d) {
     const toneNote = d.tone === 'firm'
       ? 'Tone: firm and direct — choose the stronger option where phrasing varies.'
@@ -1027,6 +1268,15 @@ This letter is being retained for my records.
     const triggerDates = document.getElementById('trigger-dates')?.value.trim() || '';
     const triggerRefs = document.getElementById('trigger-refs')?.value.trim() || '';
     const triggerResponse = document.getElementById('trigger-response')?.value || 'no_response';
+    const ehNoiseType = document.getElementById('eh-noise-type')?.value || '';
+    const ehNoiseTimes = document.getElementById('eh-noise-times')?.value.trim() || '';
+    const ehNoiseDuration = document.getElementById('eh-noise-duration')?.value.trim() || '';
+    const ehDogsType = document.getElementById('eh-dogs-type')?.value || '';
+    const ehDogsFrequency = document.getElementById('eh-dogs-frequency')?.value.trim() || '';
+    const ehDogsLocation = document.getElementById('eh-dogs-location')?.value.trim() || '';
+    const ehFlytippingLocation = document.getElementById('eh-flytipping-location')?.value.trim() || '';
+    const ehFlytippingType = document.getElementById('eh-flytipping-type')?.value || '';
+    const ehFlytippingFrequency = document.getElementById('eh-flytipping-frequency')?.value || '';
     const abcProhibitions = document.getElementById('abc-prohibitions')?.value.trim() || '';
     const abcDuration = document.getElementById('abc-duration')?.value.trim() || '';
     const neighbour2 = document.getElementById('neighbour2')?.value.trim() || '';
@@ -1039,7 +1289,12 @@ This letter is being retained for my records.
     const impactDesc = document.getElementById('impact-desc')?.value.trim() || '';
     const previousDates = document.getElementById('previous-dates')?.value.trim() || '';
 
-    if (!asbDescription && selectedDoc !== 'neighbourhood') {
+    if (selectedDoc === 'council' && !selectedEhSubcat) {
+      showError('Please select a complaint type (Noise, Nuisance Dogs, or Fly-tipping & Waste) before continuing.');
+      return;
+    }
+
+    if (!asbDescription && selectedDoc !== 'neighbourhood' && selectedDoc !== 'council') {
       showError('Please describe the anti-social behaviour before generating the document.');
       return;
     }
@@ -1054,6 +1309,16 @@ This letter is being retained for my records.
         yourName, yourAddress, yourContact, formattedDate, caseRef,
         recipientName, recipientAddress, jurisdiction, perpetratorDesc,
         asbDescription, hasDiary, impactDesc, previousReports, previousDates, tone
+      });
+    } else if (selectedDoc === 'council') {
+      prompt = buildCouncilEhPrompt({
+        yourName, yourAddress, formattedDate, caseRef,
+        recipientName, recipientAddress,
+        asbDescription, hasDiary, requestedAction, tone,
+        ehSubcat: selectedEhSubcat,
+        ehNoiseType, ehNoiseTimes, ehNoiseDuration,
+        ehDogsType, ehDogsFrequency, ehDogsLocation,
+        ehFlytippingLocation, ehFlytippingType, ehFlytippingFrequency
       });
     } else if (selectedDoc === 'trigger') {
       prompt = buildTriggerPrompt({
