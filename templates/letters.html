@@ -1359,6 +1359,130 @@ This letter is being retained for my records.
 ` + footer;
   }
 
+  function buildAbcDocument(d) {
+    const prohibitions = (d.abcProhibitions || '')
+      .split('\n').map(s => s.trim()).filter(s => s.length > 0);
+    const clauseLines = prohibitions.length > 0
+      ? prohibitions.map((p, i) => (i + 1) + '. ' + p).join('\n')
+      : '1. [Specify prohibited behaviour]\n2. [Add further clauses as required]';
+    const div = '\u2500'.repeat(72);
+    return [
+      'ACCEPTABLE BEHAVIOUR CONTRACT',
+      '',
+      'Date: ' + d.formattedDate,
+      d.caseRef ? 'Reference: ' + d.caseRef : '',
+      '',
+      'PARTIES',
+      '',
+      'This Acceptable Behaviour Contract (the "Contract") is entered into by:',
+      '',
+      'ISSUING ORGANISATION / OFFICER:',
+      d.recipientName || '[Issuing Organisation / Housing Officer Name]',
+      d.recipientAddress || '[Address / Department]',
+      '',
+      'INDIVIDUAL ENTERING THE CONTRACT:',
+      d.subjectName || '[Full Name]',
+      d.subjectAddress || '[Address]',
+      '',
+      div,
+      '',
+      'BACKGROUND',
+      '',
+      'This Contract has been prepared in response to reports of anti-social behaviour' +
+        ' associated with the Individual at the above address.' +
+        (d.asbDescription ? '\n\n' + d.asbDescription : ''),
+      '',
+      'The purpose of this Contract is to set out clearly the behaviours that are causing' +
+        ' harm to the local community and to provide the Individual with the opportunity to' +
+        ' address their conduct voluntarily, thereby avoiding formal legal action.',
+      '',
+      'The Individual acknowledges awareness of the concerns described above and understands' +
+        ' that continuation of such behaviour may result in formal enforcement action,' +
+        ' including an application for a Civil Injunction or Criminal Behaviour Order under' +
+        ' the Anti-Social Behaviour, Crime and Policing Act 2014.',
+      '',
+      div,
+      '',
+      'THE CONTRACT',
+      '',
+      'The Individual agrees that they will not engage in the following behaviours:',
+      '',
+      clauseLines,
+      '',
+      div,
+      '',
+      'DURATION',
+      '',
+      'This Contract will remain in force for ' +
+        (d.abcDuration || '[e.g. 12 months from the date of signing]') + '.',
+      '',
+      div,
+      '',
+      'BREACH OF CONTRACT',
+      '',
+      'The Individual understands that this Contract is voluntary. However, should they' +
+        ' fail to comply with any of the clauses set out above, the Issuing Organisation' +
+        ' reserves the right to:',
+      '',
+      '1. Use evidence of breach in any subsequent civil or criminal proceedings.',
+      '2. Apply to the courts for a Civil Injunction or Criminal Behaviour Order under the' +
+        ' Anti-Social Behaviour, Crime and Policing Act 2014.',
+      '3. Take further housing management action, which may include possession proceedings' +
+        ' where the Individual holds a tenancy or licence.',
+      '',
+      div,
+      '',
+      'SUPPORT',
+      '',
+      'The Issuing Organisation confirms that it will:',
+      '',
+      '1. Offer appropriate support to the Individual to help them comply with this Contract.',
+      '2. Review this Contract at the end of the contract period, or earlier if either party' +
+        ' requests a review.',
+      '3. Notify the Individual in writing of any alleged breach before taking further formal' +
+        ' action.',
+      '',
+      div,
+      '',
+      'SIGNATURES',
+      '',
+      'By signing below, the parties confirm that they have read, understood, and agreed to' +
+        ' the terms of this Contract.',
+      '',
+      'ISSUING ORGANISATION',
+      '',
+      'Name: ___________________________   Position: ______________________',
+      '',
+      'Signature: _______________________   Date: __________________________',
+      '',
+      '',
+      'INDIVIDUAL',
+      '',
+      'I confirm that I have read and understood this Contract and agree to comply with its' +
+        ' terms voluntarily. I understand that I have the right to seek independent advice' +
+        ' before signing.',
+      '',
+      'Name: ' + (d.subjectName || '___________________________'),
+      '',
+      'Address: ' + (d.subjectAddress || '___________________________'),
+      '',
+      'Signature: _______________________   Date: __________________________',
+      '',
+      '',
+      'WITNESS (if applicable)',
+      '',
+      'Name: ___________________________',
+      '',
+      'Signature: _______________________   Date: __________________________',
+      '',
+      div,
+      'This document was produced with the support of WASBA (wasba.co.uk). WASBA provides' +
+        ' information and template tools to assist individuals and agencies experiencing' +
+        ' anti-social behaviour. This document does not constitute legal advice. Parties who' +
+        ' require legal representation should seek independent legal advice.'
+    ].join('\n');
+  }
+
   async function generateDocument() {
     const meta = docMeta[selectedDoc];
     const yourName = document.getElementById('your-name').value.trim() || '[Your Name]';
@@ -1412,6 +1536,17 @@ This letter is being retained for my records.
     const perpetratorDesc = document.getElementById('perpetrator-desc')?.value.trim() || '';
     const impactDesc = document.getElementById('impact-desc')?.value.trim() || '';
     const previousDates = document.getElementById('previous-dates')?.value.trim() || '';
+
+    if (selectedDoc === 'abc') {
+      const text = buildAbcDocument({
+        formattedDate, caseRef,
+        recipientName, recipientAddress,
+        subjectName, subjectAddress,
+        asbDescription, abcProhibitions, abcDuration
+      });
+      onLetterSuccess(text);
+      return;
+    }
 
     if (selectedDoc === 'council' && !selectedEhSubcat) {
       showError('Please select a complaint type (Noise, Nuisance Dogs, or Fly-tipping & Waste) before continuing.');
