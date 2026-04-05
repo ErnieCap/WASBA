@@ -684,22 +684,58 @@
 
       <!-- ABC -->
       <div class="form-section" id="abc-section" style="display:none;">
-        <div class="form-section-title">ABC — specific behaviours</div>
+        <div class="form-section-title">ABC — contract details</div>
         <div class="notice-box" style="background:#f0fdf4; border-color:#bbf7d0; color:#166534; margin-bottom:16px;">
           <strong>What is an Acceptable Behaviour Contract?</strong><br>
           An ABC is a written agreement between a person who has been involved in anti-social behaviour and one or more local agencies whose role it is to prevent such behaviour. ABCs are most commonly used for young people but may also be used for adults.
         </div>
         <div class="form-1col">
           <div class="form-group">
-            <label>List the specific behaviours to prohibit</label>
-            <span class="form-hint">Each behaviour will become a clause in the contract. One per line recommended.</span>
-            <textarea id="abc-prohibitions" rows="5" placeholder="e.g. Playing amplified music between 11pm and 7am&#10;Using threatening or abusive language towards neighbours"></textarea>
+            <label>Additional parties to be protected <span style="font-weight:400;color:#6b7280;">(optional)</span></label>
+            <span class="form-hint">Names of specific neighbours, residents, or others the contract should protect. Feeds into clause 3. Leave blank for generic wording.</span>
+            <textarea id="abc-additional-parties" rows="3" placeholder="e.g. Mrs J Smith of 14 Elm Street&#10;The residents of Elm Court"></textarea>
+          </div>
+        </div>
+        <div class="form-1col">
+          <div class="form-group">
+            <label>Additional property owners / managers <span style="font-weight:400;color:#6b7280;">(optional)</span></label>
+            <span class="form-hint">Housing association, council, or other property owners to be named in clause 4. Leave blank for generic wording.</span>
+            <textarea id="abc-additional-properties" rows="2" placeholder="e.g. Anytown Housing Association&#10;Anytown Borough Council"></textarea>
+          </div>
+        </div>
+        <div class="form-1col">
+          <div class="form-group">
+            <label>Other relevant contracts or orders already in force <span style="font-weight:400;color:#6b7280;">(optional)</span></label>
+            <span class="form-hint">Any existing injunctions, CBOs, or agreements. Feeds into clause 7. Leave blank for generic wording.</span>
+            <textarea id="abc-other-orders" rows="2" placeholder="e.g. Civil Injunction dated 12 March 2024 (Case No. 12345)"></textarea>
+          </div>
+        </div>
+        <div class="form-1col">
+          <div class="form-group">
+            <label>Additional conditions to prohibit <span style="font-weight:400;color:#6b7280;">(optional)</span></label>
+            <span class="form-hint">Any behaviours beyond the standard clauses 1–7. Each line becomes a numbered clause (8, 9, 10…).</span>
+            <textarea id="abc-prohibitions" rows="4" placeholder="e.g. Playing amplified music between 11pm and 7am&#10;Congregating with more than two other persons in the car park"></textarea>
+          </div>
+        </div>
+        <div class="form-2col">
+          <div class="form-group">
+            <label>Duration of the contract</label>
+            <input type="text" id="abc-duration" placeholder="e.g. 12 months from the date of signing" />
+          </div>
+          <div class="form-group">
+            <label>Contract end date <span style="font-weight:400;color:#6b7280;">(optional)</span></label>
+            <input type="date" id="abc-end-date" />
           </div>
         </div>
         <div class="form-1col last">
           <div class="form-group">
-            <label>Duration of the contract</label>
-            <input type="text" id="abc-duration" placeholder="e.g. 12 months from the date of signing" />
+            <label>Regional housing legislation</label>
+            <span class="form-hint">Used in the Breach of Contract section to cite the correct possession grounds.</span>
+            <select id="abc-legislation">
+              <option value="england-wales">England &amp; Wales — Housing Act 1985 / Housing Act 1988</option>
+              <option value="scotland">Scotland — Housing (Scotland) Act 2001</option>
+              <option value="northern-ireland">Northern Ireland — Housing (Northern Ireland) Order 1983</option>
+            </select>
           </div>
         </div>
       </div>
@@ -1364,21 +1400,45 @@ This letter is being retained for my records.
   }
 
   function buildAbcDocument(d) {
-    const prohibitions = (d.abcProhibitions || '')
-      .split('\n').map(s => s.trim()).filter(s => s.length > 0);
-    const clauseLines = prohibitions.length > 0
-      ? prohibitions.map((p, i) => (i + 1) + '. ' + p).join('\n')
-      : '1. [Specify prohibited behaviour]\n2. [Add further clauses as required]';
     const div = '\u2500'.repeat(72);
-    return [
+
+    // Clause 3 — parties to protect
+    const partiesText = d.abcAdditionalParties
+      ? d.abcAdditionalParties.split('\n').map(s => s.trim()).filter(s => s).join(', ')
+      : 'any resident, neighbour, or member of the public in the local area';
+
+    // Clause 4 — property owners
+    const propertiesText = d.abcAdditionalProperties
+      ? d.abcAdditionalProperties.split('\n').map(s => s.trim()).filter(s => s).join(', ')
+      : 'the Issuing Organisation or any other resident or property owner';
+
+    // Clause 7 — other orders
+    const ordersText = d.abcOtherOrders
+      ? d.abcOtherOrders.split('\n').map(s => s.trim()).filter(s => s).join('; ')
+      : 'any order, injunction, or agreement currently in force';
+
+    // Clauses 8+ — additional user-entered conditions
+    const extraProhibitions = (d.abcProhibitions || '')
+      .split('\n').map(s => s.trim()).filter(s => s.length > 0);
+    const extraClauses = extraProhibitions.map((p, i) => (8 + i) + '. ' + p).join('\n');
+
+    // Regional possession legislation
+    const legislationMap = {
+      'england-wales': 'Schedule 2 to the Housing Act 1985 (secure tenancies) and / or Schedule 2 to the Housing Act 1988 (assured tenancies)',
+      'scotland': 'Schedule 2 to the Housing (Scotland) Act 2001',
+      'northern-ireland': 'Schedule 3 to the Housing (Northern Ireland) Order 1983'
+    };
+    const legislationText = legislationMap[d.abcLegislation] || legislationMap['england-wales'];
+
+    const lines = [
       'ACCEPTABLE BEHAVIOUR CONTRACT',
       '',
       'Date: ' + d.formattedDate,
-      d.caseRef ? 'Reference: ' + d.caseRef : '',
+      d.caseRef ? 'Reference: ' + d.caseRef : null,
       '',
       'PARTIES',
       '',
-      'This Acceptable Behaviour Contract (the "Contract") is entered into by:',
+      'This Acceptable Behaviour Contract (the "Contract") is entered into between:',
       '',
       'ISSUING ORGANISATION / OFFICER:',
       d.recipientName || '[Issuing Organisation / Housing Officer Name]',
@@ -1392,83 +1452,119 @@ This letter is being retained for my records.
       '',
       'BACKGROUND',
       '',
-      'This Contract has been prepared in response to reports of anti-social behaviour' +
-        ' associated with the Individual at the above address.' +
+      'This Contract has been prepared following reports of anti-social behaviour associated' +
+        ' with the Individual at the above address.' +
         (d.asbDescription ? '\n\n' + d.asbDescription : ''),
       '',
-      'The purpose of this Contract is to set out clearly the behaviours that are causing' +
-        ' harm to the local community and to provide the Individual with the opportunity to' +
-        ' address their conduct voluntarily, thereby avoiding formal legal action.',
+      'The purpose of this Contract is to identify clearly the behaviours that are causing' +
+        ' concern to the local community and to give the Individual the opportunity to address' +
+        ' their conduct voluntarily, avoiding the need for formal legal action.',
       '',
-      'The Individual acknowledges awareness of the concerns described above and understands' +
-        ' that continuation of such behaviour may result in formal enforcement action,' +
-        ' including an application for a Civil Injunction or Criminal Behaviour Order under' +
-        ' the Anti-Social Behaviour, Crime and Policing Act 2014.',
+      'The Individual acknowledges the concerns described above and understands that a failure' +
+        ' to comply with this Contract may result in the Issuing Organisation taking formal' +
+        ' enforcement action under the Anti-Social Behaviour, Crime and Policing Act 2014 or' +
+        ' other applicable legislation.',
       '',
       div,
       '',
-      'THE CONTRACT',
+      'BEHAVIOUR CONDITIONS',
       '',
-      'The Individual agrees that they will not engage in the following behaviours:',
+      'The Individual agrees that they will NOT:',
       '',
-      clauseLines,
+      '1. Engage in any anti-social behaviour, intimidation, harassment, or conduct likely to' +
+        ' cause alarm or distress to any resident, visitor, or member of the public in or' +
+        ' around their address or the surrounding area.',
+      '',
+      '2. Use threatening, abusive, insulting, or offensive language or behaviour towards any' +
+        ' person at any time.',
+      '',
+      '3. Harass, intimidate, follow, approach, or make unwanted contact with ' + partiesText + '.',
+      '',
+      '4. Damage, deface, vandalise, or otherwise interfere with any property belonging to ' +
+        propertiesText + '.',
+      '',
+      '5. Engage in, encourage, or facilitate any criminal or anti-social activity of any kind' +
+        ' — including but not limited to acts of violence, drug-related activity, or criminal' +
+        ' damage — in or around their address or the surrounding area.',
+      '',
+      '6. Cause or permit excessive noise — including but not limited to loud music, shouting,' +
+        ' or the use of amplified sound — at any time that is likely to cause a nuisance or' +
+        ' annoyance to neighbours or other local residents.',
+      '',
+      '7. Breach the terms of ' + ordersText + '.',
+    ];
+
+    if (extraClauses) {
+      lines.push('');
+      lines.push(extraClauses);
+    }
+
+    lines.push(
+      '',
+      div,
+      '',
+      'FURTHER CONDITIONS',
+      '',
+      'The Individual also agrees to:',
+      '',
+      '1. Notify the Issuing Organisation in writing of any change of address within 14 days' +
+        ' of moving.',
+      '2. Engage constructively with any support, mediation, or intervention programme offered' +
+        ' by the Issuing Organisation or its partners.',
+      '3. Co-operate fully with any review of this Contract carried out by the Issuing Organisation.',
       '',
       div,
       '',
       'DURATION',
       '',
       'This Contract will remain in force for ' +
-        (d.abcDuration || '[e.g. 12 months from the date of signing]') + '.',
+        (d.abcDuration || '[e.g. 12 months from the date of signing]') + '.' +
+        (d.abcEndDate ? ' It is due to expire on ' + d.abcEndDate + '.' : ''),
       '',
       div,
       '',
       'BREACH OF CONTRACT',
       '',
-      'The Individual understands that this Contract is voluntary. However, should they' +
-        ' fail to comply with any of the clauses set out above, the Issuing Organisation' +
-        ' reserves the right to:',
+      'The Individual understands that this Contract is entered into voluntarily. However,' +
+        ' evidence of a breach of any condition above may result in the Issuing Organisation' +
+        ' taking one or more of the following actions:',
       '',
-      '1. Use evidence of breach in any subsequent civil or criminal proceedings.',
-      '2. Apply to the courts for a Civil Injunction or Criminal Behaviour Order under the' +
-        ' Anti-Social Behaviour, Crime and Policing Act 2014.',
-      '3. Take further housing management action, which may include possession proceedings' +
-        ' where the Individual holds a tenancy or licence.',
-      '',
-      div,
-      '',
-      'SUPPORT',
-      '',
-      'The Issuing Organisation confirms that it will:',
-      '',
-      '1. Offer appropriate support to the Individual to help them comply with this Contract.',
-      '2. Review this Contract at the end of the contract period, or earlier if either party' +
-        ' requests a review.',
-      '3. Notify the Individual in writing of any alleged breach before taking further formal' +
-        ' action.',
+      '1. Presenting evidence of the breach in support of an application for a Civil Injunction' +
+        ' under section 1 of the Anti-Social Behaviour, Crime and Policing Act 2014.',
+      '2. Applying for a Criminal Behaviour Order under section 22 of the Anti-Social Behaviour,' +
+        ' Crime and Policing Act 2014 where criminal proceedings are concurrently in progress.',
+      '3. Commencing possession proceedings under ' + legislationText + ' on the grounds of' +
+        ' anti-social behaviour, where the Individual holds a tenancy or licence at their address.',
+      '4. Referring the matter to other relevant statutory agencies, including the police,' +
+        ' children\'s services, or adult social care, as appropriate.',
       '',
       div,
       '',
-      'SIGNATURES',
+      'DECLARATION',
       '',
-      'By signing below, the parties confirm that they have read, understood, and agreed to' +
-        ' the terms of this Contract.',
+      'We, the undersigned, confirm that we have read, understood, and voluntarily agreed to' +
+        ' the terms set out in this Contract.',
       '',
       'ISSUING ORGANISATION',
       '',
       'Name: ___________________________   Position: ______________________',
+      '',
+      'Organisation: ____________________________________________________',
       '',
       'Signature: _______________________   Date: __________________________',
       '',
       '',
       'INDIVIDUAL',
       '',
-      'I confirm that I have read and understood this Contract and agree to comply with its' +
-        ' terms voluntarily. I understand that I have the right to seek independent advice' +
-        ' before signing.',
+      'I confirm that I have read and understood this Contract, that I agree to comply with its' +
+        ' terms voluntarily, and that I am aware that I have the right to seek independent' +
+        ' legal advice before signing.',
       '',
       'Name: ' + (d.subjectName || '___________________________'),
       '',
       'Address: ' + (d.subjectAddress || '___________________________'),
+      '',
+      'Date of Birth: ___________________________',
       '',
       'Signature: _______________________   Date: __________________________',
       '',
@@ -1480,11 +1576,14 @@ This letter is being retained for my records.
       'Signature: _______________________   Date: __________________________',
       '',
       div,
-      'This document was produced with the support of WASBA (wasba.co.uk). WASBA provides' +
-        ' information and template tools to assist individuals and agencies experiencing' +
-        ' anti-social behaviour. This document does not constitute legal advice. Parties who' +
-        ' require legal representation should seek independent legal advice.'
-    ].join('\n');
+      'This document was produced with the support of ASB Guide (asbguide.com). ASB Guide' +
+        ' provides information and template tools to assist individuals and agencies' +
+        ' experiencing anti-social behaviour. This document does not constitute legal advice.' +
+        ' Parties who require legal representation should seek independent legal advice.' +
+        (d.abcEndDate ? '\n\nThis contract expires on ' + d.abcEndDate + '.' : '')
+    );
+
+    return lines.filter(l => l !== null).join('\n');
   }
 
   async function generateDocument() {
@@ -1531,6 +1630,12 @@ This letter is being retained for my records.
     const ehFtHazards = document.getElementById('eh-ft-hazards')?.value.trim() || '';
     const abcProhibitions = document.getElementById('abc-prohibitions')?.value.trim() || '';
     const abcDuration = document.getElementById('abc-duration')?.value.trim() || '';
+    const abcAdditionalParties = document.getElementById('abc-additional-parties')?.value.trim() || '';
+    const abcAdditionalProperties = document.getElementById('abc-additional-properties')?.value.trim() || '';
+    const abcOtherOrders = document.getElementById('abc-other-orders')?.value.trim() || '';
+    const abcLegislation = document.getElementById('abc-legislation')?.value || 'england-wales';
+    const abcEndDateRaw = document.getElementById('abc-end-date')?.value || '';
+    const abcEndDate = abcEndDateRaw ? new Date(abcEndDateRaw).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
     const neighbour2 = document.getElementById('neighbour2')?.value.trim() || '';
     const neighbourhoodCommitments = document.getElementById('neighbourhood-commitments')?.value.trim() || '';
 
@@ -1546,7 +1651,9 @@ This letter is being retained for my records.
         formattedDate, caseRef,
         recipientName, recipientAddress,
         subjectName, subjectAddress,
-        asbDescription, abcProhibitions, abcDuration
+        asbDescription, abcProhibitions, abcDuration,
+        abcAdditionalParties, abcAdditionalProperties,
+        abcOtherOrders, abcLegislation, abcEndDate
       });
       onLetterSuccess(text);
       return;
