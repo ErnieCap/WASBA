@@ -524,6 +524,64 @@
         </div>
       </div>
 
+      <!-- ABC -->
+      <div class="form-section" id="abc-section" style="display:none;">
+        <div class="form-section-title">ABC — contract details</div>
+        <div class="notice-box" style="background:#f0fdf4; border-color:#bbf7d0; color:#166534; margin-bottom:16px;">
+          <strong>What is an Acceptable Behaviour Contract?</strong><br>
+          An ABC is a written agreement between a person who has been involved in anti-social behaviour and one or more local agencies whose role it is to prevent such behaviour. ABCs are most commonly used for young people but may also be used for adults.
+        </div>
+        <div class="form-1col">
+          <div class="form-group">
+            <label>Additional parties to be protected <span style="font-weight:400;color:#6b7280;">(optional)</span></label>
+            <span class="form-hint">Names of specific neighbours, residents, or others the contract should protect. Feeds into clause 3. Leave blank for generic wording.</span>
+            <textarea id="abc-additional-parties" rows="3" placeholder="e.g. Mrs J Smith of 14 Elm Street&#10;The residents of Elm Court"></textarea>
+          </div>
+        </div>
+        <div class="form-1col">
+          <div class="form-group">
+            <label>Additional property owners / managers <span style="font-weight:400;color:#6b7280;">(optional)</span></label>
+            <span class="form-hint">Housing association, council, or other property owners to be named in clause 4. Leave blank for generic wording.</span>
+            <textarea id="abc-additional-properties" rows="2" placeholder="e.g. Anytown Housing Association&#10;Anytown Borough Council"></textarea>
+          </div>
+        </div>
+        <div class="form-1col">
+          <div class="form-group">
+            <label>Other relevant contracts or orders already in force <span style="font-weight:400;color:#6b7280;">(optional)</span></label>
+            <span class="form-hint">Any existing injunctions, CBOs, or agreements. Feeds into clause 7. Leave blank for generic wording.</span>
+            <textarea id="abc-other-orders" rows="2" placeholder="e.g. Civil Injunction dated 12 March 2024 (Case No. 12345)"></textarea>
+          </div>
+        </div>
+        <div class="form-1col">
+          <div class="form-group">
+            <label>Additional conditions to prohibit <span style="font-weight:400;color:#6b7280;">(optional)</span></label>
+            <span class="form-hint">Any behaviours beyond the standard clauses 1–7. Each line becomes a numbered clause (8, 9, 10…).</span>
+            <textarea id="abc-prohibitions" rows="4" placeholder="e.g. Playing amplified music between 11pm and 7am&#10;Congregating with more than two other persons in the car park"></textarea>
+          </div>
+        </div>
+        <div class="form-2col">
+          <div class="form-group">
+            <label>Duration of the contract</label>
+            <input type="text" id="abc-duration" placeholder="e.g. 12 months from the date of signing" />
+          </div>
+          <div class="form-group">
+            <label>Contract end date <span style="font-weight:400;color:#6b7280;">(optional)</span></label>
+            <input type="date" id="abc-end-date" />
+          </div>
+        </div>
+        <div class="form-1col last">
+          <div class="form-group">
+            <label>Regional housing legislation</label>
+            <span class="form-hint">Used in the Breach of Contract section to cite the correct possession grounds.</span>
+            <select id="abc-legislation">
+              <option value="england-wales">England &amp; Wales — Housing Act 1985 / Housing Act 1988</option>
+              <option value="scotland">Scotland — Housing (Scotland) Act 2001</option>
+              <option value="northern-ireland">Northern Ireland — Housing (Northern Ireland) Order 1983</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <!-- YOUR DETAILS -->
       <div class="form-section">
         <div class="form-section-title">Your details</div>
@@ -678,64 +736,6 @@
             <label>Requested action</label>
             <span class="form-hint">What specifically are you asking the recipient to do?</span>
             <textarea id="requested-action" rows="3" placeholder="e.g. I am requesting that you investigate this matter urgently, contact the individual responsible, and take appropriate enforcement action."></textarea>
-          </div>
-        </div>
-      </div>
-
-      <!-- ABC -->
-      <div class="form-section" id="abc-section" style="display:none;">
-        <div class="form-section-title">ABC — contract details</div>
-        <div class="notice-box" style="background:#f0fdf4; border-color:#bbf7d0; color:#166534; margin-bottom:16px;">
-          <strong>What is an Acceptable Behaviour Contract?</strong><br>
-          An ABC is a written agreement between a person who has been involved in anti-social behaviour and one or more local agencies whose role it is to prevent such behaviour. ABCs are most commonly used for young people but may also be used for adults.
-        </div>
-        <div class="form-1col">
-          <div class="form-group">
-            <label>Additional parties to be protected <span style="font-weight:400;color:#6b7280;">(optional)</span></label>
-            <span class="form-hint">Names of specific neighbours, residents, or others the contract should protect. Feeds into clause 3. Leave blank for generic wording.</span>
-            <textarea id="abc-additional-parties" rows="3" placeholder="e.g. Mrs J Smith of 14 Elm Street&#10;The residents of Elm Court"></textarea>
-          </div>
-        </div>
-        <div class="form-1col">
-          <div class="form-group">
-            <label>Additional property owners / managers <span style="font-weight:400;color:#6b7280;">(optional)</span></label>
-            <span class="form-hint">Housing association, council, or other property owners to be named in clause 4. Leave blank for generic wording.</span>
-            <textarea id="abc-additional-properties" rows="2" placeholder="e.g. Anytown Housing Association&#10;Anytown Borough Council"></textarea>
-          </div>
-        </div>
-        <div class="form-1col">
-          <div class="form-group">
-            <label>Other relevant contracts or orders already in force <span style="font-weight:400;color:#6b7280;">(optional)</span></label>
-            <span class="form-hint">Any existing injunctions, CBOs, or agreements. Feeds into clause 7. Leave blank for generic wording.</span>
-            <textarea id="abc-other-orders" rows="2" placeholder="e.g. Civil Injunction dated 12 March 2024 (Case No. 12345)"></textarea>
-          </div>
-        </div>
-        <div class="form-1col">
-          <div class="form-group">
-            <label>Additional conditions to prohibit <span style="font-weight:400;color:#6b7280;">(optional)</span></label>
-            <span class="form-hint">Any behaviours beyond the standard clauses 1–7. Each line becomes a numbered clause (8, 9, 10…).</span>
-            <textarea id="abc-prohibitions" rows="4" placeholder="e.g. Playing amplified music between 11pm and 7am&#10;Congregating with more than two other persons in the car park"></textarea>
-          </div>
-        </div>
-        <div class="form-2col">
-          <div class="form-group">
-            <label>Duration of the contract</label>
-            <input type="text" id="abc-duration" placeholder="e.g. 12 months from the date of signing" />
-          </div>
-          <div class="form-group">
-            <label>Contract end date <span style="font-weight:400;color:#6b7280;">(optional)</span></label>
-            <input type="date" id="abc-end-date" />
-          </div>
-        </div>
-        <div class="form-1col last">
-          <div class="form-group">
-            <label>Regional housing legislation</label>
-            <span class="form-hint">Used in the Breach of Contract section to cite the correct possession grounds.</span>
-            <select id="abc-legislation">
-              <option value="england-wales">England &amp; Wales — Housing Act 1985 / Housing Act 1988</option>
-              <option value="scotland">Scotland — Housing (Scotland) Act 2001</option>
-              <option value="northern-ireland">Northern Ireland — Housing (Northern Ireland) Order 1983</option>
-            </select>
           </div>
         </div>
       </div>
