@@ -574,7 +574,8 @@
             <label>Regional housing legislation</label>
             <span class="form-hint">Used in the Breach of Contract section to cite the correct possession grounds.</span>
             <select id="abc-legislation">
-              <option value="england-wales">England &amp; Wales — Housing Act 1985 / Housing Act 1988</option>
+              <option value="england">England — Housing Act 1985 / 1988 &amp; Renters Rights Act 2025</option>
+              <option value="wales">Wales — Housing Act 1985 / 1988 &amp; Renting Homes (Wales) Act 2016</option>
               <option value="scotland">Scotland — Housing (Scotland) Act 2001</option>
               <option value="northern-ireland">Northern Ireland — Housing (Northern Ireland) Order 1983</option>
             </select>
@@ -1424,11 +1425,12 @@ This letter is being retained for my records.
 
     // Regional possession legislation
     const legislationMap = {
-      'england-wales': 'Schedule 2 to the Housing Act 1985 (secure tenancies) and / or Schedule 2 to the Housing Act 1988 (assured tenancies)',
+      'england': 'the Housing Act 1985, the Housing Act 1988 and the Renters Rights Act 2025',
+      'wales': 'the Housing Act 1985, the Housing Act 1988 and the Renting Homes (Wales) Act 2016',
       'scotland': 'Schedule 2 to the Housing (Scotland) Act 2001',
       'northern-ireland': 'Schedule 3 to the Housing (Northern Ireland) Order 1983'
     };
-    const legislationText = legislationMap[d.abcLegislation] || legislationMap['england-wales'];
+    const legislationText = legislationMap[d.abcLegislation] || legislationMap['england'];
 
     const lines = [
       'ACCEPTABLE BEHAVIOUR CONTRACT',
@@ -1633,7 +1635,7 @@ This letter is being retained for my records.
     const abcAdditionalParties = document.getElementById('abc-additional-parties')?.value.trim() || '';
     const abcAdditionalProperties = document.getElementById('abc-additional-properties')?.value.trim() || '';
     const abcOtherOrders = document.getElementById('abc-other-orders')?.value.trim() || '';
-    const abcLegislation = document.getElementById('abc-legislation')?.value || 'england-wales';
+    const abcLegislation = document.getElementById('abc-legislation')?.value || 'england';
     const abcEndDateRaw = document.getElementById('abc-end-date')?.value || '';
     const abcEndDate = abcEndDateRaw ? new Date(abcEndDateRaw).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
     const neighbour2 = document.getElementById('neighbour2')?.value.trim() || '';
