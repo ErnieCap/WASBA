@@ -101,6 +101,7 @@ a:hover { opacity: .85; }
   border-radius: var(--radius);
   padding: 18px;
   box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  transition: border-color .2s, box-shadow .2s;
 }
 .card h3 { margin: 0 0 8px; color: var(--text); }
 .card p  { margin: 0; color: var(--muted); }
@@ -197,6 +198,35 @@ input:focus, select:focus, textarea:focus {
   color: #fff;
 }
 .radio-pill input[type="radio"] { display: none; }
+
+/* ── Triage ──────────────────────────────────────────────── */
+.triage-option {
+  display: inline-flex; align-items: center;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.triage-option:hover { border-color: var(--accent); color: var(--accent); }
+.triage-option.selected {
+  border-color: var(--accent);
+  background: #eff6ff;
+  color: var(--accent);
+}
+.card--highlighted {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(29,78,216,.15), 0 1px 3px rgba(0,0,0,.04);
+}
+.card--highlighted-secondary {
+  border-color: rgba(29,78,216,.4) !important;
+  box-shadow: 0 0 0 2px rgba(29,78,216,.07), 0 1px 3px rgba(0,0,0,.04);
+}
 
 /* ── Footer ──────────────────────────────────────────────── */
 .footer {

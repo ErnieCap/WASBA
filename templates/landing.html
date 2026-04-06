@@ -10,14 +10,26 @@
       tools built from 19 years of frontline ASB practice to help you document, assess,
       and act with confidence.
     </p>
-    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+
+    <div style="margin:20px 0 0;">
+      <p style="font-size:14px; font-weight:600; color:var(--text); margin:0 0 10px;">Where are you right now?</p>
+      <div style="display:flex; flex-wrap:wrap; gap:8px;">
+        <button class="triage-option" onclick="triageSelect('assess', this)">I don't know where to start</button>
+        <button class="triage-option" onclick="triageSelect('log', this)">Incidents are ongoing and I need to log them</button>
+        <button class="triage-option" onclick="triageSelect('escalate', this)">I need to escalate or make a formal complaint</button>
+        <button class="triage-option" onclick="triageSelect('noise', this)">My problem is specifically noise</button>
+      </div>
+      <p id="triage-guidance" style="font-size:13px; color:var(--muted); margin:10px 0 0; min-height:1.6em;"></p>
+    </div>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:20px;">
       <a class="btn primary" href="{{ url_for('asb') }}">Start ASB Assessment</a>
       <a class="btn" href="{{ url_for('noise_index') }}">Open Noise Diary</a>
     </div>
   </div>
 
   <div class="grid3" style="margin-top:18px;">
-    <div class="card">
+    <div class="card triage-card" id="card-asb">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       <h3>ASB Assessment</h3>
       <p>
@@ -29,7 +41,7 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card triage-card" id="card-noise">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       <h3>Noise Diary</h3>
       <p>
@@ -42,7 +54,7 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card triage-card" id="card-letters">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       <h3>Letters &amp; Reports</h3>
       <p>
@@ -77,5 +89,44 @@
   </div>
 
 </div>
+
+<script>
+  function triageSelect(option, btn) {
+    document.querySelectorAll('.triage-option').forEach(function(b) { b.classList.remove('selected'); });
+    btn.classList.add('selected');
+
+    var cards = {
+      assess:   { primary: ['card-asb'],                   secondary: [] },
+      log:      { primary: ['card-noise', 'card-letters'], secondary: [] },
+      escalate: { primary: ['card-letters'],               secondary: [] },
+      noise:    { primary: ['card-noise'],                 secondary: ['card-letters'] }
+    };
+    var guidance = {
+      assess:   'Start with the ASB Assessment to understand your situation and get a structured view of the risk before taking further action.',
+      log:      'Use the Noise Diary to build a time-stamped record, then generate a formal letter once you have enough evidence.',
+      escalate: 'Use Letters & Reports to generate a professionally worded complaint or formal escalation document.',
+      noise:    'Start logging with the Noise Diary — a time-stamped record makes your formal complaint far more effective.'
+    };
+
+    document.querySelectorAll('.triage-card').forEach(function(c) {
+      c.classList.remove('card--highlighted', 'card--highlighted-secondary');
+    });
+
+    var cfg = cards[option];
+    cfg.primary.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.classList.add('card--highlighted');
+    });
+    cfg.secondary.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.classList.add('card--highlighted-secondary');
+    });
+
+    document.getElementById('triage-guidance').textContent = guidance[option];
+
+    var first = document.getElementById(cfg.primary[0]);
+    if (first) first.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+</script>
 
 {% endblock %}
