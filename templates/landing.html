@@ -19,7 +19,7 @@
         <button class="triage-option" onclick="triageSelect('escalate', this)">I need to escalate or make a formal complaint</button>
         <button class="triage-option" onclick="triageSelect('noise', this)">My problem is specifically noise</button>
       </div>
-      <p id="triage-guidance" style="font-size:13px; color:var(--muted); margin:10px 0 0; min-height:1.6em;"></p>
+      <p id="triage-guidance" style="font-size:13px; color:var(--muted); margin:10px 0 0; min-height:0;"></p>
     </div>
 
     <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:20px;">
@@ -91,28 +91,34 @@
 </div>
 
 <script>
-  function triageSelect(option, btn) {
+  var triageCards = {
+    assess:   { primary: ['card-asb'],                   secondary: [] },
+    log:      { primary: ['card-noise', 'card-letters'], secondary: [] },
+    escalate: { primary: ['card-letters'],               secondary: [] },
+    noise:    { primary: ['card-noise'],                 secondary: ['card-letters'] }
+  };
+  var triageGuidance = {
+    assess:   'Start with the ASB Assessment to understand your situation and get a structured view of the risk before taking further action.',
+    log:      'Use the Noise Diary to build a time-stamped record, then generate a formal letter once you have enough evidence.',
+    escalate: 'Use Letters & Reports to generate a professionally worded complaint or formal escalation document.',
+    noise:    'Start logging with the Noise Diary — a time-stamped record makes your formal complaint far more effective.'
+  };
+
+  function clearTriage() {
     document.querySelectorAll('.triage-option').forEach(function(b) { b.classList.remove('selected'); });
-    btn.classList.add('selected');
-
-    var cards = {
-      assess:   { primary: ['card-asb'],                   secondary: [] },
-      log:      { primary: ['card-noise', 'card-letters'], secondary: [] },
-      escalate: { primary: ['card-letters'],               secondary: [] },
-      noise:    { primary: ['card-noise'],                 secondary: ['card-letters'] }
-    };
-    var guidance = {
-      assess:   'Start with the ASB Assessment to understand your situation and get a structured view of the risk before taking further action.',
-      log:      'Use the Noise Diary to build a time-stamped record, then generate a formal letter once you have enough evidence.',
-      escalate: 'Use Letters & Reports to generate a professionally worded complaint or formal escalation document.',
-      noise:    'Start logging with the Noise Diary — a time-stamped record makes your formal complaint far more effective.'
-    };
-
     document.querySelectorAll('.triage-card').forEach(function(c) {
       c.classList.remove('card--highlighted', 'card--highlighted-secondary');
     });
+    document.getElementById('triage-guidance').textContent = '';
+  }
 
-    var cfg = cards[option];
+  function triageSelect(option, btn) {
+    if (btn.classList.contains('selected')) { clearTriage(); return; }
+
+    clearTriage();
+    btn.classList.add('selected');
+
+    var cfg = triageCards[option];
     cfg.primary.forEach(function(id) {
       var el = document.getElementById(id);
       if (el) el.classList.add('card--highlighted');
@@ -122,11 +128,17 @@
       if (el) el.classList.add('card--highlighted-secondary');
     });
 
-    document.getElementById('triage-guidance').textContent = guidance[option];
+    document.getElementById('triage-guidance').textContent = triageGuidance[option];
 
     var first = document.getElementById(cfg.primary[0]);
     if (first) first.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.hero') && document.querySelector('.triage-option.selected')) {
+      clearTriage();
+    }
+  });
 </script>
 
 {% endblock %}

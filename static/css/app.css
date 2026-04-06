@@ -203,6 +203,7 @@ input:focus, select:focus, textarea:focus {
 .triage-option {
   display: inline-flex; align-items: center;
   padding: 7px 14px;
+  min-height: 36px;
   border-radius: 999px;
   border: 1px solid var(--line);
   background: var(--panel);
@@ -211,21 +212,24 @@ input:focus, select:focus, textarea:focus {
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
-  transition: border-color .15s, color .15s, background .15s;
+  line-height: 1.4;
+  transition: border-color .15s, color .15s, background .15s, box-shadow .15s;
 }
 .triage-option:hover { border-color: var(--accent); color: var(--accent); }
 .triage-option.selected {
   border-color: var(--accent);
   background: #eff6ff;
   color: var(--accent);
+  font-weight: 600;
+  box-shadow: 0 0 0 1px var(--accent);
 }
 .card--highlighted {
   border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px rgba(29,78,216,.15), 0 1px 3px rgba(0,0,0,.04);
+  box-shadow: 0 0 0 1px var(--accent), 0 2px 8px rgba(29,78,216,.12);
 }
 .card--highlighted-secondary {
-  border-color: rgba(29,78,216,.4) !important;
-  box-shadow: 0 0 0 2px rgba(29,78,216,.07), 0 1px 3px rgba(0,0,0,.04);
+  border-color: rgba(29,78,216,.45) !important;
+  box-shadow: 0 0 0 1px rgba(29,78,216,.25), 0 1px 3px rgba(0,0,0,.04);
 }
 
 /* ── Footer ──────────────────────────────────────────────── */
