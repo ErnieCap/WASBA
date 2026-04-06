@@ -202,26 +202,28 @@ input:focus, select:focus, textarea:focus {
 /* ── Triage ──────────────────────────────────────────────── */
 .triage-option {
   display: inline-flex; align-items: center;
-  padding: 7px 14px;
-  min-height: 36px;
+  padding: 10px 18px;
+  min-height: 40px;
   border-radius: 999px;
-  border: 1px solid var(--line);
-  background: var(--panel);
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 500;
+  border: 2px solid var(--text);
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
   font-family: inherit;
   line-height: 1.4;
-  transition: border-color .15s, color .15s, background .15s, box-shadow .15s;
+  transition: border-color .15s, color .15s, background .15s;
 }
-.triage-option:hover { border-color: var(--accent); color: var(--accent); }
-.triage-option.selected {
+.triage-option:hover {
+  background: var(--accent);
   border-color: var(--accent);
-  background: #eff6ff;
-  color: var(--accent);
-  font-weight: 600;
-  box-shadow: 0 0 0 1px var(--accent);
+  color: #fff;
+}
+.triage-option.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
 .card--highlighted {
   border-color: var(--accent) !important;

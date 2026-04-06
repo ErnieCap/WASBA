@@ -21,11 +21,6 @@
       </div>
       <p id="triage-guidance" style="font-size:13px; color:var(--muted); margin:10px 0 0; min-height:0;"></p>
     </div>
-
-    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:20px;">
-      <a class="btn primary" href="{{ url_for('asb') }}">Start ASB Assessment</a>
-      <a class="btn" href="{{ url_for('noise_index') }}">Open Noise Diary</a>
-    </div>
   </div>
 
   <div class="grid3" style="margin-top:18px;">
@@ -98,10 +93,10 @@
     noise:    { primary: ['card-noise'],                 secondary: ['card-letters'] }
   };
   var triageGuidance = {
-    assess:   'Start with the ASB Assessment to understand your situation and get a structured view of the risk before taking further action.',
-    log:      'Use the Noise Diary to build a time-stamped record, then generate a formal letter once you have enough evidence.',
-    escalate: 'Use Letters & Reports to generate a professionally worded complaint or formal escalation document.',
-    noise:    'Start logging with the Noise Diary — a time-stamped record makes your formal complaint far more effective.'
+    assess:   'Start here — the assessment will tell you what kind of situation you\'re dealing with.',
+    log:      'Use the Noise Diary to build your record, then generate a letter when you\'re ready to escalate.',
+    escalate: 'Go straight to Letters & Reports to produce a formal complaint or case summary.',
+    noise:    'Start logging with the Noise Diary — you can generate a formal complaint letter once you have a record.'
   };
 
   function clearTriage() {
