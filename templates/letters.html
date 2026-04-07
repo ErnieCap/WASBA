@@ -584,7 +584,7 @@
       </div>
 
       <!-- YOUR DETAILS -->
-      <div class="form-section">
+      <div class="form-section" id="your-details-section">
         <div class="form-section-title">Your details</div>
         <div class="form-2col">
           <div class="form-group">
@@ -676,7 +676,7 @@
       </div>
 
       <!-- ASB DESCRIPTION -->
-      <div class="form-section">
+      <div class="form-section" id="asb-section">
         <div class="form-section-title">The behaviour / situation</div>
         <div class="form-1col">
           <div class="form-group">
@@ -743,24 +743,78 @@
 
       <!-- NEIGHBOURHOOD AGREEMENT -->
       <div class="form-section" id="neighbourhood-section" style="display:none;">
-        <div class="form-section-title">Neighbourhood Agreement — parties &amp; commitments</div>
+        <div class="form-section-title">Neighbourhood Agreement — party details</div>
+        <div class="notice-box" style="background:#f0fdf4; border-color:#bbf7d0; color:#166534; margin-bottom:16px;">
+          <strong>Standard clauses pre-populated.</strong> The community commitments (sections 3–5) are fixed wording and do not need to be entered. Complete the party details below only.
+        </div>
+
+        <!-- Reference & dates -->
+        <div class="form-2col">
+          <div class="form-group">
+            <label>Agreement reference number</label>
+            <input type="text" id="na-ref" readonly style="background:#f8fafc; color:var(--muted); cursor:default;" />
+          </div>
+          <div class="form-group">
+            <label>Date of agreement</label>
+            <input type="date" id="na-date" onchange="onNaDateChange(this.value)" />
+          </div>
+        </div>
         <div class="form-1col">
           <div class="form-group">
-            <label>Second party name &amp; address</label>
-            <input type="text" id="neighbour2" placeholder="Name and address of other party" />
+            <label>Review date <span class="form-hint" style="display:inline; margin:0;">(auto-calculated — 6 months from above)</span></label>
+            <input type="text" id="na-review-date" readonly placeholder="Select a date above" style="background:#f8fafc; color:var(--muted); cursor:default;" />
+          </div>
+        </div>
+
+        <!-- Residents -->
+        <div style="font-weight:600; font-size:14px; margin:18px 0 4px; color:var(--text);">Participating residents</div>
+        <span class="form-hint">Add up to 8 residents. Each entry requires a name and address.</span>
+        <div id="na-residents" style="margin-top:10px;"></div>
+        <div style="margin-top:8px;">
+          <button type="button" class="btn" id="na-add-btn" onclick="addNaResident()">+ Add resident</button>
+        </div>
+
+        <!-- Landlord / LA -->
+        <div style="font-weight:600; font-size:14px; margin:20px 0 4px; color:var(--text);">Landlord / local authority</div>
+        <div class="form-2col">
+          <div class="form-group">
+            <label>Organisation name</label>
+            <input type="text" id="na-ll-org" placeholder="e.g. Anytown Council" />
+          </div>
+          <div class="form-group">
+            <label>Representative name</label>
+            <input type="text" id="na-ll-name" placeholder="e.g. Jane Smith" />
+          </div>
+        </div>
+        <div class="form-1col">
+          <div class="form-group">
+            <label>Position / role</label>
+            <input type="text" id="na-ll-position" placeholder="e.g. Housing Officer" />
+          </div>
+        </div>
+
+        <!-- Facilitating officer -->
+        <div style="font-weight:600; font-size:14px; margin:20px 0 4px; color:var(--text);">Facilitating officer</div>
+        <div class="form-2col">
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="na-fa-name" placeholder="e.g. David Jones" />
+          </div>
+          <div class="form-group">
+            <label>Organisation</label>
+            <input type="text" id="na-fa-org" placeholder="e.g. Anytown Housing Association" />
           </div>
         </div>
         <div class="form-1col last">
           <div class="form-group">
-            <label>Shared commitments / rules</label>
-            <span class="form-hint">What both parties agree to. One commitment per line.</span>
-            <textarea id="neighbourhood-commitments" rows="5" placeholder="e.g. Keep noise levels reasonable between 10pm and 8am&#10;Dispose of waste in designated areas"></textarea>
+            <label>Position / role</label>
+            <input type="text" id="na-fa-position" placeholder="e.g. Community Support Officer" />
           </div>
         </div>
       </div>
 
       <!-- TONE -->
-      <div class="form-section">
+      <div class="form-section" id="tone-section">
         <div class="form-section-title">Document tone</div>
         <div class="form-group" style="max-width:320px;">
           <label>Tone</label>
@@ -806,6 +860,7 @@
         <button class="btn primary" onclick="downloadDocx()" id="download-btn">
           ⬇ Download as Word (.docx)
         </button>
+        <button class="btn" onclick="downloadPdf()">⬇ Download as PDF</button>
         <button class="btn" onclick="startOver()">Start new document</button>
       </div>
 
@@ -886,9 +941,7 @@
     },
     neighbourhood: {
       label: 'Neighbourhood Agreement',
-      recipientLabel: 'Facilitating agency (if any)',
-      showSubject: true, showTrigger: false, showAbc: false, showNeighbourhood: true,
-      subjectTitle: 'About the parties'
+      showSubject: false, showTrigger: false, showAbc: false, showNeighbourhood: true
     }
   };
 
@@ -963,6 +1016,13 @@
     if (!document.getElementById('letter-date').value) {
       document.getElementById('letter-date').value = new Date().toISOString().split('T')[0];
     }
+    // Neighbourhood: hide shared sections not used, initialise dynamic form
+    const isNeighbourhood = selectedDoc === 'neighbourhood';
+    document.getElementById('your-details-section').style.display = isNeighbourhood ? 'none' : '';
+    document.getElementById('asb-section').style.display = isNeighbourhood ? 'none' : '';
+    document.getElementById('tone-section').style.display = isNeighbourhood ? 'none' : '';
+    if (isNeighbourhood) initNaResidents();
+
     // Show waiver only for returning users — first letter is always free
     document.getElementById('waiver-section').style.display = getLetterCount() > 0 ? '' : 'none';
     setStep(2);
@@ -1588,6 +1648,328 @@ This letter is being retained for my records.
     return lines.filter(l => l !== null).join('\n');
   }
 
+  /* ── Neighbourhood Agreement helpers ──────────────────────── */
+  function generateNaRef() {
+    var now = new Date();
+    var d = now.getFullYear().toString() +
+      String(now.getMonth() + 1).padStart(2, '0') +
+      String(now.getDate()).padStart(2, '0');
+    return 'NA-' + d + '-' + String(Math.floor(1000 + Math.random() * 9000));
+  }
+
+  function onNaDateChange(val) {
+    var el = document.getElementById('na-review-date');
+    if (!val) { if (el) el.value = ''; return; }
+    var d = new Date(val);
+    d.setMonth(d.getMonth() + 6);
+    if (el) el.value = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  function addNaResident() {
+    var container = document.getElementById('na-residents');
+    var entries = container.querySelectorAll('.na-resident-entry');
+    if (entries.length >= 8) return;
+    var idx = entries.length + 1;
+    var div = document.createElement('div');
+    div.className = 'na-resident-entry';
+    div.style.cssText = 'display:grid; grid-template-columns:1fr 1fr auto; gap:8px; align-items:end; margin-bottom:8px;';
+    div.innerHTML =
+      '<div class="form-group" style="margin:0;"><label>Resident ' + idx + ' — name</label>' +
+      '<input type="text" class="na-res-name" placeholder="Full name" /></div>' +
+      '<div class="form-group" style="margin:0;"><label>Address</label>' +
+      '<input type="text" class="na-res-address" placeholder="House, street, postcode" /></div>' +
+      '<button type="button" class="btn" onclick="removeNaResident(this)" ' +
+      'style="height:38px; padding:0 12px;" title="Remove resident">✕</button>';
+    container.appendChild(div);
+    if (container.querySelectorAll('.na-resident-entry').length >= 8) {
+      document.getElementById('na-add-btn').disabled = true;
+    }
+  }
+
+  function removeNaResident(btn) {
+    var container = document.getElementById('na-residents');
+    if (container.querySelectorAll('.na-resident-entry').length <= 1) return;
+    btn.closest('.na-resident-entry').remove();
+    document.getElementById('na-add-btn').disabled = false;
+    container.querySelectorAll('.na-resident-entry').forEach(function(e, i) {
+      e.querySelector('label').textContent = 'Resident ' + (i + 1) + ' — name';
+    });
+  }
+
+  function initNaResidents() {
+    var container = document.getElementById('na-residents');
+    if (!container) return;
+    if (container.querySelectorAll('.na-resident-entry').length === 0) {
+      addNaResident();
+      addNaResident();
+    }
+    var refEl = document.getElementById('na-ref');
+    if (refEl && !refEl.value) refEl.value = generateNaRef();
+    var dateEl = document.getElementById('na-date');
+    if (dateEl && !dateEl.value) {
+      var today = new Date().toISOString().split('T')[0];
+      dateEl.value = today;
+      onNaDateChange(today);
+    }
+    document.getElementById('na-add-btn').disabled = false;
+  }
+
+  /* ── Neighbourhood Agreement document builder ──────────────── */
+  function buildNeighbourhoodDocument(d) {
+    var div = '\u2500'.repeat(72);
+    var residents = d.residents && d.residents.length > 0 ? d.residents : [{ name: '', address: '' }];
+
+    var residentPartyLines = residents.map(function(r, i) {
+      return (i + 1) + '. ' + (r.name || '[Name]') + '\n   ' + (r.address || '[Address]');
+    }).join('\n\n');
+
+    var residentSigLines = residents.map(function(r, i) {
+      return (i + 1) + '. Name (Print): ' + (r.name || '___________________________') + '\n' +
+        '   Address: ' + (r.address || '___________________________') + '\n' +
+        '   Signature: ___________________________   Date: ___________';
+    }).join('\n\n');
+
+    var llOrg      = d.llOrg      || '[Organisation]';
+    var llName     = d.llName     || '[Representative Name]';
+    var llPosition = d.llPosition || '[Position]';
+    var faName     = d.faName     || '[Name]';
+    var faOrg      = d.faOrg      || '[Organisation]';
+    var faPosition = d.faPosition || '[Position]';
+
+    return [
+      'NEIGHBOURHOOD AGREEMENT',
+      'Building a Community We\'re All Proud Of',
+      '',
+      'This Neighbourhood Agreement has been drawn up with the willing participation of' +
+        ' residents, and in acknowledgement by the undersigned landlord or local authority.' +
+        ' It reflects a shared commitment to creating and maintaining a safe, respectful and' +
+        ' cohesive community where everyone can enjoy their home in peace.',
+      '',
+      'This is not a legal enforcement document. It is a positive expression of the values' +
+        ' and behaviours that we, as a community, agree to uphold together. It recognises' +
+        ' that a good neighbourhood is built on mutual respect, consideration and a' +
+        ' willingness to work through differences constructively.',
+      '',
+      div,
+      '',
+      'PARTIES TO THE AGREEMENT',
+      '',
+      'This agreement is entered into between the following parties:',
+      '',
+      'RESIDENTS',
+      '',
+      'The undersigned residents of the following addresses hereby agree to uphold the' +
+        ' commitments set out in this agreement:',
+      '',
+      residentPartyLines,
+      '',
+      'LANDLORD / LOCAL AUTHORITY',
+      '',
+      'Organisation: ' + llOrg,
+      'Representative: ' + llName,
+      'Position: ' + llPosition,
+      '',
+      'AGREEMENT FACILITATED BY',
+      '',
+      'Name: ' + faName,
+      'Organisation: ' + faOrg,
+      'Position: ' + faPosition,
+      '',
+      div,
+      '',
+      'OUR COMMUNITY COMMITMENTS',
+      '',
+      'We, the undersigned residents, freely and willingly make the following commitments' +
+        ' to each other and to our community:',
+      '',
+      'Respect and Consideration',
+      '',
+      'We agree to treat all neighbours, visitors and community members with courtesy and' +
+        ' respect, regardless of background, culture, lifestyle or belief. We recognise and' +
+        ' celebrate the diversity that makes our community unique.',
+      '',
+      'Noise and Quiet Enjoyment',
+      '',
+      'We agree to be mindful of noise levels, particularly during evening and night time' +
+        ' hours, and to ensure that music, television, gatherings and other activities do' +
+        ' not unreasonably disturb our neighbours. We recognise everyone\'s right to enjoy' +
+        ' their home in peace.',
+      '',
+      'Communal Areas and Shared Spaces',
+      '',
+      'We agree to keep shared entrances, stairwells, gardens, parking areas and other' +
+        ' communal spaces clean, tidy and free from obstruction. We take collective pride' +
+        ' in the appearance and upkeep of our shared environment.',
+      '',
+      'Children and Visitors',
+      '',
+      'We agree to take reasonable responsibility for the behaviour of children in our' +
+        ' care and visitors to our home, encouraging them to respect the same values set' +
+        ' out in this agreement.',
+      '',
+      'Parking and Access',
+      '',
+      'We agree to park considerately, ensuring emergency vehicle access is never blocked' +
+        ' and that shared parking areas are used fairly and respectfully.',
+      '',
+      'Resolving Disagreements',
+      '',
+      'We agree that should any disputes or concerns arise between neighbours, we will' +
+        ' seek to resolve them calmly and constructively, and where needed will seek' +
+        ' support through mediation or our landlord rather than resorting to confrontation.',
+      '',
+      div,
+      '',
+      'LANDLORD / LOCAL AUTHORITY ACKNOWLEDGEMENT',
+      '',
+      'The undersigned landlord or local authority hereby acknowledges this Neighbourhood' +
+        ' Agreement and the positive commitment made by the residents named within it.',
+      '',
+      'In acknowledging this agreement we express our support for the community\'s shared' +
+        ' vision and commit to the following general principles:',
+      '',
+      'Support',
+      '',
+      'We will endeavour to support this community in maintaining the values expressed in' +
+        ' this agreement, and will take reasonable steps to assist residents in upholding' +
+        ' them where it is within our power to do so.',
+      '',
+      'Communication',
+      '',
+      'We will maintain open channels of communication with residents and will respond to' +
+        ' concerns raised in the spirit of this agreement in a timely and respectful manner.',
+      '',
+      'Reporting',
+      '',
+      'We encourage all residents to report concerns or breaches of this agreement through' +
+        ' the appropriate channels, and assure them that all reports will be treated' +
+        ' seriously, sensitively and without prejudice.',
+      '',
+      'Review',
+      '',
+      'We commit to participating in any scheduled review of this agreement and to working' +
+        ' collaboratively with residents to ensure it remains relevant and effective.',
+      '',
+      'Note: This acknowledgement does not constitute a legally binding commitment of' +
+        ' specific resources or expenditure on the part of the landlord or local authority.' +
+        ' It represents a statement of intent and support for the principles contained' +
+        ' within this agreement.',
+      '',
+      div,
+      '',
+      'NEIGHBOURHOOD POLICING TEAM NOTIFICATION',
+      '',
+      'In support of a whole community approach to neighbourhood wellbeing, all parties to' +
+        ' this agreement acknowledge that the local Neighbourhood Policing Team will be' +
+        ' formally notified of this agreement upon signing.',
+      '',
+      'This notification is made in a positive spirit and reflects a commitment to' +
+        ' partnership working across agencies. It is not punitive and does not imply that' +
+        ' any criminal activity has taken place or is anticipated.',
+      '',
+      'The purpose of this notification is twofold:',
+      '',
+      'Awareness',
+      '',
+      'To ensure that the local Neighbourhood Policing Team has an understanding of the' +
+        ' community context and the positive steps residents and landlords have taken to' +
+        ' maintain a cohesive neighbourhood.',
+      '',
+      'Community Trigger',
+      '',
+      'Should concerns arise in the future that cannot be resolved informally, having an' +
+        ' established record of this agreement supports the use of the Community Trigger' +
+        ' (ASB Case Review). This gives residents the right to request a formal review of' +
+        ' agency responses where a pattern of antisocial behaviour has been reported.',
+      '',
+      'The Neighbourhood Policing Team notification will be coordinated by the facilitating' +
+        ' officer named in the parties section of this agreement.',
+      '',
+      div,
+      '',
+      'REVIEW AND DURATION',
+      '',
+      'Duration',
+      '',
+      'This agreement comes into effect on the date of the final signature and will remain' +
+        ' in place for an initial period of 12 months from that date, unless all parties' +
+        ' agree to extend, vary or end it sooner.',
+      '',
+      'Review Meeting',
+      '',
+      'A formal review of this agreement will take place no later than 6 months after the' +
+        ' date of signing. All parties will be invited to attend. The review will consider:',
+      '',
+      '1. Whether the commitments made in this agreement are being upheld.',
+      '2. Whether the agreement remains relevant to the needs of the community.',
+      '3. Whether any amendments or additions would strengthen the agreement.',
+      '4. Whether the agreement should be extended beyond its initial period.',
+      '',
+      'Amendments',
+      '',
+      'Any amendments to this agreement must be agreed by all parties and recorded in' +
+        ' writing. Amended versions will be signed and dated by all parties and will' +
+        ' supersede the previous version.',
+      '',
+      'Early Conclusion',
+      '',
+      'Should all parties agree that the aims of this agreement have been achieved before' +
+        ' the end of the initial period, the agreement may be formally concluded early.' +
+        ' This will be recorded in writing and held on file by the facilitating officer.',
+      '',
+      'Renewal',
+      '',
+      'At the end of the initial period, all parties will be invited to consider whether a' +
+        ' renewed or revised agreement would benefit the community going forward.',
+      '',
+      'All signed copies of this agreement and any subsequent amendments will be retained' +
+        ' by the facilitating organisation for a minimum of 3 years.',
+      '',
+      div,
+      '',
+      'SIGNATURES',
+      '',
+      'By signing this agreement, all parties confirm that they have read and understood' +
+        ' its contents, that they enter into it freely and willingly, and that they commit' +
+        ' to upholding the values and principles contained within it.',
+      '',
+      'RESIDENTS',
+      '',
+      residentSigLines,
+      '',
+      'LANDLORD / LOCAL AUTHORITY REPRESENTATIVE',
+      '',
+      'Name (Print): ' + llName,
+      '',
+      'Signature: ___________________________   Organisation: ' + llOrg,
+      '',
+      'Position: ' + llPosition + '   Date: ___________',
+      '',
+      '',
+      'FACILITATING OFFICER',
+      '',
+      'Name (Print): ' + faName,
+      '',
+      'Signature: ___________________________   Organisation: ' + faOrg,
+      '',
+      'Position: ' + faPosition + '   Date: ___________',
+      '',
+      div,
+      '',
+      'This agreement has been facilitated in good faith and in the interests of the' +
+        ' community. All parties are encouraged to retain a copy for their own records.',
+      '',
+      'Date of Agreement: ' + d.naDate,
+      'Review Date: ' + d.naReviewDate,
+      'Agreement Reference Number: ' + d.naRef,
+      '',
+      div,
+      'This document was produced with the support of ASB Guide (asbguide.com). ASB Guide' +
+        ' provides information and template tools to assist individuals and agencies' +
+        ' experiencing anti-social behaviour. This document does not constitute legal advice.'
+    ].join('\n');
+  }
+
   async function generateDocument() {
     const meta = docMeta[selectedDoc];
     const yourName = document.getElementById('your-name').value.trim() || '[Your Name]';
@@ -1638,8 +2020,6 @@ This letter is being retained for my records.
     const abcLegislation = document.getElementById('abc-legislation')?.value || 'england';
     const abcEndDateRaw = document.getElementById('abc-end-date')?.value || '';
     const abcEndDate = abcEndDateRaw ? new Date(abcEndDateRaw).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
-    const neighbour2 = document.getElementById('neighbour2')?.value.trim() || '';
-    const neighbourhoodCommitments = document.getElementById('neighbourhood-commitments')?.value.trim() || '';
 
     // Landlord-specific fields
     const yourContact = document.getElementById('your-contact')?.value.trim() || '';
@@ -1656,6 +2036,34 @@ This letter is being retained for my records.
         asbDescription, abcProhibitions, abcDuration,
         abcAdditionalParties, abcAdditionalProperties,
         abcOtherOrders, abcLegislation, abcEndDate
+      });
+      onLetterSuccess(text);
+      return;
+    }
+
+    if (selectedDoc === 'neighbourhood') {
+      const naRef = document.getElementById('na-ref')?.value || '';
+      const naDateRaw = document.getElementById('na-date')?.value || '';
+      const naDate = naDateRaw
+        ? new Date(naDateRaw).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+        : '[Date]';
+      const naReviewDate = document.getElementById('na-review-date')?.value || '[Review Date]';
+      const residents = Array.from(document.querySelectorAll('.na-resident-entry')).map(function(el) {
+        return {
+          name: el.querySelector('.na-res-name')?.value.trim() || '',
+          address: el.querySelector('.na-res-address')?.value.trim() || ''
+        };
+      }).filter(function(r) { return r.name || r.address; });
+      const llOrg      = document.getElementById('na-ll-org')?.value.trim() || '';
+      const llName     = document.getElementById('na-ll-name')?.value.trim() || '';
+      const llPosition = document.getElementById('na-ll-position')?.value.trim() || '';
+      const faName     = document.getElementById('na-fa-name')?.value.trim() || '';
+      const faOrg      = document.getElementById('na-fa-org')?.value.trim() || '';
+      const faPosition = document.getElementById('na-fa-position')?.value.trim() || '';
+      const text = buildNeighbourhoodDocument({
+        naRef, naDate, naReviewDate, residents,
+        llOrg, llName, llPosition,
+        faName, faOrg, faPosition
       });
       onLetterSuccess(text);
       return;
@@ -1996,6 +2404,28 @@ INSTRUCTIONS:
       btn.disabled = false;
       btn.textContent = '⬇ Download as Word (.docx)';
     }
+  }
+
+  function downloadPdf() {
+    if (!generatedText) return;
+    var title = selectedDoc === 'neighbourhood' ? 'Neighbourhood Agreement'
+      : selectedDoc === 'abc' ? 'Acceptable Behaviour Contract'
+      : 'Document';
+    var escaped = generatedText
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    var win = window.open('', '_blank', 'width=820,height=700');
+    if (!win) { alert('Please allow pop-ups in your browser to download as PDF.'); return; }
+    win.document.write(
+      '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + title + '</title>' +
+      '<style>' +
+      'body{font-family:Arial,sans-serif;font-size:11.5px;line-height:1.65;padding:40px 50px;max-width:720px;margin:0 auto;color:#111;}' +
+      'pre{white-space:pre-wrap;word-wrap:break-word;font-family:inherit;font-size:inherit;margin:0;}' +
+      '@media print{body{padding:0;}@page{margin:2cm;}}' +
+      '</style></head><body><pre>' + escaped + '</pre>' +
+      '<script>window.onload=function(){window.print();}<\/script>' +
+      '</body></html>'
+    );
+    win.document.close();
   }
 </script>
 
