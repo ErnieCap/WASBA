@@ -215,7 +215,6 @@ input:focus, select:focus, textarea:focus {
   line-height: 1.4;
   transition: border-color .15s, color .15s, background .15s;
 }
-#triage-guidance:empty { margin-top: 0; }
 .triage-option:hover {
   background: var(--accent);
   border-color: var(--accent);
@@ -226,6 +225,17 @@ input:focus, select:focus, textarea:focus {
   border-color: var(--accent);
   color: #fff;
 }
+#triage-guidance {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 10px 0 0;
+  min-height: 0;
+  max-width: none;
+  transition: opacity .2s;
+}
+#triage-guidance:empty { margin-top: 0; opacity: 0; }
+
 .card--highlighted {
   border-color: var(--accent) !important;
   box-shadow: 0 0 0 1px var(--accent), 0 2px 8px rgba(29,78,216,.12);
