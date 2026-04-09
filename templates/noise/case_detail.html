@@ -3,7 +3,7 @@
 {% block content %}
 
 {% if case.ref_code %}
-  <div class="card" style="margin-top:14px; border-left:4px solid #4a7fcb;">
+  <div class="card" style="margin-top:14px; border-left:4px solid var(--accent);">
     <div style="font-weight:700; margin-bottom:4px;">Your diary reference code</div>
     <div style="font-size:22px; font-weight:800; letter-spacing:4px;">
       {{ case.ref_code[:4] }}-{{ case.ref_code[4:] }}

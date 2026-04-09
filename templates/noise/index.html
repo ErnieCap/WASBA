@@ -8,8 +8,10 @@
     <p>Create a diary that’s consistent, time-stamped, and easy to review later.</p>
 
     {# Use whichever endpoint name you actually have for "new case" #}
-    <a class="btn primary" href="{{ url_for('noise_new') }}">Create a new diary</a>
-    <a class="btn" href="{{ url_for('noise_recover') }}" style="margin-left:8px;">Recover a diary</a>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:20px;">
+      <a class="btn primary" href="{{ url_for('noise_new') }}">Create a new diary</a>
+      <a class="btn" href="{{ url_for('noise_recover') }}">Recover a diary</a>
+    </div>
   </div>
 
   {% if cases and cases|length > 0 %}

@@ -7,7 +7,7 @@
     <h1 style="margin:0 0 8px;">ASB Case Assessment</h1>
     <p style="margin:0;">One clear risk rating, with calculation details available if you want them.</p>
 
-    <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+    <div style="margin-top:20px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
       <a class="btn" href="{{ url_for('asb') }}">Assess another case</a>
       <a class="btn" href="{{ url_for('landing') }}">Home</a>
     </div>
@@ -31,7 +31,7 @@
   </div>
 
 {% if result.case_highlights %}
-  <div class="card" style="margin-top:14px;">
+  <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--line);">
     <h2 style="margin:0 0 10px;">Case highlights</h2>
     <ul style="margin:8px 0 0; padding-left:20px;">
       {% for h in result.case_highlights %}
