@@ -63,7 +63,7 @@ a:hover { opacity: .85; }
 /* ── Hero ────────────────────────────────────────────────── */
 .hero {
   margin-top: 20px;
-  padding: 40px 36px 24px;
+  padding: 40px 36px 20px;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -215,6 +215,7 @@ input:focus, select:focus, textarea:focus {
   line-height: 1.4;
   transition: border-color .15s, color .15s, background .15s;
 }
+#triage-guidance:empty { margin-top: 0; }
 .triage-option:hover {
   background: var(--accent);
   border-color: var(--accent);
