@@ -236,6 +236,8 @@ input:focus, select:focus, textarea:focus {
 }
 #triage-guidance:empty { margin-top: 0; opacity: 0; }
 
+.triage-card { display: flex; flex-direction: column; }
+
 .card--highlighted {
   border-color: var(--accent) !important;
   box-shadow: 0 0 0 1px var(--accent), 0 2px 8px rgba(29,78,216,.12);
