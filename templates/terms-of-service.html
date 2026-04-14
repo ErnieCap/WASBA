@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #0f2342;
+    --navy-mid: #1a3a6b;
+    --blue-accent: #2563eb;
+    --blue-light: #dbeafe;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --bg: #f8fafc;
+    --white: #ffffff;
+    --amber: #d97706;
+    --amber-light: #fef3c7;
+    --red-light: #fef2f2;
+    --red: #dc2626;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.75; font-size: 16px; }
+  header { background: var(--navy); padding: 0; position: sticky; top: 0; z-index: 100; border-bottom: 3px solid var(--amber); }
+  .header-inner { max-width: 900px; margin: 0 auto; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-family: 'Spectral', serif; font-size: 1.4rem; font-weight: 600; color: #fff; text-decoration: none; letter-spacing: -0.02em; }
+  .logo span { color: #60a5fa; }
+  .back-link { font-size: 13px; color: #93c5fd; text-decoration: none; }
+  .back-link:hover { color: #fff; }
+  .hero { background: var(--navy); color: white; padding: 3rem 2rem 2.5rem; }
+  .hero-inner { max-width: 900px; margin: 0 auto; }
+  .doc-badge { display: inline-block; background: rgba(217,119,6,0.25); border: 1px solid rgba(251,191,36,0.4); color: #fcd34d; font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; margin-bottom: 1rem; }
+  h1 { font-family: 'Spectral', serif; font-size: 2.4rem; font-weight: 600; letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 0.75rem; color: #fff; }
+  .meta { font-size: 13px; color: #93c5fd; display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  .main { max-width: 900px; margin: 0 auto; padding: 2rem 2rem 4rem; display: grid; grid-template-columns: 220px 1fr; gap: 3rem; align-items: start; }
+  .toc { position: sticky; top: 72px; background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+  .toc-title { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.75rem; }
+  .toc ol { list-style: none; counter-reset: toc; }
+  .toc li { counter-increment: toc; margin-bottom: 0.5rem; }
+  .toc a { font-size: 13px; color: var(--text-muted); text-decoration: none; display: flex; align-items: baseline; gap: 8px; }
+  .toc a::before { content: counter(toc); font-size: 10px; font-weight: 500; color: var(--amber); min-width: 14px; }
+  .toc a:hover { color: var(--amber); }
+  .content section { margin-bottom: 2.5rem; padding-bottom: 2.5rem; border-bottom: 1px solid var(--border); }
+  .content section:last-child { border-bottom: none; margin-bottom: 0; }
+  .section-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 1rem; }
+  .section-num { font-size: 11px; font-weight: 500; color: var(--amber); letter-spacing: 0.05em; min-width: 24px; }
+  h2 { font-family: 'Spectral', serif; font-size: 1.35rem; font-weight: 600; letter-spacing: -0.02em; color: var(--navy); }
+  h3 { font-size: 0.9rem; font-weight: 500; color: var(--text); margin: 1.25rem 0 0.5rem; letter-spacing: 0.02em; }
+  p { margin-bottom: 0.85rem; color: var(--text); font-size: 0.95rem; }
+  p:last-child { margin-bottom: 0; }
+  ul, ol { padding-left: 1.25rem; margin-bottom: 0.85rem; }
+  li { margin-bottom: 0.35rem; font-size: 0.95rem; color: var(--text); }
+  a { color: var(--blue-accent); }
+  .callout { background: var(--blue-light); border-left: 3px solid var(--blue-accent); padding: 1rem 1.25rem; border-radius: 0 8px 8px 0; margin: 1.25rem 0; font-size: 0.9rem; }
+  .callout strong { color: var(--navy); }
+  .warning-callout { background: var(--amber-light); border-left: 3px solid var(--amber); padding: 1rem 1.25rem; border-radius: 0 8px 8px 0; margin: 1.25rem 0; font-size: 0.9rem; }
+  .danger-callout { background: var(--red-light); border-left: 3px solid var(--red); padding: 1rem 1.25rem; border-radius: 0 8px 8px 0; margin: 1.25rem 0; font-size: 0.9rem; }
+  .danger-callout strong { color: var(--red); }
+  .contact-box { background: var(--navy); color: white; border-radius: 12px; padding: 1.5rem; }
+  .contact-box h3 { color: #fcd34d; margin-top: 0; }
+  .contact-box p { color: #cbd5e1; font-size: 0.9rem; }
+  .contact-box a { color: #93c5fd; }
+  @media (max-width: 700px) { .main { grid-template-columns: 1fr; } .toc { display: none; } h1 { font-size: 1.8rem; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <div class="hero-inner">
+    <div class="doc-badge">Legal Document</div>
+    <h1>Terms of Service</h1>
+    <div class="meta">
+      <span>Effective date: [DATE]</span>
+      <span>Last updated: [DATE]</span>
+      <span>Governed by the laws of England and Wales</span>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <nav class="toc">
+    <p class="toc-title">Contents</p>
+    <ol>
+      <li><a href="#about">About ASBGuide</a></li>
+      <li><a href="#acceptance">Acceptance</a></li>
+      <li><a href="#eligibility">Eligibility</a></li>
+      <li><a href="#accounts">Your account</a></li>
+      <li><a href="#service">The service</a></li>
+      <li><a href="#not-legal-advice">Not legal advice</a></li>
+      <li><a href="#acceptable-use">Acceptable use</a></li>
+      <li><a href="#payments">Payments</a></li>
+      <li><a href="#ip">Intellectual property</a></li>
+      <li><a href="#liability">Liability</a></li>
+      <li><a href="#termination">Termination</a></li>
+      <li><a href="#disputes">Disputes</a></li>
+      <li><a href="#changes">Changes</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ol>
+  </nav>
+
+  <div class="content">
+
+    <div class="callout">
+      <strong>Plain English summary:</strong> ASBGuide helps you understand your options when dealing with anti-social behaviour. We provide information and guidance — not regulated legal advice. By using this site you agree to these terms. Please read section 6 (Not Legal Advice) carefully — it is the most important section for you to understand.
+    </div>
+
+    <section id="about">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2>About ASBGuide.com</h2>
+      </div>
+      <p>ASBGuide.com is operated by <strong>ASBGuide</strong> ("<strong>we</strong>", "<strong>us</strong>", "<strong>our</strong>"), a sole trader based in England and Wales. Contact address: <strong>Housing Assist, Unit 166060, PO Box 7169, Poole, BH15 9EL</strong>.</p>
+      <p>We operate a guidance and information platform to help individuals understand and navigate anti-social behaviour (ASB) cases in England and Wales. We provide information, tools, document templates, and practical guidance.</p>
+    </section>
+
+    <section id="acceptance">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2>Acceptance of terms</h2>
+      </div>
+      <p>By accessing or using ASBGuide.com (the "<strong>Service</strong>"), you agree to be bound by these Terms of Service ("<strong>Terms</strong>") and our <a href="/privacy-policy">Privacy Policy</a>.</p>
+      <p>If you do not agree to these Terms, you must not use the Service. If you are using the Service on behalf of an organisation, you confirm you have authority to bind that organisation to these Terms.</p>
+    </section>
+
+    <section id="eligibility">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2>Eligibility</h2>
+      </div>
+      <p>You must be at least 18 years old to use this Service. By using ASBGuide.com you confirm that:</p>
+      <ul>
+        <li>You are at least 18 years of age</li>
+        <li>You are located in the United Kingdom (our guidance is specific to England and Wales)</li>
+        <li>You are not prohibited from using the Service under any applicable law</li>
+      </ul>
+    </section>
+
+    <section id="accounts">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2>Your account</h2>
+      </div>
+      <p>Some features of the Service require you to create an account. When registering, you must:</p>
+      <ul>
+        <li>Provide accurate, current, and complete information</li>
+        <li>Keep your login credentials confidential</li>
+        <li>Notify us immediately if you suspect unauthorised access to your account</li>
+        <li>Not share your account with any other person</li>
+      </ul>
+      <p>You are responsible for all activity that occurs under your account. We reserve the right to suspend or terminate accounts where we have reason to believe our Terms have been breached.</p>
+    </section>
+
+    <section id="service">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2>The Service</h2>
+      </div>
+      <p>ASBGuide.com provides:</p>
+      <ul>
+        <li>An AI-assisted guidance tool to help you understand ASB processes</li>
+        <li>Practical information about reporting ASB, escalating complaints, and accessing remedies</li>
+        <li>Document templates and letter drafts for use in ASB matters</li>
+        <li>Guides to relevant legislation, enforcement agencies, and dispute resolution processes</li>
+      </ul>
+      <p>We aim to keep the Service available at all times but we do not guarantee uninterrupted access. We may suspend the Service for maintenance, updates, or reasons beyond our control without liability to you.</p>
+      <div class="warning-callout">
+        <strong>Geographic scope:</strong> Our guidance is written specifically for England and Wales. ASB law and processes differ in Scotland and Northern Ireland. If you are based outside England and Wales, the guidance may not apply to your situation.
+      </div>
+    </section>
+
+    <section id="not-legal-advice">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2>Not legal advice — please read carefully</h2>
+      </div>
+      <div class="danger-callout">
+        <strong>Important:</strong> ASBGuide.com does not provide legal advice. We are not a law firm and we are not regulated by the Solicitors Regulation Authority (SRA) or any other legal regulatory body. Nothing on this website constitutes legal advice, and no solicitor-client relationship is formed between you and us.
+      </div>
+      <p>The information and tools provided on this site are for general guidance and informational purposes only. They are based on publicly available law and policy as at the date of publication, and may not reflect the most recent legal developments.</p>
+      <p>The guidance provided:</p>
+      <ul>
+        <li>Is not tailored to your specific circumstances</li>
+        <li>Does not take into account factors specific to your case that a qualified solicitor would consider</li>
+        <li>Should not be relied upon as a substitute for professional legal advice</li>
+        <li>May not be appropriate for complex, urgent, or contentious situations</li>
+      </ul>
+      <p><strong>If you are facing legal proceedings, court action, an injunction application, or any urgent legal situation, you should seek advice from a qualified solicitor.</strong> You can find a solicitor through the <a href="https://solicitors.lawsociety.org.uk/" target="_blank" rel="noopener">Law Society Find a Solicitor</a> service. Free legal advice may also be available through Citizens Advice.</p>
+      <p>We accept no liability for any action taken or not taken in reliance on the content of this website. See section 10 (Limitation of Liability) for further detail.</p>
+    </section>
+
+    <section id="acceptable-use">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2>Acceptable use</h2>
+      </div>
+      <p>You agree to use the Service only for lawful purposes and in accordance with these Terms. You must not:</p>
+      <ul>
+        <li>Use the Service to harass, threaten, or intimidate any individual</li>
+        <li>Input false, fabricated, or misleading information into our tools</li>
+        <li>Use the Service for any purpose that is fraudulent or that facilitates fraud</li>
+        <li>Attempt to circumvent or manipulate our AI guidance tool to produce misleading outputs</li>
+        <li>Reproduce, redistribute, or commercialise any content from this Service without our written permission</li>
+        <li>Attempt to access any part of the Service by means other than those provided by us</li>
+        <li>Upload viruses, malware, or any other harmful code</li>
+        <li>Use automated tools, bots, or scrapers to access the Service</li>
+      </ul>
+      <p>Breach of acceptable use may result in immediate suspension of your account without refund.</p>
+    </section>
+
+    <section id="payments">
+      <div class="section-header">
+        <span class="section-num">08</span>
+        <h2>Payments and subscriptions</h2>
+      </div>
+      <h3>Pricing</h3>
+      <p>Certain features of the Service are available on a paid basis. Prices are displayed on our pricing page and are as shown at the time of purchase.</p>
+      <h3>Payment processing</h3>
+      <p>Payments are processed by Stripe. We do not store your full card details. By making a payment, you also agree to Stripe's terms of service.</p>
+      <h3>Subscriptions</h3>
+      <p>If you purchase a subscription, it will automatically renew at the end of each billing period unless you cancel. You may cancel at any time through your account settings. Cancellation takes effect at the end of the current billing period and you retain access until that date.</p>
+      <h3>Refunds</h3>
+      <p>As a consumer, you have a 14-day right to cancel any purchase under the Consumer Contracts (Information, Cancellation and Additional Charges) Regulations 2013. However, by accessing the Service or downloading digital content, you acknowledge that the right of withdrawal may be waived. If you have any concerns about a charge, please contact us at <a href="mailto:capenere@gmail.com">capenere@gmail.com</a> within 14 days and we will review your case.</p>
+      <h3>Failed payments</h3>
+      <p>If a payment fails, we may suspend access to paid features until payment is resolved. Persistent failure to pay may result in account termination.</p>
+    </section>
+
+    <section id="ip">
+      <div class="section-header">
+        <span class="section-num">09</span>
+        <h2>Intellectual property</h2>
+      </div>
+      <p>All content on ASBGuide.com — including text, guides, templates, tools, design, and software — is owned by or licensed to us and is protected by copyright and other intellectual property laws.</p>
+      <p>We grant you a limited, non-exclusive, non-transferable licence to access and use the Service for your personal, non-commercial use in managing your own ASB case.</p>
+      <p>You may not reproduce, distribute, modify, or create derivative works from any part of the Service without our prior written consent, except that you may use and adapt document templates provided for your own personal use in your own ASB case.</p>
+      <p>Any content you input into the Service (your case information, notes, etc.) remains yours. You grant us a limited licence to process it solely for the purpose of providing the Service to you.</p>
+    </section>
+
+    <section id="liability">
+      <div class="section-header">
+        <span class="section-num">10</span>
+        <h2>Limitation of liability</h2>
+      </div>
+      <div class="warning-callout">
+        <strong>Nothing in these Terms limits liability that cannot be limited by law</strong>, including liability for death or personal injury caused by negligence, for fraud or fraudulent misrepresentation, or under the Consumer Rights Act 2015.
+      </div>
+      <p>Subject to the above, to the maximum extent permitted by law:</p>
+      <ul>
+        <li>The Service is provided "as is" and "as available" without warranty of any kind, including as to accuracy, completeness, fitness for purpose, or availability</li>
+        <li>We are not liable for any indirect, consequential, or incidental loss, including loss of data, loss of profits, or damage to reputation</li>
+        <li>Our total liability to you in connection with the Service shall not exceed the amount you have paid us in the 12 months preceding the claim</li>
+      </ul>
+      <p>In particular, we are not liable for any outcome of an ASB case or related legal proceedings where you have used guidance from this Service.</p>
+    </section>
+
+    <section id="termination">
+      <div class="section-header">
+        <span class="section-num">11</span>
+        <h2>Termination</h2>
+      </div>
+      <p>You may close your account at any time through your account settings or by contacting us.</p>
+      <p>We may suspend or terminate your access to the Service immediately, without notice, if we reasonably believe you have breached these Terms. In such cases, no refund will be due for any remaining paid period.</p>
+      <p>On termination, your right to access the Service ceases. We will handle your personal data in accordance with our <a href="/privacy-policy">Privacy Policy</a>.</p>
+    </section>
+
+    <section id="disputes">
+      <div class="section-header">
+        <span class="section-num">12</span>
+        <h2>Disputes and governing law</h2>
+      </div>
+      <p>These Terms are governed by the laws of England and Wales. Any disputes arising from or in connection with these Terms or your use of the Service shall be subject to the exclusive jurisdiction of the courts of England and Wales.</p>
+      <p>If you have a dispute with us, please contact us first at <a href="mailto:capenere@gmail.com">capenere@gmail.com</a>. We will attempt to resolve disputes amicably before any legal proceedings are commenced.</p>
+      <p>As a UK consumer, you may also have the right to use the Online Dispute Resolution (ODR) platform at <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener">ec.europa.eu/consumers/odr</a>.</p>
+    </section>
+
+    <section id="changes">
+      <div class="section-header">
+        <span class="section-num">13</span>
+        <h2>Changes to these Terms</h2>
+      </div>
+      <p>We may update these Terms from time to time. When we make material changes, we will notify you by email at least 14 days before the changes take effect. Your continued use of the Service after that date constitutes acceptance of the updated Terms.</p>
+      <p>If you do not accept the updated Terms, you should stop using the Service and close your account before they take effect.</p>
+    </section>
+
+    <section id="contact">
+      <div class="section-header">
+        <span class="section-num">14</span>
+        <h2>Contact us</h2>
+      </div>
+      <div class="contact-box">
+        <h3>Get in touch</h3>
+        <p>For any questions about these Terms of Service:</p>
+        <p><strong style="color:#fff;">ASBGuide</strong><br>
+        Housing Assist, Unit 166060, PO Box 7169<br>Poole, BH15 9EL</p>
+        <p>General: <a href="mailto:capenere@gmail.com">capenere@gmail.com</a><br>
+        Legal/privacy: <a href="mailto:capenere@gmail.com">capenere@gmail.com</a></p>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+{% endblock %}
