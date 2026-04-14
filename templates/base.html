@@ -6,6 +6,60 @@
   <title>ASB Guide — Anti-Social Behaviour Tools</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   {% block head %}{% endblock %}
+  <style>
+    #cookie-banner {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: #0f2342;
+      color: #e2e8f0;
+      z-index: 9999;
+      padding: 0;
+      box-shadow: 0 -4px 32px rgba(0,0,0,0.35);
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #cookie-banner.visible { transform: translateY(0); }
+    .banner-inner { max-width: 1100px; margin: 0 auto; padding: 1.25rem 1.5rem; display: grid; grid-template-columns: 1fr auto; gap: 1.5rem; align-items: center; }
+    .banner-text p { font-size: 14px; color: #cbd5e1; line-height: 1.6; margin-bottom: 0.4rem; }
+    .banner-text p:first-child { font-size: 15px; font-weight: 500; color: #fff; margin-bottom: 0.3rem; }
+    .banner-text a { color: #60a5fa; font-size: 13px; }
+    .banner-actions { display: flex; flex-direction: column; gap: 8px; min-width: 200px; }
+    .btn-accept-all { background: #0d9488; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+    .btn-accept-all:hover { background: #0f766e; }
+    .btn-essential-only { background: transparent; color: #93c5fd; border: 1px solid rgba(147,197,253,0.3); padding: 9px 20px; border-radius: 8px; font-size: 13px; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+    .btn-essential-only:hover { border-color: #93c5fd; color: #fff; }
+    .btn-manage { background: transparent; color: #64748b; border: none; padding: 4px 0; font-size: 12px; cursor: pointer; text-align: left; text-decoration: underline; }
+    .btn-manage:hover { color: #93c5fd; }
+    #cookie-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 10000; align-items: center; justify-content: center; padding: 1rem; }
+    #cookie-modal.open { display: flex; }
+    .modal-box { background: var(--panel); border-radius: 16px; max-width: 520px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 2rem; }
+    .modal-title { font-size: 1.2rem; font-weight: 700; color: #0f2342; margin-bottom: 0.5rem; }
+    .modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.6; }
+    .cookie-category { border: 1px solid var(--line); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 12px; }
+    .category-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
+    .category-name { font-size: 14px; font-weight: 500; color: #0f2342; }
+    .toggle-wrap { display: flex; align-items: center; gap: 8px; }
+    .toggle-label { font-size: 12px; color: var(--muted); }
+    .toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; background: #cbd5e1; border-radius: 22px; cursor: pointer; transition: background 0.2s; }
+    .slider::before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform 0.2s; }
+    .toggle input:checked + .slider { background: #0d9488; }
+    .toggle input:checked + .slider::before { transform: translateX(18px); }
+    .toggle input:disabled + .slider { background: #94a3b8; cursor: not-allowed; opacity: 0.7; }
+    .category-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+    .required-badge { font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; background: #f1f5f9; color: #475569; padding: 3px 8px; border-radius: 20px; }
+    .modal-footer { display: flex; gap: 10px; margin-top: 1.5rem; }
+    .btn-save { flex: 1; background: #0f2342; color: white; border: none; padding: 11px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+    .btn-save:hover { background: #1a3a6b; }
+    .btn-accept-modal { flex: 1; background: #0d9488; color: white; border: none; padding: 11px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+    .btn-accept-modal:hover { background: #0f766e; }
+    @media (max-width: 620px) {
+      .banner-inner { grid-template-columns: 1fr; }
+      .banner-actions { flex-direction: row; flex-wrap: wrap; min-width: unset; }
+      .btn-accept-all, .btn-essential-only { flex: 1; }
+    }
+  </style>
 </head>
 <body>
 
@@ -49,6 +103,105 @@
       </div>
     </div>
   </div>
+
+
+  <div id="cookie-banner" role="dialog" aria-live="polite" aria-label="Cookie consent">
+    <div class="banner-inner">
+      <div class="banner-text">
+        <p>We use cookies on ASBGuide.com</p>
+        <p>Essential cookies keep the site working. With your consent, we also use analytics cookies to understand how people use the site so we can improve it. We never use advertising cookies.</p>
+        <a href="{{ url_for('cookie_policy') }}">Read our Cookie Policy</a>
+      </div>
+      <div class="banner-actions">
+        <button class="btn-accept-all" onclick="acceptCookies('all')">Accept all cookies</button>
+        <button class="btn-essential-only" onclick="acceptCookies('essential')">Essential only</button>
+        <button class="btn-manage" onclick="openManage()">Manage preferences</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="cookie-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-box">
+      <h2 class="modal-title" id="modal-title">Cookie preferences</h2>
+      <p class="modal-sub">Choose which cookies you are happy for us to use. You can change these settings at any time. Withdrawing consent will not affect processing that has already taken place.</p>
+      <div class="cookie-category">
+        <div class="category-header">
+          <span class="category-name">Strictly necessary</span>
+          <div class="toggle-wrap">
+            <span class="required-badge">Always on</span>
+            <label class="toggle"><input type="checkbox" checked disabled><span class="slider"></span></label>
+          </div>
+        </div>
+        <p class="category-desc">These cookies are essential for the website to function. They enable core features like session management, security, and payment processing. They cannot be disabled.</p>
+      </div>
+      <div class="cookie-category">
+        <div class="category-header">
+          <span class="category-name">Analytics</span>
+          <div class="toggle-wrap">
+            <span class="toggle-label" id="analytics-label">Off</span>
+            <label class="toggle"><input type="checkbox" id="toggle-analytics" onchange="updateLabel(this,'analytics-label')"><span class="slider"></span></label>
+          </div>
+        </div>
+        <p class="category-desc">Help us understand how visitors use the site so we can improve it. Data is aggregated and anonymised. We use privacy-friendly analytics that do not share data with advertisers.</p>
+      </div>
+      <div class="cookie-category">
+        <div class="category-header">
+          <span class="category-name">Functional</span>
+          <div class="toggle-wrap">
+            <span class="toggle-label" id="functional-label">Off</span>
+            <label class="toggle"><input type="checkbox" id="toggle-functional" onchange="updateLabel(this,'functional-label')"><span class="slider"></span></label>
+          </div>
+        </div>
+        <p class="category-desc">Remember your preferences to improve your experience on return visits. These are not strictly required for the site to work.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-save" onclick="savePreferences()">Save my preferences</button>
+        <button class="btn-accept-modal" onclick="acceptCookies('all')">Accept all</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var CONSENT_KEY = 'asbg_cookie_consent';
+    function getConsent() { try { return JSON.parse(localStorage.getItem(CONSENT_KEY)); } catch(e) { return null; } }
+    function setConsent(prefs) {
+      localStorage.setItem(CONSENT_KEY, JSON.stringify(Object.assign({}, prefs, { timestamp: new Date().toISOString() })));
+      hideBanner(); closeManage(); applyConsent(prefs);
+    }
+    function acceptCookies(level) {
+      setConsent(level === 'all'
+        ? { essential: true, analytics: true, functional: true }
+        : { essential: true, analytics: false, functional: false });
+    }
+    function savePreferences() {
+      setConsent({
+        essential: true,
+        analytics: document.getElementById('toggle-analytics').checked,
+        functional: document.getElementById('toggle-functional').checked
+      });
+    }
+    function hideBanner() { document.getElementById('cookie-banner').classList.remove('visible'); }
+    function openManage() {
+      var prefs = getConsent();
+      if (prefs) {
+        document.getElementById('toggle-analytics').checked = !!prefs.analytics;
+        document.getElementById('toggle-functional').checked = !!prefs.functional;
+        updateLabel(document.getElementById('toggle-analytics'), 'analytics-label');
+        updateLabel(document.getElementById('toggle-functional'), 'functional-label');
+      }
+      document.getElementById('cookie-modal').classList.add('open');
+    }
+    function closeManage() { document.getElementById('cookie-modal').classList.remove('open'); }
+    function updateLabel(checkbox, labelId) { document.getElementById(labelId).textContent = checkbox.checked ? 'On' : 'Off'; }
+    function applyConsent(prefs) { /* wire analytics init here */ }
+    document.getElementById('cookie-modal').addEventListener('click', function(e) { if (e.target === this) closeManage(); });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeManage(); });
+    window.addEventListener('DOMContentLoaded', function() {
+      var prefs = getConsent();
+      if (!prefs) { setTimeout(function() { document.getElementById('cookie-banner').classList.add('visible'); }, 600); }
+      else { applyConsent(prefs); }
+    });
+  </script>
 
 </body>
 </html>
