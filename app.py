@@ -494,7 +494,7 @@ def terms_of_service():
 
 @app.route("/cookie-policy")
 def cookie_policy():
-    return render_template("cookies.html")
+    return render_template("Cookie Policy \u2014 ASB Guide.html")
 
 
 @app.route("/health")
