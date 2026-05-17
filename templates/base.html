@@ -161,6 +161,47 @@
     </div>
   </div>
 
+  <button id="help-btn" aria-label="How to use this site">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <span>How to use</span>
+  </button>
+
+  <div id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
+    <div class="help-modal-box">
+      <div class="help-modal-header">
+        <h2 id="help-modal-title">How to use ASB Guide</h2>
+        <button class="help-modal-close" aria-label="Close video">&times;</button>
+      </div>
+      <div class="help-video-wrap">
+        <iframe id="help-video" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var EMBED = 'https://www.youtube.com/embed/H0ZjEMzvi_0?autoplay=1';
+      var modal = document.getElementById('help-modal');
+      var iframe = document.getElementById('help-video');
+
+      document.getElementById('help-btn').addEventListener('click', function() {
+        iframe.src = EMBED;
+        modal.classList.add('open');
+      });
+
+      function closeHelp() {
+        modal.classList.remove('open');
+        iframe.src = '';
+      }
+
+      modal.querySelector('.help-modal-close').addEventListener('click', closeHelp);
+      modal.addEventListener('click', function(e) { if (e.target === this) closeHelp(); });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('open')) closeHelp();
+      });
+    })();
+  </script>
+
   <script>
     var CONSENT_KEY = 'asbg_cookie_consent';
     function getConsent() { try { return JSON.parse(localStorage.getItem(CONSENT_KEY)); } catch(e) { return null; } }
