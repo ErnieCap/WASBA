@@ -4,7 +4,7 @@
 
   <div class="hero">
     <h1>Describe what's been happening</h1>
-    <p>Use plain language. The tool will organise it into a structured risk assessment.</p>
+    <p>Use plain language. We'll work out the risk assessment for you in the background.</p>
   </div>
 
   <div class="card" style="margin-top:14px;">
@@ -12,9 +12,8 @@
     <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-bottom:18px; flex-wrap:wrap;">
       <div>
         <h2 style="margin:0 0 4px;">Case details</h2>
-        <div style="color:var(--muted); font-size:14px;">Answer as best you can — it's fine if you don't remember exact dates or numbers.</div>
+        <div style="color:var(--muted); font-size:14px;">Answer as best you can — it's fine if you don't remember exact dates or numbers. The more detail you give in your description, the more accurate your risk assessment will be.</div>
       </div>
-      <span class="badge">Step 1 of 2</span>
     </div>
 
     <form method="post" action="/assess">
@@ -61,142 +60,11 @@
 
       <hr style="border:0; border-top:1px solid var(--line); margin:24px 0;">
 
-      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-bottom:14px; flex-wrap:wrap;">
-        <div>
-          <h2 style="margin:0 0 4px;">Risk assessment matrix (v8)</h2>
-          <div style="color:var(--muted); font-size:14px;">Answer these questions to calculate an evidence-based risk score (0–41).</div>
-        </div>
-        <span class="badge">Optional but recommended</span>
-      </div>
       <div style="font-size:13px; color:var(--muted); margin-bottom:18px;">
-        This section mirrors common ASB risk matrix scoring used by agencies. Each answer has points shown in brackets.
+        You don't need to fill in a separate risk assessment — we build an evidence-based
+        risk score (the same 14-factor matrix agencies use) automatically from what you've
+        told us above. You can see exactly how it was calculated on your results page.
       </div>
-
-      <div class="form-row">
-        <label>Q1: Other than this occasion — how often do you have problems?</label>
-        <div class="radio-group">
-          <label class="radio-pill"><input type="radio" name="matrix_q1" value="0" required><span>Only occasionally <span style="opacity:.65;">(0)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q1" value="1"><span>Most months <span style="opacity:.65;">(1)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q1" value="2"><span>Most weeks <span style="opacity:.65;">(2)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q1" value="3"><span>Most days <span style="opacity:.65;">(3)</span></span></label>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <label>Q2: Do you think the current incident is linked to previous incidents?</label>
-        <div class="radio-group">
-          <label class="radio-pill"><input type="radio" name="matrix_q2" value="0" required><span>No <span style="opacity:.65;">(0)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q2" value="2"><span>Yes <span style="opacity:.65;">(2)</span></span></label>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <label>Q3: Do you think incidents are happening more often and/or are getting worse?</label>
-        <div class="radio-group">
-          <label class="radio-pill"><input type="radio" name="matrix_q3" value="0" required><span>No <span style="opacity:.65;">(0)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q3" value="2"><span>Yes <span style="opacity:.65;">(2)</span></span></label>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <label>Q4: Do you know the person or persons causing the problem?</label>
-        <div class="radio-group">
-          <label class="radio-pill"><input type="radio" name="matrix_q4" value="0" required><span>I do not know them <span style="opacity:.65;">(0)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q4" value="1"><span>We are "known" to each other <span style="opacity:.65;">(1)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q4" value="2"><span>We know each other well <span style="opacity:.65;">(2)</span></span></label>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <label>Q5: Do the people causing the problem have a history of or reputation for intimidation or harassment?</label>
-        <div class="radio-group">
-          <label class="radio-pill"><input type="radio" name="matrix_q5" value="0" required><span>No history or reputation <span style="opacity:.65;">(0)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q5" value="2"><span>Reputation but not towards me <span style="opacity:.65;">(2)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q5" value="4"><span>Have harassed me in the past <span style="opacity:.65;">(4)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q5" value="6"><span>Currently harassing me <span style="opacity:.65;">(6)</span></span></label>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <label>Q6: Have you ever reported incidents of this kind to any other agency?</label>
-        <div class="radio-group">
-          <label class="radio-pill"><input type="radio" name="matrix_q6" value="1" required><span>Yes <span style="opacity:.65;">(1)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q6" value="0"><span>No <span style="opacity:.65;">(0)</span></span></label>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <label>Q7: Which of the following do you think this incident deliberately targeted?</label>
-        <div class="radio-group">
-          <label class="radio-pill"><input type="radio" name="matrix_q7" value="1" required><span>Your community <span style="opacity:.65;">(1)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q7" value="3"><span>Your family <span style="opacity:.65;">(3)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q7" value="4"><span>You personally <span style="opacity:.65;">(4)</span></span></label>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <label>Q8: Do you feel this incident is associated with your faith, race, sexuality, gender, disability or another characteristic? (Think: Hate Crime)</label>
-        <div class="radio-group">
-          <label class="radio-pill"><input type="radio" name="matrix_q8" value="0" required><span>No <span style="opacity:.65;">(0)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q8" value="3"><span>Yes <span style="opacity:.65;">(3)</span></span></label>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <label>Q9: Is anything increasing your household's personal risk — for example, personal circumstances?</label>
-        <div class="radio-group">
-          <label class="radio-pill"><input type="radio" name="matrix_q9" value="0" required><span>No <span style="opacity:.65;">(0)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q9" value="3"><span>Yes <span style="opacity:.65;">(3)</span></span></label>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <label>Q10: How affected do you feel by what has happened?</label>
-        <div class="radio-group">
-          <label class="radio-pill"><input type="radio" name="matrix_q10" value="0" required><span>Not at all <span style="opacity:.65;">(0)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q10" value="1"><span>A little <span style="opacity:.65;">(1)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q10" value="2"><span>Moderately <span style="opacity:.65;">(2)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q10" value="3"><span>A lot <span style="opacity:.65;">(3)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q10" value="5"><span>Extremely <span style="opacity:.65;">(5)</span></span></label>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <label>Q11: Has yours or anyone's health been affected as a result of this or previous incidents?</label>
-        <div class="radio-group">
-          <label class="radio-pill"><input type="radio" name="matrix_q11" value="0" required><span>No <span style="opacity:.65;">(0)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q11" value="3"><span>Yes <span style="opacity:.65;">(3)</span></span></label>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <label>Q12: Do you have a social worker, health visitor or any other professional support?</label>
-        <div class="radio-group">
-          <label class="radio-pill"><input type="radio" name="matrix_q12" value="0" required><span>No <span style="opacity:.65;">(0)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q12" value="1"><span>Yes <span style="opacity:.65;">(1)</span></span></label>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <label>Q13: Do you have friends and family who can support you?</label>
-        <div class="radio-group">
-          <label class="radio-pill"><input type="radio" name="matrix_q13" value="0" required><span>A close network <span style="opacity:.65;">(0)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q13" value="1"><span>A few people <span style="opacity:.65;">(1)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q13" value="3"><span>Largely isolated <span style="opacity:.65;">(3)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q13" value="4"><span>Lives alone and isolated <span style="opacity:.65;">(4)</span></span></label>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <label>Q14: Apart from the effect on you, has anyone else been affected by what has happened?</label>
-        <div class="radio-group">
-          <label class="radio-pill"><input type="radio" name="matrix_q14" value="0" required><span>No-one else <span style="opacity:.65;">(0)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q14" value="1"><span>Your family <span style="opacity:.65;">(1)</span></span></label>
-          <label class="radio-pill"><input type="radio" name="matrix_q14" value="3"><span>The local community <span style="opacity:.65;">(3)</span></span></label>
-        </div>
-      </div>
-
-      <hr style="border:0; border-top:1px solid var(--line); margin:24px 0;">
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button class="btn primary" type="submit">Get assessment</button>

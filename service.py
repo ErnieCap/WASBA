@@ -1,7 +1,7 @@
 import os
 
 from prompts import build_prompts
-from rules import refine_risk_and_flags
+from rules import refine_risk_and_flags, infer_matrix_scores, score_matrix
 from recommendations import build_what_to_do_now
 
 
@@ -53,32 +53,31 @@ def _attach_recommendations(case: dict, result: dict) -> dict:
 
 
 def _score_matrix(case: dict) -> tuple[int | None, str | None]:
-    vals = []
+    """
+    Score the 14-question risk matrix. If explicit matrix_qN answers were
+    submitted (e.g. by an internal/admin override), use those; otherwise
+    estimate the matrix automatically from the free-text description and
+    the small set of structured fields on the form.
+    """
+    explicit = {}
     for i in range(1, 15):
         v = case.get(f"matrix_q{i}")
         if isinstance(v, int):
-            vals.append(v)
+            explicit[f"matrix_q{i}"] = v
 
-    if not vals:
-        return None, None
+    if len(explicit) == 14:
+        return score_matrix(explicit)
 
-    total = sum(vals)
-
-    # Simple bands — tweak later once you’ve sanity-checked real cases
-    if total <= 14:
-        band = "LOW"
-    elif total <= 28:
-        band = "MEDIUM"
-    else:
-        band = "HIGH"
-
-    return total, band
+    inferred, _rationale = infer_matrix_scores(case)
+    return score_matrix(inferred)
 
 
 def assess_case_free(case: dict) -> dict:
     matrix_total, matrix_band = _score_matrix(case)
+    _, matrix_rationale = infer_matrix_scores(case)
 
-    # Fallback if matrix not completed
+    # Fallback if matrix could not be scored at all (should be rare now that
+    # it's auto-estimated from the description)
     initial_risk_level = matrix_band or "MEDIUM"
 
     risk_factors = []
@@ -88,7 +87,7 @@ def assess_case_free(case: dict) -> dict:
     if case.get("num_previous_incidents", 0) >= 3:
         risk_factors.append("Repeat incidents reported (pattern emerging).")
 
-    if (case.get("vulnerable_tenant") or "").strip():
+    if (case.get("vulnerable_tenant") or "").strip().lower() in {"yes", "y", "true"}:
         risk_factors.append("Potential vulnerability noted for reporting tenant/household.")
         safeguarding.append("Consider vulnerability/safeguarding checks and appropriate support/referrals.")
 
@@ -115,6 +114,7 @@ def assess_case_free(case: dict) -> dict:
         "initial_risk_level": initial_risk_level,
         "matrix_total": matrix_total,
         "matrix_band": matrix_band,
+        "matrix_rationale": matrix_rationale,
 
         "risk_factors": risk_factors,
         "safeguarding_concerns": safeguarding or None,  # None keeps template tidy
@@ -123,7 +123,7 @@ def assess_case_free(case: dict) -> dict:
         "summary": "Free tier assessment generated from your input.",
         "case_highlights": [
             "Your description has been captured and structured.",
-            "Risk matrix answers have been recorded (if provided).",
+            "Risk assessment estimated automatically from your description.",
         ],
         "next_steps": [
             "Start a simple incident diary (dates/times/impact).",
