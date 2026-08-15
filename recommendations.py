@@ -59,14 +59,18 @@ def extract_flags(case: Dict) -> Set[str]:
 
     notes = str(case.get("notes", "")).lower()
 
-    if bool(case.get("vulnerable_tenant", False)):
+    # NOTE: these fields arrive as the strings "yes"/"no" from the form, so a
+    # plain bool(...) truthiness check was always True (a non-empty "no" is
+    # still truthy). Compare the actual value instead.
+    if str(case.get("vulnerable_tenant", "")).strip().lower() in {"yes", "y", "true"}:
         flags.add("vulnerable")
 
-    if bool(case.get("has_criminal_history", False)):
+    if str(case.get("has_criminal_history", "")).strip().lower() in {"yes", "y", "true"}:
         flags.add("criminal_history")
 
     # crude but useful keyword flags
-    if any(k in notes for k in ["kill", "hurt", "smash", "beat", "stab", "attack", "assault", "violence", "violent"]):
+    if any(k in notes for k in ["kill", "hurt", "smash", "beat", "stab", "attack", "assault",
+                                  "violence", "violent", "threat", "threaten"]):
         flags.add("threats_or_violence")
 
     if any(k in notes for k in ["hate", "racist", "homophobic", "slur", "go back to", "dirty"]):

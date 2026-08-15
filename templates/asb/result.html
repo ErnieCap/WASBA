@@ -100,16 +100,29 @@
       <div style="margin-top:10px; color:var(--muted);">
         {% if result.matrix_total is not none %}
           <p style="margin:0 0 6px;">
-            Risk matrix score: <strong>{{ result.matrix_total }}</strong>
+            Risk matrix score (estimated automatically from your description): <strong>{{ result.matrix_total }}</strong>
             {% if result.matrix_band %}(band: <strong>{{ result.matrix_band }}</strong>){% endif %}
+            <span style="opacity:.75;">out of 41</span>
           </p>
         {% else %}
           <p style="margin:0 0 6px;">
-            Risk matrix not completed — used fallback assessment.
+            Risk matrix could not be estimated — used fallback assessment.
           </p>
         {% endif %}
         <p style="margin:0;">
-          Initial (without matrix): <strong>{{ result.initial_risk_level }}</strong>
+          Initial risk (before evidence-based matrix escalators): <strong>{{ result.initial_risk_level }}</strong>
+        </p>
+        {% if result.matrix_rationale %}
+          <p style="margin:12px 0 4px; font-weight:600; color:inherit;">What we picked up on from your description:</p>
+          <ul style="margin:4px 0 0; padding-left:20px;">
+            {% for note in result.matrix_rationale %}
+              <li style="margin:4px 0;">{{ note }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        <p style="margin-top:12px; font-size:12px;">
+          This estimate is based on the wording of your description and the details you gave above.
+          If anything above looks wrong, go back and add more detail to your description — the more specific you are, the more accurate this will be.
         </p>
       </div>
     </details>
