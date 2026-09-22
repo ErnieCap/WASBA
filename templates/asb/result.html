@@ -4,8 +4,8 @@
 <div class="container">
 
   <div class="hero">
-    <h1 style="margin:0 0 8px;">ASB Case Assessment</h1>
-    <p style="margin:0;">One clear risk rating, with calculation details available if you want them.</p>
+    <h1 style="margin:0 0 8px;">Here's what we found</h1>
+    <p style="margin:0;">Thank you for sharing that. Here's what your situation looks like and what to do next.</p>
 
     <div style="margin-top:20px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
       <a class="btn" href="{{ url_for('asb') }}">Assess another case</a>
@@ -55,9 +55,11 @@
 
   {% if not paid %}
   <div class="card" style="margin-top:14px;">
-    <p style="margin:0; color:var(--muted);">
-      Want a full case summary you can copy/paste into an email or report?
-      Unlock the full report for <strong>£3</strong>.
+    <h3 style="margin:0 0 8px;">Want this written up for you?</h3>
+    <p style="margin:0 0 12px; color:var(--muted);">
+      For £3 we turn what you’ve told us into a full written report — a plain-English summary
+      of your situation, your evidence laid out clearly, a timeline of next steps, and a
+      covering letter you can send as-is to your landlord, council, or housing officer.
     </p>
 
     {% if payment_pending %}
@@ -67,8 +69,7 @@
     {% endif %}
 
     <form method="post" action="/pay/{{ case_id }}" style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-      <button class="btn primary" type="submit">Unlock full report (£3)</button>
-      <a class="btn" href="/premium/{{ case_id }}">Stay on free result</a>
+      <button class="btn primary" type="submit">Get my full written report — £3</button>
     </form>
   </div>
   {% endif %}
