@@ -2,7 +2,7 @@ import logging
 import os
 import stripe
 
-from db import mark_paid, mark_noise_case_paid
+from db import mark_paid
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 
 
-from typing import Optional, Dict, Tuple
+from typing import Optional, Dict
 
 def create_checkout_session(
     case_id: str,
@@ -70,22 +70,6 @@ def verify_and_mark_paid(case_id: str, session_id: str) -> bool:
     return result
 
 
-def create_letter_payment_intent(token: str) -> Tuple[str, str]:
-    """Create a £1 PaymentIntent for a letter download.
-
-    Returns (client_secret, intent_id).
-    Template-agnostic: works for any letter type via the same token mechanism.
-    """
-    if not stripe.api_key:
-        raise RuntimeError("STRIPE_SECRET_KEY is not set")
-    intent = stripe.PaymentIntent.create(
-        amount=100,  # £1 in pence
-        currency="gbp",
-        metadata={"product": "letter", "letter_token": token},
-    )
-    return intent.client_secret, intent.id
-
-
 def check_payment_intent_succeeded(pi_id: str) -> bool:
     """Directly verify a PaymentIntent status with Stripe.
 
@@ -101,60 +85,3 @@ def check_payment_intent_succeeded(pi_id: str) -> bool:
         return False
 
 
-def create_donation_intent(amount_pence: int) -> str:
-    """Create a PaymentIntent for a voluntary donation. Returns client_secret."""
-    if not stripe.api_key:
-        raise RuntimeError("STRIPE_SECRET_KEY is not set")
-    intent = stripe.PaymentIntent.create(
-        amount=amount_pence,
-        currency="gbp",
-        metadata={"product": "donation"},
-    )
-    return intent.client_secret
-
-
-def handle_stripe_webhook(payload: bytes, sig_header: str) -> bool:
-    """Handle checkout.session.completed events (ASB + noise diary unlocks)."""
-    webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET")
-    if not webhook_secret:
-        raise RuntimeError("STRIPE_WEBHOOK_SECRET is not set")
-
-    try:
-        event = stripe.Webhook.construct_event(
-            payload=payload,
-            sig_header=sig_header,
-            secret=webhook_secret,
-        )
-    except Exception as e:
-        logger.error("Stripe webhook signature/payload error: %s", e)
-        return False
-
-    logger.info("Stripe webhook event received: %s", event["type"])
-
-    if event["type"] == "checkout.session.completed":
-        session = event["data"]["object"]
-        metadata = session.get("metadata") or {}
-
-        product = metadata.get("product")
-        case_id = metadata.get("case_id")
-        logger.info("checkout.session.completed: product=%s case_id=%s", product, case_id)
-
-        # ASB unlock (existing)
-        if (product == "asb_unlock" or product is None) and case_id:
-            result = mark_paid(case_id)
-            logger.info("mark_paid(%s) returned %s", case_id, result)
-            return result
-
-        # Noise diary unlock
-        if product == "noise_unlock" and case_id:
-            owner_uid = metadata.get("owner_uid")
-            if not owner_uid:
-                logger.error("noise_unlock missing owner_uid for case_id=%s", case_id)
-                return False
-            result = mark_noise_case_paid(case_id)
-            logger.info("mark_noise_case_paid(%s) returned %s", case_id, result)
-            return result
-
-        logger.warning("Unhandled product=%s case_id=%s", product, case_id)
-
-    return False
