@@ -1,8 +1,11 @@
+import logging
 import os
 
 from prompts import build_prompts
-from rules import refine_risk_and_flags, infer_matrix_scores, score_matrix
+from expert_system import extract_keys, derive_risk, build_rationale, keys_to_category_and_flags
 from recommendations import build_what_to_do_now
+
+logger = logging.getLogger(__name__)
 
 
 def call_llm_stub(system_prompt: str, user_prompt: str) -> dict:
@@ -28,7 +31,6 @@ def call_llm_live(system_prompt: str, user_prompt: str) -> dict:
         ],
     )
     content = message.content[0].text.strip()
-    # Strip markdown code fences if present
     if content.startswith("```"):
         content = content.split("```")[1]
         if content.startswith("json"):
@@ -44,117 +46,126 @@ def call_llm(system_prompt: str, user_prompt: str) -> dict:
     return call_llm_stub(system_prompt, user_prompt)
 
 
-def _attach_recommendations(case: dict, result: dict) -> dict:
-    from recommendations import categorise_case, extract_flags
-    category = categorise_case(case)
-    flags = extract_flags(case)
-    result["what_to_do_now"] = build_what_to_do_now(result.get("initial_risk_level", "MEDIUM"), category, flags)
-    return result
-
-
-def _score_matrix(case: dict) -> tuple[int | None, str | None]:
-    """
-    Score the 14-question risk matrix. If explicit matrix_qN answers were
-    submitted (e.g. by an internal/admin override), use those; otherwise
-    estimate the matrix automatically from the free-text description and
-    the small set of structured fields on the form.
-    """
-    explicit = {}
-    for i in range(1, 15):
-        v = case.get(f"matrix_q{i}")
-        if isinstance(v, int):
-            explicit[f"matrix_q{i}"] = v
-
-    if len(explicit) == 14:
-        return score_matrix(explicit)
-
-    inferred, _rationale = infer_matrix_scores(case)
-    return score_matrix(inferred)
+def _dedupe(items: list) -> list:
+    seen = set()
+    out = []
+    for s in items:
+        s = (s or "").strip()
+        if s and s not in seen:
+            seen.add(s)
+            out.append(s)
+    return out
 
 
 def assess_case_free(case: dict) -> dict:
-    matrix_total, matrix_band = _score_matrix(case)
-    _, matrix_rationale = infer_matrix_scores(case)
+    """
+    Free-tier assessment: no LLM, no payment required.
 
-    # Fallback if matrix could not be scored at all (should be rare now that
-    # it's auto-estimated from the description)
-    initial_risk_level = matrix_band or "MEDIUM"
+    Risk is derived entirely by the expert system:
+      1. extract_keys() maps the case description to a structured key:value profile
+      2. derive_risk()  maps that profile to a risk level + factors using
+         deterministic rules based on UK ASB casework practice
 
-    risk_factors = []
-    safeguarding = []
+    The expert_keys field in the result is the inspectable audit record —
+    it explains what the system detected and why it reached the risk level it did.
+    """
+    expert_keys, expert_sources = extract_keys(case)
+    risk_level, risk_factors, safeguarding, score_breakdown = derive_risk(expert_keys)
 
-    # Obvious structured factors from your form fields
-    if case.get("num_previous_incidents", 0) >= 3:
-        risk_factors.append("Repeat incidents reported (pattern emerging).")
+    category, flags = keys_to_category_and_flags(expert_keys)
+    what_to_do_now = build_what_to_do_now(risk_level, category, flags)
 
-    if (case.get("vulnerable_tenant") or "").strip().lower() in {"yes", "y", "true"}:
-        risk_factors.append("Potential vulnerability noted for reporting tenant/household.")
-        safeguarding.append("Consider vulnerability/safeguarding checks and appropriate support/referrals.")
+    # Human-readable rationale for the "How this risk level was arrived at" panel
+    matrix_rationale = build_rationale(expert_keys, expert_sources)
+    total_score = score_breakdown.get("_total", 0)
 
-    if (case.get("has_criminal_history") or "").strip().lower() in {"yes", "y", "true"}:
-        risk_factors.append("Perpetrator criminal history indicated (higher risk of escalation).")
+    logger.info(
+        "assess_case_free: risk=%s score=%d keys=%s",
+        risk_level, total_score, expert_keys,
+    )
 
-    itype = (case.get("incident_type") or "").strip().lower()
-    if itype:
-        risk_factors.append(f"Incident type recorded: {case.get('incident_type')}.")
-
-    # If matrix answers include high values, flag as factors (light-touch, still “free”)
-    high_qs = []
-    for i in range(1, 15):
-        v = case.get(f"matrix_q{i}")
-        if isinstance(v, int) and v >= 3:
-            high_qs.append(i)
-    if high_qs:
-        risk_factors.append(f"Higher-severity indicators present in risk matrix (Q{', Q'.join(map(str, high_qs))}).")
-
-    result = {
+    return {
         "tier": "free",
 
-        # Keys your template is already ready to show:
-        "initial_risk_level": initial_risk_level,
-        "matrix_total": matrix_total,
-        "matrix_band": matrix_band,
+        # Primary risk fields — template uses final_risk_level first
+        "final_risk_level": risk_level,
+        "initial_risk_level": risk_level,
+
+        # Retained for the "How calculated" panel in the template
+        "matrix_total": total_score,
+        "matrix_band": risk_level,
         "matrix_rationale": matrix_rationale,
 
         "risk_factors": risk_factors,
-        "safeguarding_concerns": safeguarding or None,  # None keeps template tidy
+        "safeguarding_concerns": safeguarding or None,
 
-        # You can keep these if you still use them elsewhere:
         "summary": "Free tier assessment generated from your input.",
-        "case_highlights": [
-            "Your description has been captured and structured.",
-            "Risk assessment estimated automatically from your description.",
-        ],
-        "next_steps": [
-            "Start a simple incident diary (dates/times/impact).",
-            "If you feel unsafe, contact police immediately.",
-        ],
+        "case_highlights": [],
+        "next_steps": [],
+        "what_to_do_now": what_to_do_now,
+
+        # Inspectable audit record — stored in DB alongside the result
+        "expert_keys": expert_keys,
+        "expert_sources": expert_sources,
+        "expert_score_breakdown": score_breakdown,
     }
-
-    from recommendations import categorise_case, extract_flags, build_what_to_do_now
-
-    category = categorise_case(case)
-    flags = extract_flags(case)
-
-    result["what_to_do_now"] = build_what_to_do_now(
-        initial_risk_level,
-        category,
-        flags,
-    )
-    # ─────────────────────────────────────────
-
-    return result
-
 
 
 def assess_case_premium(case: dict) -> dict:
+    """
+    Premium-tier assessment: LLM provides the case summary; the expert system
+    is authoritative on risk level.
+
+    Steps:
+      1. LLM call produces a case summary and initial risk factors
+      2. extract_keys() extracts the structured profile
+      3. derive_risk() determines the final risk level deterministically
+      4. Risk factors from both sources are merged (expert factors first)
+    """
     system_prompt, user_prompt = build_prompts(case)
     llm_output = call_llm(system_prompt, user_prompt)
 
-    refined = refine_risk_and_flags(case, llm_output)
-    refined = _attach_recommendations(case, refined)
-    refined["tier"] = "premium"
-    return refined
+    expert_keys, expert_sources = extract_keys(case)
+    risk_level, expert_factors, expert_sc, score_breakdown = derive_risk(expert_keys)
+
+    # Merge LLM factors with expert factors (expert takes precedence, LLM adds extras)
+    llm_factors = list(llm_output.get("risk_factors", []))
+    llm_sc = list(llm_output.get("safeguarding_concerns", []))
+    all_factors = _dedupe(expert_factors + [f for f in llm_factors if f not in expert_factors])
+    all_sc = _dedupe(expert_sc + [c for c in llm_sc if c not in expert_sc])
+
+    category, flags = keys_to_category_and_flags(expert_keys)
+    what_to_do_now = build_what_to_do_now(risk_level, category, flags)
+
+    matrix_rationale = build_rationale(expert_keys, expert_sources)
+    total_score = score_breakdown.get("_total", 0)
+
+    logger.info(
+        "assess_case_premium: risk=%s score=%d keys=%s",
+        risk_level, total_score, expert_keys,
+    )
+
+    return {
+        "tier": "premium",
+
+        "summary": llm_output.get("summary", ""),
+        "final_risk_level": risk_level,
+        "initial_risk_level": llm_output.get("initial_risk_level", risk_level),
+
+        "matrix_total": total_score,
+        "matrix_band": risk_level,
+        "risk_basis": "EXPERT_SYSTEM",
+        "matrix_rationale": matrix_rationale,
+
+        "risk_factors": all_factors,
+        "safeguarding_concerns": all_sc or None,
+        "what_to_do_now": what_to_do_now,
+
+        # Inspectable audit record
+        "expert_keys": expert_keys,
+        "expert_sources": expert_sources,
+        "expert_score_breakdown": score_breakdown,
+    }
 
 
 # Backwards compatibility
