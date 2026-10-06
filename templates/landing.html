@@ -4,35 +4,73 @@
 <div class="container">
 
   <div class="hero">
-    <h1>Struggling with anti-social behaviour?</h1>
+    <h1>Is your neighbour situation anti-social behaviour?</h1>
     <p>
-      Get the same structured, evidence-based approach used by housing professionals —
-      built from 19 years of frontline ASB practice to help you understand what you're
-      dealing with, what to do next, and how to explain it clearly to the people who can help.
+      Describe what's been happening and get a structured risk assessment — the same
+      framework housing teams use. Free, takes two minutes, no name or address needed.
     </p>
-    <div style="margin-top:20px;">
-      <a class="btn primary" href="{{ url_for('asb') }}">Get your free assessment</a>
+
+    <form method="POST" action="{{ url_for('assess') }}" style="margin-top:20px;">
+      <textarea
+        name="notes"
+        rows="5"
+        placeholder="Describe what's been happening — what, when, how often, and how it's affected you. The more detail, the more useful the assessment."
+        required
+        style="width:100%; box-sizing:border-box; padding:12px 14px;
+               border:1px solid var(--line); border-radius:var(--radius);
+               font-size:15px; font-family:inherit; color:var(--text);
+               background:var(--bg); resize:vertical; margin-bottom:12px;"
+      ></textarea>
+      <button type="submit" class="btn primary" style="width:100%; padding:14px; font-size:16px;">
+        Get my free assessment
+      </button>
+    </form>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <h3 style="margin:0 0 16px;">How it works</h3>
+    <div class="grid3">
+
+      <div style="display:flex; gap:12px; align-items:flex-start;">
+        <div style="font-size:22px; font-weight:800; color:var(--accent); flex-shrink:0; line-height:1;">1</div>
+        <div>
+          <div style="font-weight:600; margin-bottom:4px;">Describe what's happening</div>
+          <p style="margin:0; font-size:14px; color:var(--muted);">
+            Write what you've experienced — noise, intimidation, damage, harassment.
+            Plain language is fine.
+          </p>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:12px; align-items:flex-start;">
+        <div style="font-size:22px; font-weight:800; color:var(--accent); flex-shrink:0; line-height:1;">2</div>
+        <div>
+          <div style="font-weight:600; margin-bottom:4px;">Get your risk assessment</div>
+          <p style="margin:0; font-size:14px; color:var(--muted);">
+            The tool identifies the risk level, flags safeguarding concerns,
+            and explains how the assessment was reached.
+          </p>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:12px; align-items:flex-start;">
+        <div style="font-size:22px; font-weight:800; color:var(--accent); flex-shrink:0; line-height:1;">3</div>
+        <div>
+          <div style="font-weight:600; margin-bottom:4px;">Know what to do next</div>
+          <p style="margin:0; font-size:14px; color:var(--muted);">
+            Clear, prioritised next steps — who to contact, what to record,
+            and how to make a complaint that gets taken seriously.
+          </p>
+        </div>
+      </div>
+
     </div>
   </div>
 
   <div class="card" style="margin-top:14px;">
-    <div class="card triage-card" id="card-asb" style="border:none; padding:0; box-shadow:none;">
-      <h3>How it works</h3>
-      <p>
-        Tell us what's been happening, in your own words. We'll assess the risk level,
-        pull out the key factors, and give you a clear set of next steps — the same
-        framework housing teams use to triage and prioritise cases. It's free, takes
-        about two minutes, and doesn't ask for your name or address.
-      </p>
-    </div>
-  </div>
-
-  <!-- Outcome stories -->
-  <div class="card" style="margin-top:14px;">
-    <h3 style="margin:0 0 4px;">How ASB Guide has helped people</h3>
+    <h3 style="margin:0 0 4px;">How it's helped people</h3>
     <p style="margin:0 0 18px; color:var(--muted); font-size:14px;">
-      Real situations, anonymised. People who came here not knowing
-      what to do — and left with a plan.
+      Real situations, anonymised.
     </p>
 
     <div style="display:grid;
@@ -48,9 +86,9 @@
           Social housing tenant, North England
         </p>
         <p style="margin:0; font-size:14px; color:var(--muted);">
-          A year of intimidating behaviour dismissed as "neighbour
-          dispute." After using ASB Guide to document the pattern,
-          their landlord issued a formal warning within six weeks.
+          A year of intimidating behaviour dismissed as a "neighbour dispute."
+          After using ASB Guide to document the pattern, their landlord issued
+          a formal warning within six weeks.
         </p>
       </div>
 
@@ -63,10 +101,9 @@
           Private renter, Midlands
         </p>
         <p style="margin:0; font-size:14px; color:var(--muted);">
-          Didn't know whether their situation counted as ASB. The
-          free assessment identified it as medium-risk. They used
-          the written report to make a formal complaint and their
-          council opened an investigation.
+          Didn't know whether their situation counted as ASB. The free assessment
+          identified it as medium-risk and gave them a clear framework for their
+          complaint. Their council opened an investigation.
         </p>
       </div>
 
@@ -79,9 +116,9 @@
           Family, shared ownership property
         </p>
         <p style="margin:0; font-size:14px; color:var(--muted);">
-          Prolonged noise affecting children's sleep — months of
-          informal reports, nothing acted on. The written assessment
-          gave their housing officer something concrete to work with.
+          Prolonged noise affecting children's sleep — months of informal reports,
+          nothing acted on. The assessment and written report gave their housing
+          officer something concrete to work with.
         </p>
       </div>
 
@@ -91,19 +128,18 @@
   <div class="card" style="margin-top:14px;">
     <div style="display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap;">
       <div style="flex:1; min-width:220px;">
-        <div style="font-weight:700; margin-bottom:6px;">Why ASB Guide?</div>
+        <div style="font-weight:700; margin-bottom:6px;">Built by a practitioner</div>
         <p>
-          ASB Guide was created by a housing professional who has spent 19 years working
-          directly on ASB cases, leading housing teams, and developing approaches now
-          adopted across the sector. The tools here reflect what actually works in
-          practice — not what looks good on paper.
+          ASB Guide was created by a housing professional with 19 years of frontline
+          ASB and case management experience. The approach here reflects what actually
+          works in practice — not what looks good on paper.
         </p>
       </div>
       <div style="flex:1; min-width:220px;">
         <div style="font-weight:700; margin-bottom:6px;">Your privacy</div>
         <p>
-          ASB Guide does not ask for your name or address. There are no accounts.
-          Keep notes factual — focus on what happened, when, and how it affected you.
+          No name, no address, no account required. Keep notes factual —
+          focus on what happened, when, and how it affected you.
         </p>
       </div>
     </div>
