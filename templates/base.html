@@ -10,7 +10,7 @@
     #cookie-banner {
       position: fixed;
       bottom: 0; left: 0; right: 0;
-      background: #0f2342;
+      background: #1e2d3a;
       color: #e2e8f0;
       z-index: 9999;
       padding: 0;
@@ -22,38 +22,38 @@
     .banner-inner { max-width: 1100px; margin: 0 auto; padding: 1.25rem 1.5rem; display: grid; grid-template-columns: 1fr auto; gap: 1.5rem; align-items: center; }
     .banner-text p { font-size: 14px; color: #cbd5e1; line-height: 1.6; margin-bottom: 0.4rem; }
     .banner-text p:first-child { font-size: 15px; font-weight: 500; color: #fff; margin-bottom: 0.3rem; }
-    .banner-text a { color: #60a5fa; font-size: 13px; }
+    .banner-text a { color: #6ee7b7; font-size: 13px; }
     .banner-actions { display: flex; flex-direction: column; gap: 8px; min-width: 200px; }
-    .btn-accept-all { background: #0d9488; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
-    .btn-accept-all:hover { background: #0f766e; }
-    .btn-essential-only { background: transparent; color: #93c5fd; border: 1px solid rgba(147,197,253,0.3); padding: 9px 20px; border-radius: 8px; font-size: 13px; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
-    .btn-essential-only:hover { border-color: #93c5fd; color: #fff; }
+    .btn-accept-all { background: #3a6b4f; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+    .btn-accept-all:hover { background: #2f5840; }
+    .btn-essential-only { background: transparent; color: #6ee7b7; border: 1px solid rgba(110,231,183,0.3); padding: 9px 20px; border-radius: 8px; font-size: 13px; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+    .btn-essential-only:hover { border-color: #6ee7b7; color: #fff; }
     .btn-manage { background: transparent; color: #64748b; border: none; padding: 4px 0; font-size: 12px; cursor: pointer; text-align: left; text-decoration: underline; }
-    .btn-manage:hover { color: #93c5fd; }
+    .btn-manage:hover { color: #6ee7b7; }
     #cookie-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 10000; align-items: center; justify-content: center; padding: 1rem; }
     #cookie-modal.open { display: flex; }
     .modal-box { background: var(--panel); border-radius: 16px; max-width: 520px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 2rem; }
-    .modal-title { font-size: 1.2rem; font-weight: 700; color: #0f2342; margin-bottom: 0.5rem; }
+    .modal-title { font-size: 1.2rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
     .modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.6; }
     .cookie-category { border: 1px solid var(--line); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 12px; }
     .category-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
-    .category-name { font-size: 14px; font-weight: 500; color: #0f2342; }
+    .category-name { font-size: 14px; font-weight: 500; color: var(--text); }
     .toggle-wrap { display: flex; align-items: center; gap: 8px; }
     .toggle-label { font-size: 12px; color: var(--muted); }
     .toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
     .toggle input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; inset: 0; background: #cbd5e1; border-radius: 22px; cursor: pointer; transition: background 0.2s; }
     .slider::before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform 0.2s; }
-    .toggle input:checked + .slider { background: #0d9488; }
+    .toggle input:checked + .slider { background: #3a6b4f; }
     .toggle input:checked + .slider::before { transform: translateX(18px); }
     .toggle input:disabled + .slider { background: #94a3b8; cursor: not-allowed; opacity: 0.7; }
     .category-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
     .required-badge { font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; background: #f1f5f9; color: #475569; padding: 3px 8px; border-radius: 20px; }
     .modal-footer { display: flex; gap: 10px; margin-top: 1.5rem; }
-    .btn-save { flex: 1; background: #0f2342; color: white; border: none; padding: 11px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
-    .btn-save:hover { background: #1a3a6b; }
-    .btn-accept-modal { flex: 1; background: #0d9488; color: white; border: none; padding: 11px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
-    .btn-accept-modal:hover { background: #0f766e; }
+    .btn-save { flex: 1; background: var(--text); color: white; border: none; padding: 11px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+    .btn-save:hover { background: #1a2d3a; }
+    .btn-accept-modal { flex: 1; background: #3a6b4f; color: white; border: none; padding: 11px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+    .btn-accept-modal:hover { background: #2f5840; }
     @media (max-width: 620px) {
       .banner-inner { grid-template-columns: 1fr; }
       .banner-actions { flex-direction: row; flex-wrap: wrap; min-width: unset; }
@@ -65,8 +65,8 @@
 
   <div class="trustbar">
     Built by a Chartered Institute of Housing professional &nbsp;·&nbsp;
-    19 years of frontline ASB and housing experience &nbsp;·&nbsp;
-    Methods pioneered here are in use across the housing sector
+    19 years of frontline ASB experience &nbsp;·&nbsp;
+    Transparent, rules-based risk assessment
   </div>
 
   <div class="container" style="padding-bottom:0;">
@@ -76,7 +76,7 @@
       </div>
       <div class="navlinks">
         <a href="{{ url_for('landing') }}">Home</a>
-        <a href="{{ url_for('asb') }}">ASB Assessment</a>
+        <a href="{{ url_for('asb') }}">Assessment</a>
       </div>
     </div>
   </div>
@@ -87,17 +87,19 @@
 
   <div class="container">
     <div class="footer">
-      <strong>Not legal advice.</strong> If you are in immediate danger call 999.
-      For ongoing issues, contact your landlord, council, or local support services.
+      <strong>Not legal advice.</strong>
+      If someone is at immediate risk of harm, call 999.
+      For ongoing issues, contact your landlord, housing association, council, or local police.
       &nbsp;·&nbsp;
       ASB Guide does not store your name, address, or any personal identifiers.
-      Keep case notes factual and time-based.
       <div style="margin-top:10px;">
         <a href="{{ url_for('privacy_policy') }}">Privacy Policy</a>
         &nbsp;·&nbsp;
         <a href="{{ url_for('terms_of_service') }}">Terms of Service</a>
         &nbsp;·&nbsp;
         <a href="{{ url_for('cookie_policy') }}">Cookie Policy</a>
+        &nbsp;·&nbsp;
+        <a href="https://www.youtube.com/@ASBGuide" target="_blank" rel="noopener">YouTube channel</a>
       </div>
     </div>
   </div>
@@ -159,6 +161,13 @@
     </div>
   </div>
 
+  {# VIDEO_MODAL_DISABLED
+     The tutorial video (H0ZjEMzvi_0) no longer matches how the site works.
+     To re-enable: change the line below from "if false" to "if true",
+     and update the EMBED URL inside the script block to the new video. #}
+  {% if false %}
+  {# VIDEO MODAL — set the condition above to "if true" to re-enable #}
+
   <button id="help-btn" aria-label="How to use this site">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
     <span>How to use</span>
@@ -199,6 +208,8 @@
       });
     })();
   </script>
+
+  {% endif %}
 
   <script>
     var CONSENT_KEY = 'asbg_cookie_consent';

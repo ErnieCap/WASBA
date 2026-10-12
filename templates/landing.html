@@ -3,63 +3,95 @@
 
 <div class="container">
 
+  <!-- ─── HERO: case input ───────────────────────────────────────────── -->
   <div class="hero">
-    <h1>Is your neighbour situation anti-social behaviour?</h1>
+    <h1>What's been happening?</h1>
     <p>
-      Describe what's been happening and get a structured risk assessment — the same
-      framework housing teams use. Free, takes two minutes, no name or address needed.
+      Describe the situation in plain language. The tool will identify the risk level,
+      flag any safeguarding concerns, and give you a clear set of next steps.
     </p>
 
-    <form method="POST" action="{{ url_for('assess') }}" style="margin-top:20px;">
-      <textarea
-        name="notes"
-        rows="5"
-        placeholder="Describe what's been happening — what, when, how often, and how it's affected you. The more detail, the more useful the assessment."
-        required
-        style="width:100%; box-sizing:border-box; padding:12px 14px;
-               border:1px solid var(--line); border-radius:var(--radius);
-               font-size:15px; font-family:inherit; color:var(--text);
-               background:var(--bg); resize:vertical; margin-bottom:12px;"
-      ></textarea>
-      <button type="submit" class="btn primary" style="width:100%; padding:14px; font-size:16px;">
-        Get my free assessment
-      </button>
-    </form>
+    <div style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; margin-top:20px;">
+
+      <form method="POST" action="{{ url_for('assess') }}" style="flex:1; min-width:280px;">
+        <textarea
+          name="notes"
+          rows="7"
+          placeholder="What's happening? How often? Who is affected, and how?  For example: noise every night after 11pm, verbal threats in the stairwell, children can't sleep..."
+          required
+          style="width:100%; padding:13px 15px;
+                 border:1px solid var(--line); border-radius:var(--radius);
+                 font-size:15px; font-family:var(--font-body); color:var(--text);
+                 background:var(--bg); resize:vertical; line-height:1.55;"
+        ></textarea>
+        <button type="submit" class="btn primary"
+                style="margin-top:10px; width:100%; padding:14px; font-size:16px;">
+          Get my risk assessment
+        </button>
+      </form>
+
+      <div style="font-size:14px; color:var(--muted); line-height:1.65; padding-top:2px; flex:0 0 260px; min-width:220px;">
+        <p style="margin:0 0 10px; font-weight:600; color:var(--text); max-width:none;">
+          What to include
+        </p>
+        <ul style="margin:0; padding-left:18px;">
+          <li style="margin-bottom:6px;">What type of behaviour — noise, threats, harassment, criminal damage</li>
+          <li style="margin-bottom:6px;">How often it happens and how long it has been going on</li>
+          <li style="margin-bottom:6px;">Who is affected and how — lost sleep, fear, children at home</li>
+          <li style="margin-bottom:6px;">Whether it has escalated or changed recently</li>
+          <li style="margin-bottom:6px;">Any action already taken — reports, warnings, police involvement</li>
+        </ul>
+        <p style="margin:14px 0 0; padding:10px 12px;
+                  background:#fdf8f2; border:1px solid #e8d9c0;
+                  border-radius:8px; font-size:13px; color:var(--muted); max-width:none;">
+          <strong style="color:var(--text);">Before you submit:</strong>
+          remove or replace any names, addresses, and other details that identify
+          individuals. Focus on what happened, not who did it.
+        </p>
+      </div>
+
+    </div>
   </div>
 
+  <!-- ─── HOW TO USE (written guide, replaces video) ────────────────── -->
   <div class="card" style="margin-top:14px;">
-    <h3 style="margin:0 0 16px;">How it works</h3>
-    <div class="grid3">
+    <h2 style="margin:0 0 16px;">How to use this tool</h2>
+    <div class="grid3" style="margin-top:0;">
 
-      <div style="display:flex; gap:12px; align-items:flex-start;">
-        <div style="font-size:22px; font-weight:800; color:var(--accent); flex-shrink:0; line-height:1;">1</div>
+      <div style="display:flex; gap:14px; align-items:flex-start;">
+        <div style="font-family:var(--font-heading); font-size:28px; font-weight:700;
+                    color:var(--accent); flex-shrink:0; line-height:1; margin-top:2px;">1</div>
         <div>
-          <div style="font-weight:600; margin-bottom:4px;">Describe what's happening</div>
-          <p style="margin:0; font-size:14px; color:var(--muted);">
-            Write what you've experienced — noise, intimidation, damage, harassment.
-            Plain language is fine.
+          <div style="font-weight:600; margin-bottom:5px; color:var(--text);">Describe the situation</div>
+          <p style="margin:0; font-size:14px;">
+            Write what has been happening — type of behaviour, how often,
+            who it is affecting, and for how long. Remove any names or identifying
+            details before you submit.
           </p>
         </div>
       </div>
 
-      <div style="display:flex; gap:12px; align-items:flex-start;">
-        <div style="font-size:22px; font-weight:800; color:var(--accent); flex-shrink:0; line-height:1;">2</div>
+      <div style="display:flex; gap:14px; align-items:flex-start;">
+        <div style="font-family:var(--font-heading); font-size:28px; font-weight:700;
+                    color:var(--accent); flex-shrink:0; line-height:1; margin-top:2px;">2</div>
         <div>
-          <div style="font-weight:600; margin-bottom:4px;">Get your risk assessment</div>
-          <p style="margin:0; font-size:14px; color:var(--muted);">
-            The tool identifies the risk level, flags safeguarding concerns,
-            and explains how the assessment was reached.
+          <div style="font-weight:600; margin-bottom:5px; color:var(--text);">Get your assessment</div>
+          <p style="margin:0; font-size:14px;">
+            The tool identifies the risk level, picks out the key factors,
+            and flags any safeguarding concerns. You can see exactly how the
+            risk level was arrived at.
           </p>
         </div>
       </div>
 
-      <div style="display:flex; gap:12px; align-items:flex-start;">
-        <div style="font-size:22px; font-weight:800; color:var(--accent); flex-shrink:0; line-height:1;">3</div>
+      <div style="display:flex; gap:14px; align-items:flex-start;">
+        <div style="font-family:var(--font-heading); font-size:28px; font-weight:700;
+                    color:var(--accent); flex-shrink:0; line-height:1; margin-top:2px;">3</div>
         <div>
-          <div style="font-weight:600; margin-bottom:4px;">Know what to do next</div>
-          <p style="margin:0; font-size:14px; color:var(--muted);">
-            Clear, prioritised next steps — who to contact, what to record,
-            and how to make a complaint that gets taken seriously.
+          <div style="font-weight:600; margin-bottom:5px; color:var(--text);">Know what to do next</div>
+          <p style="margin:0; font-size:14px;">
+            You get a prioritised list of next steps — who to contact, what
+            to record, and how to make a complaint that carries weight.
           </p>
         </div>
       </div>
@@ -67,55 +99,75 @@
     </div>
   </div>
 
+  <!-- ─── HOW THE ASSESSMENT WORKS ─────────────────────────────────── -->
   <div class="card" style="margin-top:14px;">
-    <h3 style="margin:0 0 4px;">How it's helped people</h3>
-    <p style="margin:0 0 18px; color:var(--muted); font-size:14px;">
-      Real situations, anonymised.
+    <h2 style="margin:0 0 12px;">How the assessment works</h2>
+    <p style="margin:0 0 12px;">
+      The tool reads your case description and identifies factors that the evidence
+      shows matter in ASB risk: the type of behaviour, how often it is happening,
+      how long it has been going on, whether anyone involved is vulnerable, signs of
+      escalation, and whether there are elements of hatred or violence.
     </p>
+    <p style="margin:0 0 12px;">
+      Each factor is weighted according to a structured risk framework built from
+      frontline practice. The risk level — low, medium, or high — is produced by
+      that framework, not by a black-box model. On your results page you can see
+      exactly which factors were identified and how the risk level was reached.
+    </p>
+    <p style="margin:0; color:var(--muted); font-size:14px;">
+      The more specific your description, the more accurate the result.
+      If the assessment looks wrong, go back and add more detail.
+    </p>
+  </div>
+
+  <!-- ─── HOW IT HAS HELPED PEOPLE ─────────────────────────────────── -->
+  <div class="card" style="margin-top:14px;">
+    <h2 style="margin:0 0 4px;">How it has helped people</h2>
+    <p style="margin:0 0 18px; font-size:14px;">Real situations, anonymised.</p>
 
     <div style="display:grid;
            grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
            gap:14px;">
 
-      <div style="padding:14px 16px;
+      <div style="padding:15px 17px;
               border-left:3px solid var(--accent);
               background:var(--bg);
               border-radius:0 8px 8px 0;">
-        <p style="margin:0 0 7px; font-weight:700;
-               font-size:13px; color:var(--text);">
+        <p style="margin:0 0 7px; font-weight:600;
+               font-size:13px; color:var(--text); max-width:none;">
           Social housing tenant, North England
         </p>
-        <p style="margin:0; font-size:14px; color:var(--muted);">
-          A year of intimidating behaviour dismissed as a "neighbour dispute."
+        <p style="margin:0; font-size:14px; max-width:none;">
+          A year of intimidating behaviour dismissed as a neighbour dispute.
           After using ASB Guide to document the pattern, their landlord issued
           a formal warning within six weeks.
         </p>
       </div>
 
-      <div style="padding:14px 16px;
+      <div style="padding:15px 17px;
               border-left:3px solid var(--accent);
               background:var(--bg);
               border-radius:0 8px 8px 0;">
-        <p style="margin:0 0 7px; font-weight:700;
-               font-size:13px; color:var(--text);">
+        <p style="margin:0 0 7px; font-weight:600;
+               font-size:13px; color:var(--text); max-width:none;">
           Private renter, Midlands
         </p>
-        <p style="margin:0; font-size:14px; color:var(--muted);">
-          Didn't know whether their situation counted as ASB. The free assessment
+        <p style="margin:0; font-size:14px; max-width:none;">
+          Did not know whether their situation counted as ASB. The free assessment
           identified it as medium-risk and gave them a clear framework for their
           complaint. Their council opened an investigation.
         </p>
       </div>
 
-      <div style="padding:14px 16px;
+      <div style="padding:15px 17px;
               border-left:3px solid var(--accent);
               background:var(--bg);
               border-radius:0 8px 8px 0;">
-        <p style="margin:0 0 7px; font-weight:700;
-               font-size:13px; color:var(--text);">
+        <p style="margin:0 0 7px; font-weight:600;
+               font-size:13px; color:var(--text); max-width:none;">
           Family, shared ownership property
         </p>
-        <p style="margin:0; font-size:14px; color:var(--muted);">
+        <p style="margin:0; font-size:14px; max-width:none;">
           Prolonged noise affecting children's sleep — months of informal reports,
           nothing acted on. The assessment and written report gave their housing
           officer something concrete to work with.
@@ -125,24 +177,57 @@
     </div>
   </div>
 
+  <!-- ─────────────────────────────────────────────────────────────────
+       ABOUT COPY
+       Edit the text inside this section to update the "Who's behind this"
+       content. Do not change the surrounding HTML unless you intend to
+       change the layout as well.
+  ──────────────────────────────────────────────────────────────────── -->
   <div class="card" style="margin-top:14px;">
-    <div style="display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap;">
+    <div style="display:flex; gap:28px; align-items:flex-start; flex-wrap:wrap;">
+
       <div style="flex:1; min-width:220px;">
-        <div style="font-weight:700; margin-bottom:6px;">Built by a practitioner</div>
-        <p>
-          ASB Guide was created by a housing professional with 19 years of frontline
-          ASB and case management experience. The approach here reflects what actually
-          works in practice — not what looks good on paper.
+        <h2 style="margin:0 0 10px;">Who's behind this</h2>
+        <p style="margin:0 0 10px;">
+          ASB Guide is built by an ASB officer with nineteen years of frontline
+          experience in social housing in Wales. That means managing cases,
+          supervising housing teams, and developing the risk tools and practice
+          approaches used across the sector.
+        </p>
+        <p style="margin:0;">
+          This is not a general-purpose AI product. It is a practitioner tool —
+          built to reflect what actually works in casework, not what looks good
+          on a product page.
         </p>
       </div>
+
       <div style="flex:1; min-width:220px;">
-        <div style="font-weight:700; margin-bottom:6px;">Your privacy</div>
-        <p>
-          No name, no address, no account required. Keep notes factual —
-          focus on what happened, when, and how it affected you.
+        <h2 style="margin:0 0 10px;">Your privacy</h2>
+        <p style="margin:0 0 10px;">
+          No account required. No name, address, or personal identifiers stored.
+          Keep your notes factual — focus on what happened, when, and how it
+          affected you, not on naming individuals.
+        </p>
+        <p style="margin:0; font-size:14px;">
+          <a href="{{ url_for('privacy_policy') }}">Read the full privacy policy</a>
         </p>
       </div>
+
     </div>
+  </div>
+  <!-- END ABOUT COPY ──────────────────────────────────────────────── -->
+
+  <!-- ─── DISCLAIMER ───────────────────────────────────────────────── -->
+  <div class="card card--disclaimer" style="margin-top:14px;">
+    <p style="margin:0; font-size:14px; color:var(--text); max-width:none;">
+      <strong>Guidance only — not legal advice.</strong>
+      This tool is designed to support professional judgement and help you
+      understand risk. It does not replace the statutory duties of housing
+      providers or local authorities, and it is not a substitute for legal advice.
+      If someone is at immediate risk of harm, call <strong>999</strong>.
+      For ongoing risk, contact your landlord, housing association, council,
+      or local police.
+    </p>
   </div>
 
 </div>

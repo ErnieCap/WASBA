@@ -1,37 +1,55 @@
 /* static/css/app.css */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 
+/* ── Design tokens ───────────────────────────────────────── */
 :root {
-  --bg:      #f0f4f8;
+  --bg:      #f7f6f2;   /* warm off-white */
   --panel:   #ffffff;
-  --text:    #1e293b;
-  --muted:   #64748b;
-  --line:    #e2e8f0;
-  --accent:  #1d4ed8;
-  --accent2: #1e40af;
+  --text:    #2a3844;   /* dark slate */
+  --muted:   #5a6875;   /* medium slate */
+  --line:    #dde2e8;
+  --accent:  #3a6b4f;   /* moss green — 6.2:1 contrast on white, WCAG AA */
+  --accent2: #2f5840;   /* darker moss for hover */
+  --warn:    #92400e;   /* amber text for locked/high-risk badges */
   --radius:  10px;
+
+  /* Typography */
+  --font-body:    'Inter', system-ui, -apple-system, Segoe UI, sans-serif;
+  --font-heading: 'Lora', Georgia, 'Times New Roman', serif;
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: 'Poppins', system-ui, -apple-system, Segoe UI, sans-serif;
+  font-family: var(--font-body);
   background: var(--bg);
   color: var(--text);
-  font-size: 15px;
-  line-height: 1.6;
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text);
 }
 
 a { color: var(--accent); text-decoration: none; }
-a:hover { opacity: .85; }
+a:hover { opacity: .82; }
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
 
 .container { max-width: 1050px; margin: 0 auto; padding: 24px; }
 
 /* ── Trust strip ─────────────────────────────────────────── */
 .trustbar {
-  background: var(--accent);
-  color: #fff;
+  background: var(--text);
+  color: #e8edf2;
   text-align: center;
   font-size: 13px;
   font-weight: 500;
@@ -46,9 +64,9 @@ a:hover { opacity: .85; }
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
 }
-.brand { font-weight: 800; font-size: 18px; letter-spacing: -.3px; }
+.brand { font-family: var(--font-heading); font-weight: 700; font-size: 19px; letter-spacing: -.2px; }
 .brand a { color: var(--text); }
 .navlinks { display: flex; gap: 4px; }
 .navlinks a {
@@ -63,14 +81,14 @@ a:hover { opacity: .85; }
 /* ── Hero ────────────────────────────────────────────────── */
 .hero {
   margin-top: 20px;
-  padding: 40px 36px 20px;
+  padding: 44px 40px 32px;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
 }
-.hero h1 { margin: 0 0 12px; font-size: 34px; line-height: 1.15; }
-.hero p  { margin: 0 0 20px; color: var(--muted); font-size: 17px; max-width: 58ch; }
+.hero h1 { margin: 0 0 14px; font-size: 36px; line-height: 1.2; }
+.hero p  { margin: 0 0 20px; color: var(--muted); font-size: 17px; max-width: 60ch; line-height: 1.6; }
 
 /* ── Buttons ─────────────────────────────────────────────── */
 .btn {
@@ -80,10 +98,11 @@ a:hover { opacity: .85; }
   border: 1px solid var(--line);
   background: var(--panel);
   color: var(--text);
+  font-family: var(--font-body);
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  font-family: inherit;
+  transition: background .15s, border-color .15s, box-shadow .15s;
 }
 .btn.primary {
   background: var(--accent);
@@ -92,6 +111,7 @@ a:hover { opacity: .85; }
 }
 .btn.primary:hover { background: var(--accent2); border-color: var(--accent2); opacity: 1; }
 .btn:hover { background: var(--bg); opacity: 1; }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .btn:disabled, .btn.disabled { opacity: .45; cursor: not-allowed; }
 
 /* ── Cards ───────────────────────────────────────────────── */
@@ -99,24 +119,33 @@ a:hover { opacity: .85; }
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 18px;
+  padding: 22px 24px;
   box-shadow: 0 1px 3px rgba(0,0,0,.04);
   transition: border-color .2s, box-shadow .2s;
 }
-.card h3 { margin: 0 0 8px; color: var(--text); }
+.card h2, .card h3 { margin: 0 0 10px; }
 .card p  { margin: 0; color: var(--muted); }
+
+/* Prose width cap for reading comfort */
+.card p, .card li { max-width: 72ch; }
+
+/* ── Disclaimer card ─────────────────────────────────────── */
+.card--disclaimer {
+  background: #f7f5ee;
+  border-color: #c8c0a8;
+}
 
 /* ── Grid ────────────────────────────────────────────────── */
 .grid3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin-top: 14px;
+  gap: 16px;
+  margin-top: 16px;
 }
 @media (max-width: 900px) {
   .grid3 { grid-template-columns: 1fr; }
-  .hero { padding: 28px 20px 18px; }
-  .hero h1 { font-size: 26px; }
+  .hero { padding: 30px 22px 22px; }
+  .hero h1 { font-size: 28px; }
 }
 
 /* ── Badges ──────────────────────────────────────────────── */
@@ -130,8 +159,8 @@ a:hover { opacity: .85; }
   font-size: 13px;
   font-weight: 500;
 }
-.badge.open   { color: #15803d; border-color: #bbf7d0; background: #f0fdf4; }
-.badge.locked { color: #b45309; border-color: #fde68a; background: #fffbeb; }
+.badge.open   { color: #166534; border-color: #bbf7d0; background: #f0fdf4; }
+.badge.locked { color: var(--warn); border-color: #fde68a; background: #fffbeb; }
 
 /* ── Table ───────────────────────────────────────────────── */
 .table {
@@ -149,7 +178,7 @@ a:hover { opacity: .85; }
 }
 .table th { color: var(--muted); font-weight: 600; background: var(--bg); }
 .table tr:last-child td { border-bottom: none; }
-.table tr:hover td { background: #f8fafc; }
+.table tr:hover td { background: var(--bg); }
 
 /* ── Forms ───────────────────────────────────────────────── */
 label {
@@ -161,13 +190,14 @@ label {
 }
 input, select, textarea {
   width: 100%;
-  padding: 9px 12px;
+  padding: 10px 13px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel);
   color: var(--text);
-  font-family: inherit;
-  font-size: 14px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
 }
 input:focus, select:focus, textarea:focus {
   outline: 2px solid var(--accent);
@@ -176,8 +206,8 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ── Form helpers ────────────────────────────────────────── */
-.form-row  { margin-bottom: 18px; }
-.form-hint { font-size: 13px; color: var(--muted); margin-bottom: 6px; line-height: 1.4; }
+.form-row  { margin-bottom: 20px; }
+.form-hint { font-size: 13px; color: var(--muted); margin-bottom: 6px; line-height: 1.5; }
 
 .radio-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
 .radio-pill {
@@ -191,6 +221,7 @@ input:focus, select:focus, textarea:focus {
   background: var(--panel);
   color: var(--muted);
   user-select: none;
+  transition: background .12s, border-color .12s, color .12s;
 }
 .radio-pill:has(input:checked) {
   background: var(--accent);
@@ -208,18 +239,14 @@ input:focus, select:focus, textarea:focus {
   border: 2px solid var(--text);
   background: transparent;
   color: var(--text);
+  font-family: var(--font-body);
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  font-family: inherit;
   line-height: 1.4;
   transition: border-color .15s, color .15s, background .15s;
 }
-.triage-option:hover {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-}
+.triage-option:hover,
 .triage-option.selected {
   background: var(--accent);
   border-color: var(--accent);
@@ -240,23 +267,27 @@ input:focus, select:focus, textarea:focus {
 
 .card--highlighted {
   border-color: var(--accent) !important;
-  box-shadow: 0 0 0 1px var(--accent), 0 2px 8px rgba(29,78,216,.12);
+  box-shadow: 0 0 0 1px var(--accent), 0 2px 8px rgba(58,107,79,.12);
 }
 .card--highlighted-secondary {
-  border-color: rgba(29,78,216,.45) !important;
-  box-shadow: 0 0 0 1px rgba(29,78,216,.25), 0 1px 3px rgba(0,0,0,.04);
+  border-color: rgba(58,107,79,.45) !important;
+  box-shadow: 0 0 0 1px rgba(58,107,79,.25), 0 1px 3px rgba(0,0,0,.04);
 }
 
 /* ── Footer ──────────────────────────────────────────────── */
 .footer {
-  margin: 32px 0 16px;
+  margin: 36px 0 20px;
   color: var(--muted);
   font-size: 13px;
   border-top: 1px solid var(--line);
-  padding-top: 16px;
+  padding-top: 18px;
+  line-height: 1.7;
 }
 
-/* ── Help button & modal ─────────────────────────────────── */
+/* ── Help button & modal (video) ─────────────────────────── */
+/* VIDEO_MODAL_HIDDEN — the button and modal HTML exist in base.html
+   inside a {% if video_modal_enabled %} block (currently false).
+   To re-enable: set video_modal_enabled = true in base.html. */
 #help-btn {
   position: fixed;
   bottom: 24px;
@@ -270,16 +301,16 @@ input:focus, select:focus, textarea:focus {
   color: #fff;
   border: none;
   border-radius: 999px;
-  font-family: inherit;
+  font-family: var(--font-body);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(29,78,216,.4);
+  box-shadow: 0 2px 10px rgba(58,107,79,.4);
   transition: background .15s, box-shadow .15s, transform .1s;
 }
 #help-btn:hover {
   background: var(--accent2);
-  box-shadow: 0 4px 16px rgba(29,78,216,.5);
+  box-shadow: 0 4px 16px rgba(58,107,79,.5);
   transform: translateY(-1px);
 }
 
@@ -300,7 +331,7 @@ input:focus, select:focus, textarea:focus {
   border-radius: 16px;
   width: 100%;
   max-width: 780px;
-  box-shadow: 0 8px 40px rgba(0,0,0,.25);
+  box-shadow: 0 8px 40px rgba(0,0,0,.22);
   overflow: hidden;
 }
 

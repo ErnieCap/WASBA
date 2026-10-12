@@ -19,11 +19,21 @@
     <form method="post" action="/assess">
 
       <div class="form-row">
-        <label for="notes">Case notes</label>
-        <div class="form-hint">What is happening? How often? Who is involved? How does it affect you or anyone else?</div>
+        <label for="notes">Case description</label>
+        <div class="form-hint">
+          What is happening? How often? Who is affected, and how?
+          Describe the behaviour, not the person — focus on what happens,
+          when, and the impact.
+        </div>
         <textarea id="notes" name="notes" rows="10"
-                  placeholder="For example: neighbour plays loud music most nights after 11pm, shouts in the stairwell, children can't sleep..."
+                  placeholder="For example: loud music most nights after 11pm, verbal threats in the communal stairwell, children unable to sleep — ongoing for about eight months..."
                   required></textarea>
+        <div style="margin-top:8px; font-size:13px; color:var(--muted); padding:9px 11px;
+                    background:#fdf8f2; border:1px solid #e8d9c0; border-radius:8px;">
+          <strong style="color:var(--text);">Remove names and identifying details before submitting.</strong>
+          Replace people's names with descriptions (e.g. "neighbour at number 12") and
+          avoid including full addresses, dates of birth, or other personal identifiers.
+        </div>
       </div>
 
       <div class="form-row">
