@@ -27,3 +27,16 @@ Thumbs.db
 
 # Logs
 *.log
+
+# ── Knowledge pipeline data — NEVER commit ───────────────────────────────────
+# Source documents, extracted text, embeddings and review reports may contain
+# real personal data. None of this ever leaves the owner's local machine.
+data/raw/*
+data/processed/*
+data/review/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/review/.gitkeep
+
+# spaCy downloaded models (can be large)
+knowledge/.spacy_cache/
