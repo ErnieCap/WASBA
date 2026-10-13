@@ -1,0 +1,22 @@
+# knowledge/requirements.txt
+# Dependencies for the knowledge pipeline.
+# Install with:  pip install -r knowledge/requirements.txt
+#
+# Core (always required)
+pydantic>=2.0
+pyyaml>=6.0
+
+# Text extraction (install before running extract.py or inventory.py)
+pdfplumber>=0.10          # PDF text extraction
+python-docx>=1.0          # DOCX text extraction
+
+# NLP / NER (install before running scrub.py with spaCy pass)
+spacy>=3.7
+# After installing spaCy, download the model:
+#   python -m spacy download en_core_web_sm
+
+# Vector database (install before running embed.py)
+psycopg2-binary>=2.9      # PostgreSQL driver with pgvector support
+
+# Testing
+pytest>=8.0

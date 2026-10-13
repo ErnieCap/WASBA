@@ -1,0 +1,77 @@
+# knowledge/tags.yaml
+# Topic tag vocabulary for chunk metadata.
+# Add, remove or rename tags here as your document set grows.
+# Each tag should be a single lowercase word or words joined by underscores.
+# Jurisdiction-specific tags should be reflected in the ChunkMetadata.jurisdiction field
+# rather than in the tag name (e.g. use jurisdiction: Wales rather than tag: wales_specific).
+#
+# NOTE: Welsh law differs from English law in several important areas —
+# the Renting Homes (Wales) Act 2016 replaced the assured tenancy regime for
+# social housing in Wales. Tag documents correctly so retrieval can filter by
+# jurisdiction when that distinction matters.
+
+topic_tags:
+
+  # Behaviour types
+  - noise
+  - harassment
+  - hate_incident
+  - drugs
+  - domestic_abuse
+  - intimidation
+  - threats
+  - criminal_damage
+  - trespass
+  - cuckooing
+  - county_lines
+
+  # People and vulnerability
+  - vulnerability
+  - mental_health
+  - safeguarding
+  - children_at_risk
+  - victims_support
+  - witness_support
+
+  # Enforcement tools
+  - enforcement_tools
+  - injunctions
+  - closure_orders
+  - criminal_behaviour_orders
+  - acceptable_behaviour_contracts
+  - notices_seeking_possession
+  - demotion_orders
+  - community_protection_notices
+  - dispersal_powers
+
+  # Process and practice
+  - risk_assessment
+  - evidence_gathering
+  - diary_sheets
+  - case_management
+  - case_closure
+  - tenancy_management
+  - mediation
+  - early_intervention
+  - community_trigger
+  - review_panels
+
+  # Legislation and policy
+  - antisocial_behaviour_act_2014
+  - renting_homes_wales_act_2016
+  - housing_act_1996
+  - crime_and_disorder_act_1998
+  - statutory_guidance
+
+  # Partnership and multi-agency
+  - partnership_working
+  - multi_agency
+  - police_liaison
+  - local_authority
+  - housing_association
+
+  # Other
+  - procedure
+  - template
+  - training
+  - reflective_practice
