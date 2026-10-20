@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 # Required env vars:
 # STRIPE_SECRET_KEY
-# STRIPE_PRICE_ID        (create a £3 Price in Stripe dashboard)
+# STRIPE_PRICE_ID        (create a £0.50 Price in Stripe dashboard)
 # STRIPE_WEBHOOK_SECRET  (webhook signing secret)
 # STRIPE_PUBLISHABLE_KEY (used by Stripe.js on the frontend)
 
