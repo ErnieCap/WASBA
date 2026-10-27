@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container">
+
+  <!-- ─── HERO ─────────────────────────────────────────────────────────── -->
+  <div class="hero">
+    <h1>Community Trigger checker</h1>
+    <p>
+      Answer four quick questions to find out whether your situation may
+      qualify for a Community Trigger — a legal right to request a formal
+      review of your case.
+    </p>
+  </div>
+
+  <!-- ─── DECISION TREE ───────────────────────────────────────────────── -->
+  <div class="card" style="margin-top:14px;">
+
+    <!-- Q1 -->
+    <div id="q1">
+      <p style="font-weight:600; margin:0 0 16px; font-size:16px;">
+        Has the behaviour been reported to a landlord, council, or police?
+      </p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn primary" onclick="answer(1,'yes')"
+                style="padding:10px 28px;">Yes</button>
+        <button class="btn" onclick="answer(1,'no')"
+                style="padding:10px 28px;">No</button>
+      </div>
+    </div>
+
+    <!-- Q2 -->
+    <div id="q2" style="display:none;">
+      <p style="font-weight:600; margin:0 0 16px; font-size:16px;">
+        Have you reported it at least <strong>three times</strong>?
+      </p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn primary" onclick="answer(2,'yes')"
+                style="padding:10px 28px;">Yes</button>
+        <button class="btn" onclick="answer(2,'no')"
+                style="padding:10px 28px;">No</button>
+        <button class="btn" onclick="answer(2,'unsure')"
+                style="padding:10px 28px;">Not sure</button>
+      </div>
+    </div>
+
+    <!-- Q3 -->
+    <div id="q3" style="display:none;">
+      <p style="font-weight:600; margin:0 0 16px; font-size:16px;">
+        Has the behaviour been going on for at least <strong>six months</strong>?
+      </p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn primary" onclick="answer(3,'yes')"
+                style="padding:10px 28px;">Yes</button>
+        <button class="btn" onclick="answer(3,'no')"
+                style="padding:10px 28px;">No</button>
+      </div>
+    </div>
+
+    <!-- Q4 -->
+    <div id="q4" style="display:none;">
+      <p style="font-weight:600; margin:0 0 16px; font-size:16px;">
+        Did the agencies you reported to fail to take adequate action?
+      </p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn primary" onclick="answer(4,'yes')"
+                style="padding:10px 28px;">Yes</button>
+        <button class="btn" onclick="answer(4,'partially')"
+                style="padding:10px 28px;">Partially</button>
+        <button class="btn" onclick="answer(4,'no')"
+                style="padding:10px 28px;">No</button>
+      </div>
+    </div>
+
+    <!-- Result: likely eligible -->
+    <div id="result-likely" style="display:none;">
+      <div style="padding:18px 20px;
+                  border-left:3px solid var(--accent);
+                  background:var(--bg);
+                  border-radius:0 8px 8px 0;
+                  margin-bottom:16px;">
+        <p style="margin:0 0 8px; font-weight:700; font-size:16px; color:var(--text);">
+          Your situation may qualify for a Community Trigger
+        </p>
+        <p style="margin:0 0 12px; font-size:14px;">
+          Based on your answers, you may be entitled to request an ASB Case Review
+          (also called a Community Trigger) from your local council. This is a formal
+          review of how your case has been handled.
+        </p>
+        <p style="margin:0; font-size:14px;">
+          <strong>Next step:</strong> contact your local council's ASB team and ask
+          to make a Community Trigger application. You can use the risk assessment
+          tool to build a clear written summary of your case to support the request.
+        </p>
+      </div>
+      <a href="{{ url_for('landing') }}" class="btn primary"
+         style="display:inline-block; padding:11px 28px;">
+        Get a risk assessment
+      </a>
+      <button onclick="restart()" class="btn"
+              style="margin-left:10px; padding:11px 24px;">
+        Start again
+      </button>
+    </div>
+
+    <!-- Result: possibly eligible -->
+    <div id="result-possibly" style="display:none;">
+      <div style="padding:18px 20px;
+                  border-left:3px solid #d97706;
+                  background:var(--bg);
+                  border-radius:0 8px 8px 0;
+                  margin-bottom:16px;">
+        <p style="margin:0 0 8px; font-weight:700; font-size:16px; color:var(--text);">
+          You may be approaching eligibility
+        </p>
+        <p style="margin:0 0 12px; font-size:14px;">
+          Your situation does not yet clearly meet the threshold, but it may be
+          getting close. The most important thing you can do now is keep a written
+          record of every incident and every report you make.
+        </p>
+        <p style="margin:0; font-size:14px;">
+          Write down the date, time, what happened, who was affected, and what you
+          did about it. Keep a copy of any emails or letters you send. This log
+          will be essential if you apply for a Community Trigger in future.
+        </p>
+      </div>
+      <a href="{{ url_for('landing') }}" class="btn primary"
+         style="display:inline-block; padding:11px 28px;">
+        Get a risk assessment
+      </a>
+      <button onclick="restart()" class="btn"
+              style="margin-left:10px; padding:11px 24px;">
+        Start again
+      </button>
+    </div>
+
+    <!-- Result: not eligible -->
+    <div id="result-not" style="display:none;">
+      <div style="padding:18px 20px;
+                  border-left:3px solid var(--line);
+                  background:var(--bg);
+                  border-radius:0 8px 8px 0;
+                  margin-bottom:16px;">
+        <p style="margin:0 0 8px; font-weight:700; font-size:16px; color:var(--text);">
+          Your situation doesn't yet meet the threshold
+        </p>
+        <p style="margin:0 0 12px; font-size:14px;">
+          That doesn't mean nothing can be done. Many cases are resolved before
+          reaching the Community Trigger stage. A risk assessment can identify
+          what action you can take right now and who to contact.
+        </p>
+      </div>
+      <a href="{{ url_for('landing') }}" class="btn primary"
+         style="display:inline-block; padding:11px 28px;">
+        Get a risk assessment
+      </a>
+      <button onclick="restart()" class="btn"
+              style="margin-left:10px; padding:11px 24px;">
+        Start again
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ─── EXPLAINER ────────────────────────────────────────────────────── -->
+  <div class="card" style="margin-top:14px;">
+    <h2 style="margin:0 0 12px;">What is the Community Trigger?</h2>
+    <p style="margin:0 0 10px;">
+      The Community Trigger — officially called an <strong>ASB Case Review</strong>
+      — is a legal right created by the
+      <strong>Anti-Social Behaviour, Crime and Policing Act 2014</strong>.
+      It gives victims of persistent anti-social behaviour the right to demand
+      a formal review of how their case has been handled by the relevant agencies.
+    </p>
+    <p style="margin:0 0 10px;">
+      If you have made a qualifying number of reports to a council, housing
+      provider, or police — and they have failed to take adequate action —
+      you can apply to your local council to trigger a review. The council
+      must then bring together all the relevant agencies to look at what has
+      happened and agree a plan.
+    </p>
+    <p style="margin:0 0 10px;">
+      Despite being a legal right, research suggests that
+      <strong>fewer than 1 in 17 people</strong> affected by persistent ASB
+      are aware it exists. Many cases that could qualify are never reviewed,
+      simply because victims don't know they can ask.
+    </p>
+    <p style="margin:0; color:var(--muted); font-size:14px;">
+      The exact threshold (number of reports, time period) can vary slightly
+      by council, but three qualifying reports within a 12-month period is the
+      standard national threshold set in the statutory guidance.
+    </p>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  var answers = {};
+
+  window.answer = function (q, val) {
+    answers['q' + q] = val;
+
+    if (q === 1 && val === 'no') {
+      showResult('not');
+      return;
+    }
+    if (q < 4) {
+      document.getElementById('q' + q).style.display = 'none';
+      document.getElementById('q' + (q + 1)).style.display = '';
+      return;
+    }
+
+    // All four answered — evaluate
+    document.getElementById('q4').style.display = 'none';
+    var threeReports = answers.q2 === 'yes';
+    var sixMonths    = answers.q3 === 'yes';
+    var agenciesFailed = answers.q4 === 'yes' || answers.q4 === 'partially';
+
+    if (threeReports && sixMonths && agenciesFailed) {
+      showResult('likely');
+    } else if (agenciesFailed || threeReports || sixMonths) {
+      showResult('possibly');
+    } else {
+      showResult('not');
+    }
+  };
+
+  function showResult(type) {
+    document.getElementById('result-likely').style.display   = type === 'likely'   ? '' : 'none';
+    document.getElementById('result-possibly').style.display = type === 'possibly' ? '' : 'none';
+    document.getElementById('result-not').style.display      = type === 'not'      ? '' : 'none';
+  }
+
+  window.restart = function () {
+    answers = {};
+    ['q2','q3','q4','result-likely','result-possibly','result-not'].forEach(function (id) {
+      document.getElementById(id).style.display = 'none';
+    });
+    document.getElementById('q1').style.display = '';
+  };
+}());
+</script>
+
+{% endblock %}

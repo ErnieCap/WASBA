@@ -191,6 +191,11 @@ def cookie_policy():
     return render_template("cookies.html")
 
 
+@app.route("/community-trigger")
+def community_trigger():
+    return render_template("community_trigger.html")
+
+
 @app.route("/health")
 def health():
     return {
