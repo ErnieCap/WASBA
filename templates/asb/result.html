@@ -1,15 +1,119 @@
 {% extends "base.html" %}
+
+{% block head %}
+<style>
+@media print {
+  @page {
+    size: A4;
+    margin: 20mm 18mm;
+  }
+
+  body {
+    background: #fff !important;
+    color: #000;
+    font-size: 11pt;
+    line-height: 1.55;
+  }
+
+  /* Hide screen-only chrome */
+  .trustbar,
+  .nav,
+  .footer,
+  .no-print,
+  #cookie-banner,
+  #cookie-modal,
+  #help-btn {
+    display: none !important;
+  }
+
+  /* Collapse empty nav/footer containers */
+  .container {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  /* Cards: clean for paper */
+  .card {
+    background: #fff !important;
+    border: 1px solid #bbb !important;
+    box-shadow: none !important;
+    border-radius: 3px !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-top: 8pt !important;
+    padding: 14pt 16pt !important;
+  }
+  .card h2, .card h3 { color: #000 !important; margin: 0 0 8pt !important; }
+  .card p, .card li  { color: #222 !important; max-width: none !important; }
+
+  /* Hero: strip decorative chrome; the print header replaces it */
+  .hero {
+    background: #fff !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .hero h1, .hero > p { display: none; }
+
+  /* Risk badge: preserve colour on paper */
+  .badge {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    border: 1px solid #bbb !important;
+    font-size: 22pt !important;
+    padding: 8pt 14pt !important;
+  }
+  .badge.open   { background: #f0fdf4 !important; color: #166534 !important; border-color: #bbf7d0 !important; }
+  .badge.locked { background: #fffbeb !important; color: #92400e !important; border-color: #fde68a !important; }
+
+  /* Show print-only elements */
+  .print-only { display: block !important; }
+  .print-header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 10pt;
+    border-bottom: 2pt solid #2a3844;
+    margin-bottom: 14pt;
+  }
+
+  /* Reveal contents of the methodology <details> */
+  details { display: block; }
+  details > summary { display: none; }
+
+  /* Links: inherit text colour, no underline */
+  a { color: inherit !important; text-decoration: none !important; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 
 <div class="container">
+
+  {# ── Print-only page header ── #}
+  <div class="print-only" style="display:none;">
+    <div class="print-header-inner">
+      <div>
+        <div style="font-family:Georgia,serif; font-size:20pt; font-weight:700; color:#2a3844; line-height:1.1;">ASB Guide</div>
+        <div style="font-size:10pt; color:#5a6875; margin-top:3px;">Case Assessment Report</div>
+      </div>
+      <div style="text-align:right; font-size:10pt; color:#5a6875; line-height:1.6;">
+        asbguide.com<br>
+        <span id="print-date"></span>
+      </div>
+    </div>
+  </div>
 
   <div class="hero">
     <h1 style="margin:0 0 8px;">Here's what we found</h1>
     <p style="margin:0;">Thank you for sharing that. Here's what your situation looks like and what to do next.</p>
 
-    <div style="margin-top:20px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+    <div class="no-print" style="margin-top:20px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
       <a class="btn" href="{{ url_for('asb') }}">Assess another case</a>
       <a class="btn" href="{{ url_for('landing') }}">Home</a>
+      <button class="btn" onclick="window.print()">Print / save as PDF</button>
     </div>
   </div>
 
@@ -54,17 +158,17 @@
 
 
   {% if not paid %}
-  <div class="card" style="margin-top:14px;">
+  <div class="card no-print" style="margin-top:14px;">
     <h3 style="margin:0 0 8px;">Want this written up for you?</h3>
     <p style="margin:0 0 12px; color:var(--muted);">
-      For £0.50 we turn what you’ve told us into a full written report — a plain-English summary
+      For £0.50 we turn what you've told us into a full written report — a plain-English summary
       of your situation, your evidence laid out clearly, a timeline of next steps, and a
       covering letter you can send as-is to your landlord, council, or housing officer.
     </p>
 
     {% if payment_pending %}
       <p style="margin:10px 0 0; color:var(--muted);">
-        <strong>Payment not confirmed yet.</strong> If you’ve just paid, wait a few seconds and refresh this page.
+        <strong>Payment not confirmed yet.</strong> If you've just paid, wait a few seconds and refresh this page.
       </p>
     {% endif %}
 
@@ -167,5 +271,22 @@
   {% endif %}
 
 </div>
+
+<script>
+  (function () {
+    var months = ['January','February','March','April','May','June',
+                  'July','August','September','October','November','December'];
+    var d = new Date();
+    var label = d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+    var el = document.getElementById('print-date');
+    if (el) el.textContent = label;
+
+    window.addEventListener('beforeprint', function () {
+      document.querySelectorAll('details').forEach(function (det) {
+        det.open = true;
+      });
+    });
+  })();
+</script>
 
 {% endblock %}
