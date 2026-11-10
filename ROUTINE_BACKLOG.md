@@ -7,7 +7,7 @@ or clear BLOCKED items by adding the missing information.
 
 ---
 
-## 2. ASB tools area: move Community Trigger out of the banner — Done
+## 2. ASB tools area: move Community Trigger out of the banner — TODO
 
 Remove the Community Trigger link from the top banner. The banner keeps
 only the site headline and the main call to action (paste a case, get a
