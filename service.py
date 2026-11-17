@@ -1,11 +1,29 @@
+import json
 import logging
 import os
 
 from prompts import build_prompts
-from expert_system import extract_keys, derive_risk, build_rationale, keys_to_category_and_flags
+from expert_system import (
+    extract_keys, derive_risk, build_rationale,
+    keys_to_category_and_flags, check_tool_links,
+)
 from recommendations import build_what_to_do_now
 
 logger = logging.getLogger(__name__)
+
+_TOOLS_PATH = os.path.join(os.path.dirname(__file__), "data", "tools.json")
+
+
+def _load_tools() -> list:
+    try:
+        with open(_TOOLS_PATH) as f:
+            return json.load(f)
+    except Exception:
+        logger.warning("Could not load %s — tool links disabled", _TOOLS_PATH)
+        return []
+
+
+TOOLS = _load_tools()
 
 
 def call_llm_stub(system_prompt: str, user_prompt: str) -> dict:
@@ -79,6 +97,8 @@ def assess_case_free(case: dict) -> dict:
     matrix_rationale = build_rationale(expert_keys, expert_sources)
     total_score = score_breakdown.get("_total", 0)
 
+    tool_links = check_tool_links(case, expert_keys, TOOLS)
+
     logger.info(
         "assess_case_free: risk=%s score=%d keys=%s",
         risk_level, total_score, expert_keys,
@@ -103,6 +123,10 @@ def assess_case_free(case: dict) -> dict:
         "case_highlights": [],
         "next_steps": [],
         "what_to_do_now": what_to_do_now,
+
+        # ASB tools relevant to this case
+        "tool_links": tool_links,
+        "all_tools": TOOLS,
 
         # Inspectable audit record — stored in DB alongside the result
         "expert_keys": expert_keys,
@@ -140,6 +164,8 @@ def assess_case_premium(case: dict) -> dict:
     matrix_rationale = build_rationale(expert_keys, expert_sources)
     total_score = score_breakdown.get("_total", 0)
 
+    tool_links = check_tool_links(case, expert_keys, TOOLS)
+
     logger.info(
         "assess_case_premium: risk=%s score=%d keys=%s",
         risk_level, total_score, expert_keys,
@@ -160,6 +186,10 @@ def assess_case_premium(case: dict) -> dict:
         "risk_factors": all_factors,
         "safeguarding_concerns": all_sc or None,
         "what_to_do_now": what_to_do_now,
+
+        # ASB tools relevant to this case
+        "tool_links": tool_links,
+        "all_tools": TOOLS,
 
         # Inspectable audit record
         "expert_keys": expert_keys,

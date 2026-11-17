@@ -681,6 +681,65 @@ def derive_risk(
     return result_risk, result_factors, result_sc, breakdown
 
 
+# ── Tool relevance rules ──────────────────────────────────────────────────────
+
+def _rule_community_trigger(case: Dict, keys: Dict[str, str]) -> bool:
+    """
+    Community Trigger relevance (Anti-Social Behaviour, Crime and Policing
+    Act 2014, s.104).
+
+    The trigger applies when qualifying complaints have been made about
+    separate ASB incidents and the responsible body has not taken adequate
+    action. The statutory threshold is no higher than three qualifying
+    complaints within six months, made to the police, local authority,
+    housing provider, or a combination. Each complaint must relate to a
+    separate incident, be made within one month of the incident, and the
+    behaviour must constitute ASB — not mere dissatisfaction with an
+    agency's response. The application for review must generally be made
+    within six months of the first qualifying complaint.
+
+    We use structured fields as proxies (the site does not capture
+    individual complaint dates, so the six-month window cannot be assessed
+    precisely):
+      - 3+ previous incidents recorded (num_previous_incidents >= 3)
+      - At least one complaint or report already made (PRIOR_ACTION != "none")
+      - Behaviour is recurring, not an isolated one-off (FREQUENCY != "one-off")
+    """
+    num_prev = int(case.get("num_previous_incidents", 0) or 0)
+    prior = keys.get("PRIOR_ACTION", "none")
+    frequency = keys.get("FREQUENCY", "one-off")
+    return (
+        num_prev >= 3
+        and prior != "none"
+        and frequency != "one-off"
+    )
+
+
+_TOOL_RULES: Dict[str, object] = {
+    "community-trigger": _rule_community_trigger,
+}
+
+
+def check_tool_links(
+    case: Dict,
+    keys: Dict[str, str],
+    tools: List[Dict],
+) -> List[Dict]:
+    """
+    Return the subset of tools whose named rule fires for this case.
+
+    Each returned entry is taken verbatim from the tools list so the
+    template gets all fields (id, title, description, link) without
+    further lookup. Only tools with an entry in _TOOL_RULES are eligible.
+    """
+    relevant = []
+    for tool in tools:
+        rule = _TOOL_RULES.get(tool.get("id", ""))
+        if rule and rule(case, keys):
+            relevant.append(tool)
+    return relevant
+
+
 # ── Adapter for recommendations.py ───────────────────────────────────────────
 
 def keys_to_category_and_flags(keys: Dict[str, str]) -> Tuple[str, Set[str]]:
