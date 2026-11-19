@@ -6,7 +6,7 @@ The owner edits this file at the Tuesday check-in: add items, reorder them,
 or clear BLOCKED items by adding the missing information.
 ---
 
-# Task: Finish the ASB tools area (continuation of previous run) TODO 
+# 3. Task: Finish the ASB tools area (continuation of previous run) TODO 
 
 ## Context
 The last run did only part of this task. The Community Trigger link has been removed from the top banner. The ASB tools area, `tools.json`, the card rendering and the overview linking were **not** done. This run finishes that work and adds a second tool, Respect Orders.
