@@ -704,6 +704,14 @@ def _rule_community_trigger(case: Dict, keys: Dict[str, str]) -> bool:
       - 3+ previous incidents recorded (num_previous_incidents >= 3)
       - At least one complaint or report already made (PRIOR_ACTION != "none")
       - Behaviour is recurring, not an isolated one-off (FREQUENCY != "one-off")
+
+    Criteria NOT checked automatically (require per-incident date data):
+      - Whether each complaint is a "qualifying complaint"
+      - The one-month reporting window (incident → complaint)
+      - The six-month application window (first complaint → trigger application)
+      - Harm to the victim as a qualifying factor
+      - Adequacy of the response (the trigger requires inadequate response,
+        not just three complaints)
     """
     num_prev = int(case.get("num_previous_incidents", 0) or 0)
     prior = keys.get("PRIOR_ACTION", "none")
@@ -715,8 +723,14 @@ def _rule_community_trigger(case: Dict, keys: Dict[str, str]) -> bool:
     )
 
 
+def _rule_respect_orders(case: Dict, keys: Dict[str, str]) -> bool:
+    # TODO: criteria to be supplied by site owner. Do not invent.
+    return False
+
+
 _TOOL_RULES: Dict[str, object] = {
     "community-trigger": _rule_community_trigger,
+    "respect-orders":    _rule_respect_orders,
 }
 
 
