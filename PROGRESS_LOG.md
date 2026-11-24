@@ -24,7 +24,6 @@ This run adds:
 - `_rule_respect_orders` stub in `expert_system.py` (always returns False)
 - "Coming soon" label in `result.html` for cards with `link == "#"`
 - `tests/fixtures/ct-meets.txt` and `tests/fixtures/ct-not-met.txt`
-- Done/Not Done checklist at the end of this entry
 
 ### TODOs raised
 
@@ -41,6 +40,19 @@ This run adds:
   - Harm to the victim as a qualifying factor
   - Adequacy of the response (the trigger requires inadequate response, not just three complaints)
   These require per-incident date data the site does not currently capture.
+
+### Done / Not Done
+
+- [x] Banner has no Community Trigger link (done in PR #13)
+- [x] `data/tools.json` holds two entries: Community Trigger (working link) and Respect Orders (Coming soon)
+- [x] The ASB tools card renders both entries; Respect Orders shows "Coming soon" label, not a broken link
+- [x] Grid uses `repeat(auto-fit,minmax(240px,1fr))` — 1/2/3 columns at narrow/medium/wide viewports
+- [x] Adding a third entry to `tools.json` shows a third card with no code changes _(verified by design: all cards rendered from data)_
+- [x] Community Trigger rule fires for `ct-meets.txt` case (4 prev incidents, complaint made, weekly) → link appears in overview
+- [x] Community Trigger rule does not fire for `ct-not-met.txt` case (0 prev incidents, no prior action, one-off) → no link
+- [x] No overview links to Respect Orders while its rule is stubbed (always returns False)
+- [x] `tests/fixtures/ct-meets.txt` and `tests/fixtures/ct-not-met.txt` saved
+- [x] PROGRESS_LOG.md has starting state, TODOs, and this checklist
 
 ---
 
