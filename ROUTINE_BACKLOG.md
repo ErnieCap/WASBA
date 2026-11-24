@@ -4,6 +4,24 @@ Items are worked through top to bottom. Status is one of:
 TODO, IN PROGRESS, DONE, BLOCKED.
 The owner edits this file at the Tuesday check-in: add items, reorder them,
 or clear BLOCKED items by adding the missing information.
+
+### 4. Landing page: remove the "How it has helped people" card — TODO
+
+Scheduled for the Tuesday 1 December 2026 run.
+
+Remove the "How it has helped people" testimonials card from
+`templates/landing.html` — the whole `<div class="card">` block that starts
+under the `<!-- ─── HOW IT HAS HELPED PEOPLE ─── -->` comment, including
+its heading, the "Real situations, anonymised." line and all three
+testimonial entries (social housing tenant, private renter, shared
+ownership family). Remove the comment too.
+
+- Do not replace it with anything; the card before it and the section
+  after it should sit together with the normal card spacing.
+- Check for and remove anything that only existed for this card (anchors,
+  nav links, CSS, JS or tests that reference it). Leave shared styles alone.
+- Check the landing page still renders cleanly on mobile and desktop.
+- Note the removal in `PROGRESS_LOG.md`.
 ---
 
 (The routine moves finished items here, with PR links.)
