@@ -1,0 +1,20 @@
+# Community Trigger test fixture — MEETS threshold
+#
+# Expected: _rule_community_trigger returns True
+# Rule criteria met:
+#   - num_previous_incidents >= 3  (set to 4 in structured fields)
+#   - PRIOR_ACTION != "none"       (text: "reported to the council")
+#   - FREQUENCY != "one-off"       (text: "every week")
+#
+# Structured fields (passed alongside this note text):
+#   num_previous_incidents: 4
+#   vulnerable_tenant: no
+#   has_criminal_history: no
+#   incident_type: noise
+
+Loud music and shouting every week from the flat above, starting around 11pm and
+going on until 2am or 3am. This has been happening for about four months. I have
+reported to the council three times and to the housing association once. Each time
+I was told someone would look into it but nothing has changed. The noise is so bad
+that my children cannot sleep and I am losing sleep myself. I have kept a diary of
+every incident. The behaviour is not improving — if anything it is getting worse.
