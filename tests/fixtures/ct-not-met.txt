@@ -1,0 +1,17 @@
+# Community Trigger test fixture — DOES NOT MEET threshold
+#
+# Expected: _rule_community_trigger returns False
+# Rule criteria NOT met:
+#   - num_previous_incidents < 3   (set to 0 — first incident)
+#   - PRIOR_ACTION == "none"       (no reports made yet)
+#   - FREQUENCY == "one-off"       (single incident)
+#
+# Structured fields (passed alongside this note text):
+#   num_previous_incidents: 0
+#   vulnerable_tenant: no
+#   has_criminal_history: no
+#   incident_type: noise
+
+My neighbour had a loud party last Saturday night. Music was thumping until about
+1am. I haven't complained to anyone yet — I wanted to see if it was a one-off
+before escalating. As far as I know this is the first time it has happened.

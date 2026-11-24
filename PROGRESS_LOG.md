@@ -4,6 +4,58 @@ Entries added by the Tuesday routine. Most recent first.
 
 ---
 
+## 2026-11-24 — Backlog item 3: ASB tools continuation (Respect Orders + test fixtures)
+
+**Branch:** feat/asb-tools-continuation
+
+### Starting state
+
+PR #13 (merged 2026-11-17) completed item 2 in full:
+- Community Trigger removed from top banner ✅
+- `data/tools.json` exists with the Community Trigger entry ✅
+- `expert_system.py` has `_rule_community_trigger()` and `check_tool_links()` ✅
+- `service.py` passes `tool_links` and `all_tools` to both free and premium result dicts ✅
+- `result.html` renders the ASB tools card from `all_tools`, with `#tool-{id}` anchors,
+  and shows tool links in the "What to do now" card ✅
+- No test fixtures exist at `tests/fixtures/` — that directory is new ✅
+
+This run adds:
+- Respect Orders entry to `tools.json` (description + link are TODO placeholders)
+- `_rule_respect_orders` stub in `expert_system.py` (always returns False)
+- "Coming soon" label in `result.html` for cards with `link == "#"`
+- `tests/fixtures/ct-meets.txt` and `tests/fixtures/ct-not-met.txt`
+
+### TODOs raised
+
+- **Respect Orders description and link**: placeholder `"TODO: description to be supplied"` and
+  `"#"` are in `tools.json`. Content must come from the site owner before the card shows real
+  information. See `data/tools.json`.
+- **Respect Orders rule criteria**: `_rule_respect_orders()` in `expert_system.py` is stubbed
+  as always-false. Criteria must come from the site owner. Do not invent.
+- **Community Trigger rule — criteria not checked automatically** (documented in function
+  docstring in `expert_system.py`):
+  - Whether each complaint is a "qualifying complaint"
+  - The one-month reporting window (incident → complaint)
+  - The six-month application window (first complaint → trigger application)
+  - Harm to the victim as a qualifying factor
+  - Adequacy of the response (the trigger requires inadequate response, not just three complaints)
+  These require per-incident date data the site does not currently capture.
+
+### Done / Not Done
+
+- [x] Banner has no Community Trigger link (done in PR #13)
+- [x] `data/tools.json` holds two entries: Community Trigger (working link) and Respect Orders (Coming soon)
+- [x] The ASB tools card renders both entries; Respect Orders shows "Coming soon" label, not a broken link
+- [x] Grid uses `repeat(auto-fit,minmax(240px,1fr))` — 1/2/3 columns at narrow/medium/wide viewports
+- [x] Adding a third entry to `tools.json` shows a third card with no code changes _(verified by design: all cards rendered from data)_
+- [x] Community Trigger rule fires for `ct-meets.txt` case (4 prev incidents, complaint made, weekly) → link appears in overview
+- [x] Community Trigger rule does not fire for `ct-not-met.txt` case (0 prev incidents, no prior action, one-off) → no link
+- [x] No overview links to Respect Orders while its rule is stubbed (always returns False)
+- [x] `tests/fixtures/ct-meets.txt` and `tests/fixtures/ct-not-met.txt` saved
+- [x] PROGRESS_LOG.md has starting state, TODOs, and this checklist
+
+---
+
 ## 2026-10-27 — Backlog item 1: printable report
 
 **Branch:** feat/results-print  
