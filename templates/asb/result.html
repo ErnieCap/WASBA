@@ -292,15 +292,34 @@
            grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
            gap:14px;">
       {% for tool in result.all_tools %}
-      <a id="tool-{{ tool.id }}"
-         href="{{ tool.link }}"
-         style="display:block; padding:16px 18px;
-                border:1px solid var(--line); border-radius:var(--radius);
-                text-decoration:none; color:var(--text);
-                background:var(--bg);">
-        <div style="font-weight:600; margin-bottom:6px; color:var(--text);">{{ tool.title }}</div>
-        <p style="margin:0; font-size:14px; color:var(--muted);">{{ tool.description }}</p>
-      </a>
+        {%- set coming_soon = (tool.link == "#" or tool.link.startswith("TODO")) -%}
+        {% if coming_soon %}
+        <div id="tool-{{ tool.id }}"
+             style="padding:16px 18px;
+                    border:1px solid var(--line); border-radius:var(--radius);
+                    background:var(--bg); opacity:0.7;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-weight:600; color:var(--text);">{{ tool.title }}</span>
+            <span style="font-size:11px; font-weight:500; letter-spacing:0.05em;
+                         text-transform:uppercase; color:var(--muted);
+                         border:1px solid var(--line); border-radius:4px;
+                         padding:1px 6px;">Coming soon</span>
+          </div>
+          <p style="margin:0; font-size:14px; color:var(--muted);">
+            More information on this tool will be available shortly.
+          </p>
+        </div>
+        {% else %}
+        <a id="tool-{{ tool.id }}"
+           href="{{ tool.link }}"
+           style="display:block; padding:16px 18px;
+                  border:1px solid var(--line); border-radius:var(--radius);
+                  text-decoration:none; color:var(--text);
+                  background:var(--bg);">
+          <div style="font-weight:600; margin-bottom:6px; color:var(--text);">{{ tool.title }}</div>
+          <p style="margin:0; font-size:14px; color:var(--muted);">{{ tool.description }}</p>
+        </a>
+        {% endif %}
       {% endfor %}
     </div>
   </div>
